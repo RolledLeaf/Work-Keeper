@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 121.8652 117.4029">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5 {
+        fill: #fff;
+      }
+
+      .cls-1, .cls-3, .cls-5, .cls-6, .cls-7 {
+        stroke-miterlimit: 10;
+      }
+
+      .cls-1, .cls-7 {
+        stroke: #000;
+        stroke-width: 4px;
+      }
+
+      .cls-3, .cls-4, .cls-5, .cls-6 {
+        stroke: #231f20;
+      }
+
+      .cls-4 {
+        stroke-linejoin: round;
+      }
+
+      .cls-4, .cls-5, .cls-6 {
+        stroke-width: 2px;
+      }
+
+      .cls-6 {
+        stroke-linecap: round;
+      }
+
+      .cls-6, .cls-7 {
+        fill: none;
+      }
+    </style>
+  </defs>
+  <circle class="cls-1" cx="45.5" cy="45.5" r="43.5"/>
+  <line class="cls-7" x1="77.4366" y1="75.2106" x2="87.1926" y2="84.2866"/>
+  <rect class="cls-7" x="82.4274" y="93.1089" width="41.2969" height="12.4798" rx="6.2399" ry="6.2399" transform="translate(95.2771 -43.5987) rotate(42.932)"/>
+  <rect class="cls-5" x="21.9141" y="14.7488" width="42.5712" height="64.7727" rx="7.8607" ry="7.8607"/>
+  <rect class="cls-4" x="35.0437" y="10.4445" width="16.2037" height="10.3723" rx="2.6852" ry="2.6852"/>
+  <line class="cls-6" x1="31.8417" y1="39.6093" x2="56.875" y2="39.7259"/>
+  <line class="cls-6" x1="31.8417" y1="49.5155" x2="48.5306" y2="49.5155"/>
+  <line class="cls-6" x1="41.9989" y1="58.1583" x2="32.2056" y2="58.07"/>
+  <rect class="cls-2" x="61.7044" y="35.3242" width="5.4336" height="26.2221"/>
+  <polygon class="cls-3" points="77.7745 32.934 57.7347 58.8021 53.83 54.4389 73.8697 28.5707 77.7745 32.934"/>
+  <path class="cls-3" d="M80.9768,28.6436l-3.155,4.2147-3.9763-4.2981,3.2829-4.3855c.1521-.2032.4176-.217.59-.0307l3.2046,3.4639c.2521.2725.2763.7385.0539,1.0357Z"/>
+  <path class="cls-3" d="M52.8075,62.0954l4.7019-2.7504c.1441-.0843.1725-.2806.0583-.4023l-3.8503-4.1038c-.1383-.1474-.3844-.0876-.4397.1068l-1.7506,6.1576c-.2151.7565.6014,1.3892,1.2803.9921Z"/>
+</svg>

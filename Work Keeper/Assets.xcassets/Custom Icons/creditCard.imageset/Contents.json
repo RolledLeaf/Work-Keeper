@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "simple-credit-card-symbol-black-outline-18380 4.svg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "simple-credit-card-symbol-black-outline-18380 5.svg",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "simple-credit-card-symbol-black-outline-18380 6.svg",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
