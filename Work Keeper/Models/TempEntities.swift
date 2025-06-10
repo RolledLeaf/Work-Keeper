@@ -6,3 +6,7 @@ enum Status: String, Codable {
     case canceled
 }
 
+enum PaymentMethod: String, Codable {
+    case creditCard
+    case cash
+}

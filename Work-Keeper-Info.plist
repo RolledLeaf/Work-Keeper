@@ -5,6 +5,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>SF-Pro-Display-Bold.otf</string>
+		<string>SF-Pro-Display-RegularItalic.otf</string>
 		<string>SF-Pro-Display-Regular.otf</string>
 		<string>YS Display-Medium.ttf</string>
 	</array>
