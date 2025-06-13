@@ -37,8 +37,12 @@ struct Address {
     let isPrivateHouse: Bool
 }
 
-
+let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
 let date1 = Date()
+let today1 = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 11, hour: 10, minute: 30))
+let today2 = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 11, hour: 14, minute: 00))
+let tomorrow = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 12, hour: 10, minute: 0))
+let twoDaysAgo = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 10, hour: 10, minute: 0))
 
 
 let address1 = Address(street: "Тверская", houseNumber: "12", apartmentNumber: "45", entranceNumber: "3", floorNumber: 8, isPrivateHouse: false)
@@ -52,16 +56,24 @@ let clientDiana = Client(firstName: "Диана", lastName: nil, address: dianaA
 let clientJulia = Client(firstName: "Юлия", lastName: "Петрова", address: juliaAddress, phoneNumber: "+79991234567")
 let clientPetr = Client(firstName: "Петр", lastName: "Иванов", address: address2, phoneNumber: "+79996664599")
 
-let task1 = Task(scheduledAt: date1, client: clientBoris, isRemote: false, taskDescription: "Встретиться с Борисом Джонсоном", taskComment: "", isCompleted: .scheduled, paymentMethod: nil, contractAmount: 3500, cost: 500, extraPayment: 1000)
-let task2 = Task(scheduledAt: date1, client: clientDiana, isRemote: false, taskDescription: "Установить Windows 11", taskComment: nil, isCompleted: .completed, paymentMethod: .creditCard, contractAmount: 5000, cost: 950, extraPayment: 500)
-let task3 = Task(scheduledAt: date1, client: clientJulia, isRemote: false, taskDescription: "Купить в магазине и настроить роутер keenetic. Сдача остаётся мне", taskComment: "Не получилось. Роутер не включается", isCompleted: .canceled, paymentMethod: nil, contractAmount: 0, cost: 0, extraPayment: 0)
-let task4 = Task(scheduledAt: date1, client: clientPetr, isRemote: true, taskDescription: "Office install", taskComment: nil, isCompleted: .scheduled, paymentMethod: nil, contractAmount: 1500, cost: 500, extraPayment: 0)
+let task1 = Task(scheduledAt: tomorrow ?? date1, client: clientBoris, isRemote: false, taskDescription: "Встретиться с Борисом Джонсоном", taskComment: "", isCompleted: .scheduled, paymentMethod: nil, contractAmount: 3500, cost: 500, extraPayment: 1000)
+let task2 = Task(scheduledAt: today1 ?? date1, client: clientDiana, isRemote: false, taskDescription: "Установить Windows 11", taskComment: nil, isCompleted: .completed, paymentMethod: .creditCard, contractAmount: 5000, cost: 950, extraPayment: 500)
+let task3 = Task(scheduledAt: today2 ?? date1, client: clientJulia, isRemote: false, taskDescription: "Купить в магазине и настроить роутер keenetic. Сдача остаётся мне", taskComment: "Не получилось. Роутер не включается", isCompleted: .canceled, paymentMethod: nil, contractAmount: 0, cost: 0, extraPayment: 0)
+let task4 = Task(scheduledAt: twoDaysAgo ?? date1, client: clientPetr, isRemote: true, taskDescription: "Office install", taskComment: nil, isCompleted: .scheduled, paymentMethod: nil, contractAmount: 1500, cost: 500, extraPayment: 0)
 
 let tasks: [Task] = [task1, task2, task3, task4]
 
 
     
     struct TaskListView: View {
+        
+        var groupedTasks: [String: [Task]] {
+            Dictionary(grouping: tasks) { task in
+                let formatter = customDateFormatter
+                return formatter.string(from: task.scheduledAt)
+            }
+        }
+        
         var body: some View {
             VStack {
               
@@ -118,7 +130,7 @@ let tasks: [Task] = [task1, task2, task3, task4]
                     )
                 
                 
-             
+              
                 
                 if tasks.isEmpty {
                     
@@ -141,13 +153,24 @@ let tasks: [Task] = [task1, task2, task3, task4]
                 } else {
                     Spacer()
                         .frame(height: 38)
-                    ScrollView {
-                        LazyVStack(spacing: 37) {
-                            ForEach(tasks) { task in
-                                TaskRow(task: task)
+                    List {
+                        ForEach(groupedTasks.keys.sorted { $0 > $1 }, id: \.self) { dateKey in
+                            Section(header: Text(dateKey).font(.headline)) {
+                                ForEach(groupedTasks[dateKey] ?? []) { task in
+                                    TaskRow(task: task)
+                                }
                             }
+                            .listRowSeparator(.hidden)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.clear)
+                            )
                         }
                     }
+                    .listRowSeparator(.hidden)
+                    .listStyle(PlainListStyle())
+                    .padding(.leading, -20)
+                    .padding(.trailing, -20)
                 }
             }
             
@@ -159,4 +182,6 @@ let tasks: [Task] = [task1, task2, task3, task4]
     #Preview {
         TaskListView()
     }
+
+
 

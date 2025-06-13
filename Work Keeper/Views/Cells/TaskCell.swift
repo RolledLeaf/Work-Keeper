@@ -21,7 +21,7 @@ struct TaskRow: View {
         return VStack {
             HStack{
                 Color.custom(statusColor)
-                    .frame(width: 6, height: 114)
+                    .frame(width: 6, height: 130)
                     .cornerRadius(15, corners: [.topLeft, .bottomLeft])
                     .offset(x: 5)
                     .padding(.top, 5)
@@ -31,11 +31,27 @@ struct TaskRow: View {
                         HStack {
                             Text(task.scheduledAt.formattedAsTime())
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
-                                .offset(x: 20)
+                                .offset(x: 5)
                             
                             Spacer()
                             HStack {
-                                Image("repeatBadge")
+                                ZStack {
+                                    Image("repeatClientCloud")
+                                    Text("Клиент\nрепит")
+                                        .font(.custom(SFPro.regular.rawValue, size: 12))
+                                        .multilineTextAlignment(.center)
+                                        .offset(x: -4, y: 1)
+                                        
+                                }
+                                .frame(width: 20)
+                                .offset(x: -10)
+                                   
+                                
+                                Button(action: {
+                                    
+                                }) {
+                                    Image("repeatBadge")
+                                }
                                 
                                 
                                 Text(task.client.firstName)
@@ -43,27 +59,40 @@ struct TaskRow: View {
                             }
                             .offset(x: -18)
                             
-                            Spacer()
+                          
                             
-                            Image("call")
-                                .offset(x: -8)
+                            
+                                Text("\(task.client.phoneNumber)")
+                                    .font(.custom(SFPro.regular.rawValue, size: 12))
+                                    .background(Image("phoneNumberCloud"))
+                            
+                                    .offset(x: 0)
+                                Button(action: {
+                                    
+                                }) {
+                                    Image("call")
+                                }
+                                
+                           
                         }
+                        .padding(.trailing, 5)
                         
                         
                         Text("\(task.client.address.street) \(task.client.address.houseNumber)")
-                            .font(.custom(SFPro.regular.rawValue, size: 25))
+                            .font(.custom(SFPro.regular.rawValue, size: 32))
                             .foregroundColor(.custom(.taskTextGray))
                         
                             .padding(.leading, 20)
                             .padding(.top, -12)
                             .padding(.bottom, -5)
-                            .frame(maxWidth: 300, alignment: .center)
+                            .frame(width: 300, alignment: .center)
+                            .frame(height: 25)
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
                             .minimumScaleFactor(0.5)
-                        
-                        HStack {
-                            if task.client.address.isPrivateHouse == false {
+                        if task.client.address.isPrivateHouse == false {
+                            HStack {
+                                
                                 Image("location")
                                     .offset(x: -9, y: -20)
                                 Spacer()
@@ -75,7 +104,11 @@ struct TaskRow: View {
                                 Spacer()
                                 Text("эт.\(task.client.address.floorNumber ?? 0)")
                                     .foregroundColor(.custom(.taskTextGray))
+                            }
+                            .padding(.trailing, 90)
+                            .padding(.leading, 15)
                             } else {
+                                HStack {
                                 Image("location")
                                     .offset(y: -20)
                                 
@@ -85,9 +118,10 @@ struct TaskRow: View {
                                     .foregroundColor(.custom(.taskTextGray))
                                     .offset(x: -19)
                             }
+                                .padding(.trailing, 90)
+                                .padding(.leading, 15)
                         }
-                        .padding(.trailing, 90)
-                        .padding(.leading, 15)
+                       
                         
                         
                         Rectangle()
@@ -97,17 +131,17 @@ struct TaskRow: View {
                             .padding(.top, -15)
                         
                         Text(task.taskDescription)
-                            .font(.custom(SFPro.regular.rawValue, size: 24))
+                            .font(.custom(SFPro.regular.rawValue, size: 19))
                             .bold()
-                            .frame(maxWidth: .infinity, alignment: .center)
+                            .frame(maxWidth: 350, alignment: .center)
+                            .frame(height: 35)
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
                             .minimumScaleFactor(0.5)
                             .padding(.leading, 5)
                             .padding(.trailing, 5)
-                            .padding(.top, -20)
+                            .padding(.top, -22)
                             .padding(.bottom, 5)
-                        
                     }
                     .frame(maxHeight: 150)
                 } else {
@@ -119,7 +153,22 @@ struct TaskRow: View {
                             
                             Spacer()
                             HStack {
-                                Image("repeatBadge")
+                                
+                                ZStack {
+                                    Image("repeatClientCloud")
+                                    Text("Клиент\nрепит")
+                                        .font(.custom(SFPro.regular.rawValue, size: 12))
+                                        .multilineTextAlignment(.center)
+                                        .offset(x: -4, y: 1)
+                                        
+                                }
+                                .frame(width: 20)
+                                .offset(x: -10, y: 18)
+                                Button(action: {
+                                    
+                                }) {
+                                    Image("repeatBadge")
+                                }
                                 
                                 
                                 Text(task.client.firstName)
@@ -127,12 +176,23 @@ struct TaskRow: View {
                             }
                             .offset(x: -18)
                             
-                            Spacer()
+                          
                             
-                            Image("call")
-                                .offset(x: -8)
+                            
+                                Text("\(task.client.phoneNumber)")
+                                    .font(.custom(SFPro.regular.rawValue, size: 12))
+                                    .background(Image("phoneNumberCloud"))
+                            
+                                    .offset(x: 0)
+                                Button(action: {
+                                    
+                                }) {
+                                    Image("call")
+                                }
+                                
                         }
                         .padding(.top, -20)
+                        .padding(.trailing, 5)
      
                         HStack{
                                Image("remote")
@@ -168,9 +228,10 @@ struct TaskRow: View {
                            
                         
                     }
-                    .frame(maxHeight: 150)
+                    .frame(height: 150)
                 }
             }
+            
             
             Rectangle()
                 .frame( height: 0.5)
@@ -188,7 +249,7 @@ struct TaskRow: View {
                         .font(.custom(SFPro.bold.rawValue, size: 19))
                     Image("creditCard")
                 }
-                .padding(.leading, 49)
+                .padding(.leading, 32)
                 .padding(.trailing, 8)
                 
                 HStack{
@@ -209,9 +270,9 @@ struct TaskRow: View {
             }
             .padding(.top, -12)
         }
-        .frame(height: 200)
         .background(Color.custom(.taskCellGray))
         .cornerRadius(12)
+        
     }
 }
 
