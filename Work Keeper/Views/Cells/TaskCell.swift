@@ -1,8 +1,16 @@
 import SwiftUI
 
+
 let defaultNumber = "1"
 
 struct TaskRow: View {
+    @State private var showPhoneNumberCloudLocal = false
+    @State private var showRepeatClientBubbleLocal = false
+    @State private var showPhoneNumberCloudRemote = false
+    @State private var showRepeatClientBubbleRemote = false
+    @State private var showCashIcon = false
+    @State private var showCreditCardIcon = false
+    
     let task: Task
     
     var body: some View {
@@ -34,46 +42,58 @@ struct TaskRow: View {
                                 .offset(x: 5)
                             
                             Spacer()
+                            
+                            //Стек имени
                             HStack {
                                 ZStack {
                                     Image("repeatClientCloud")
+
                                     Text("Клиент\nрепит")
                                         .font(.custom(SFPro.regular.rawValue, size: 12))
                                         .multilineTextAlignment(.center)
-                                        .offset(x: -4, y: 1)
+                                        .offset(x: -4)
                                         
                                 }
                                 .frame(width: 20)
-                                .offset(x: -10)
-                                   
-                                
+                                .offset(x: -8, y: 2)
+                                .opacity(showRepeatClientBubbleLocal ? 1 : 0)
+                                .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleLocal)
                                 Button(action: {
-                                    
+                                    showRepeatClientBubbleLocal.toggle()
                                 }) {
                                     Image("repeatBadge")
+                                        .resizable()
+                                        .frame(width: 20, height: 20)
+                                        .padding(6)
                                 }
-                                
-                                
+                                .buttonStyle(BorderlessButtonStyle())
+                                .contentShape(Circle())
                                 Text(task.client.firstName)
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
                             }
-                            .offset(x: -18)
-                            
-                          
-                            
-                            
+                            .padding(.trailing, 35)
+                            Spacer()
+                            ZStack {
+                                Image("phoneNumberCloud")
                                 Text("\(task.client.phoneNumber)")
                                     .font(.custom(SFPro.regular.rawValue, size: 12))
-                                    .background(Image("phoneNumberCloud"))
-                            
-                                    .offset(x: 0)
-                                Button(action: {
-                                    
-                                }) {
-                                    Image("call")
-                                }
-                                
-                           
+                                    .offset(x: -3)
+                            }
+                          
+                            .padding(.leading, -70)
+                            .offset(x: 11)
+                            .opacity(showPhoneNumberCloudLocal ? 1 : 0)
+                            .animation(.easeInOut(duration: 0.3), value: showPhoneNumberCloudLocal)
+                            Button(action: {
+                                showPhoneNumberCloudLocal.toggle()
+                            }) {
+                                Image("call")
+                                    .resizable()
+                                    .frame(width: 20, height: 20)
+                                    .padding(6)
+                            }
+                            .contentShape(Rectangle())
+                            .buttonStyle(BorderlessButtonStyle())
                         }
                         .padding(.trailing, 5)
                         
@@ -119,7 +139,7 @@ struct TaskRow: View {
                                     .offset(x: -19)
                             }
                                 .padding(.trailing, 90)
-                                .padding(.leading, 15)
+                                .padding(.leading, 10)
                         }
                        
                         
@@ -149,71 +169,89 @@ struct TaskRow: View {
                         HStack {
                             Text(task.scheduledAt.formattedAsTime())
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
-                                .offset(x: 20)
+                                .offset(x: 5)
                             
                             Spacer()
                             HStack {
-                                
                                 ZStack {
                                     Image("repeatClientCloud")
                                     Text("Клиент\nрепит")
                                         .font(.custom(SFPro.regular.rawValue, size: 12))
                                         .multilineTextAlignment(.center)
-                                        .offset(x: -4, y: 1)
-                                        
+                                        .offset(x: -4)
                                 }
                                 .frame(width: 20)
-                                .offset(x: -10, y: 18)
+                                .offset(x: 9, y: 3)
+                                .opacity(showRepeatClientBubbleRemote ? 1 : 0)
+                                .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleRemote)
                                 Button(action: {
-                                    
+                                    showRepeatClientBubbleRemote.toggle()
                                 }) {
                                     Image("repeatBadge")
+                                        .resizable()
+                                        .frame(width: 20, height: 20)
+                                        .padding(6)
                                 }
-                                
-                                
+                                .buttonStyle(BorderlessButtonStyle())
+                                .contentShape(Rectangle())
                                 Text(task.client.firstName)
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
                             }
-                            .offset(x: -18)
-                            
-                          
-                            
-                            
+                            .offset(x: 6)
+                            .padding(.trailing, 35)
+                           
+                            Spacer()
+                            ZStack {
+                                Image("phoneNumberCloud")
                                 Text("\(task.client.phoneNumber)")
                                     .font(.custom(SFPro.regular.rawValue, size: 12))
-                                    .background(Image("phoneNumberCloud"))
-                            
-                                    .offset(x: 0)
-                                Button(action: {
-                                    
-                                }) {
-                                    Image("call")
-                                }
-                                
+                                    .offset(x: -3)
+                                    .onTapGesture {
+                                           if let url = URL(string: "tel://\(task.client.phoneNumber)"),
+                                              UIApplication.shared.canOpenURL(url) {
+                                               UIApplication.shared.open(url)
+                                           }
+                                       }
+                            }
+                            .padding(.leading, -70)
+                            .offset(x: 10, y: 3)
+                            .opacity(showPhoneNumberCloudRemote ? 1 : 0)
+                            .animation(.easeInOut(duration: 0.3), value: showPhoneNumberCloudRemote)
+                            Button(action: {
+                                showPhoneNumberCloudRemote.toggle()
+                            }) {
+                                Image("call")
+                                    .resizable()
+                                    .frame(width: 20, height: 20)
+                                    .padding(6)
+                            }
+                            .contentShape(Rectangle())
+                            .buttonStyle(BorderlessButtonStyle())
                         }
                         .padding(.top, -20)
                         .padding(.trailing, 5)
      
                         HStack{
                                Image("remote")
-                                   .offset(y: -10)
+                                   
                                Spacer()
                        
                                Text("Удалёнка")
                                    .font(.custom(SFPro.regular.rawValue, size: 30))
                                    .foregroundColor(.custom(.taskTextGray))
-                                   .padding(.top, -19)
+                                   .padding(.top, -15)
+                                   .offset(x: 10, y: 2)
                            }
-                        
+                        .padding(.top, -20)
                         .padding(.trailing, 120)
-                        .padding(.leading, 15)
+                        .padding(.leading, 10)
                         
                         
                         Rectangle()
                             .frame( height: 0.5)
                             .frame(maxWidth: .infinity)
                             .foregroundColor(Color.black)
-                            .padding(.top, -15)
+                            .padding(.top, -5)
                         
                         Text(task.taskDescription)
                             .font(.custom(SFPro.regular.rawValue, size: 30))
@@ -224,7 +262,7 @@ struct TaskRow: View {
                             .minimumScaleFactor(0.5)
                             .padding(.leading, 5)
                             .padding(.trailing, 5)
-                            .padding(.top, -10)
+                            .offset(y: -7)
                            
                         
                     }
@@ -281,151 +319,4 @@ struct TaskRow: View {
 }
 
     
-//    
-//} else {
-//    HStack{
-//        Image("remote")
-//            .offset(y: -10)
-//        Spacer()
-//  
-//        Text("Удалёнка")
-//            .font(.custom(SFPro.regular.rawValue, size: 30))
-//            .foregroundColor(.custom(.taskTextGray))
-//            .padding(.top, -25)
-//    }
-//    .frame(height: 50)
-//    .padding(.leading, 20)
-//    .padding(.trailing, 110)
-//    
-//    
-//}
-//    
-//HStack {
-//    Color.custom(statusColor)
-//        .frame(width: 6, height: 114)
-//        .cornerRadius(15, corners: [.topLeft, .bottomLeft])
-//        .offset(x: 5, y: 5)
-//
-//    VStack {
-//
-//        HStack {
-//            Text(task.scheduledAt.formattedAsTime())
-//                .font(.custom(SFPro.regular.rawValue, size: 16))
-//                .offset(x: 9)
-//
-//            Spacer()
-//            HStack {
-//                Image("repeatBadge")
-//
-//
-//                Text(task.client.firstName)
-//                    .font(.custom(SFPro.bold.rawValue, size: 25))
-//            }
-//            .offset(x: -18)
-//
-//            Spacer()
-//
-//            Image("call")
-//                .offset(x: -8)
-//        }
-//        .offset(y: 16)
-//
-//                Text("\(task.client.address.street) \(task.client.address.houseNumber)")
-//                    .font(.custom(SFPro.regular.rawValue, size: 25))
-//                    .foregroundColor(.custom(.taskTextGray))
-//
-//                    .padding(.leading, 20)
-//
-//                    .frame(maxWidth: 280)
-//                    .frame(height: 36)
-//                    .lineLimit(2)
-//                    .minimumScaleFactor(0.5)
-//
-//
-//        HStack {
-//            Spacer()
-//
-//
-//            if task.client.address.isPrivateHouse == false {
-//                Image("location")
-//                    .offset(x: 30, y: -17)
-//                Spacer()
-//                Text("кв. \(task.client.address.apartmentNumber ?? defaultNumber)")
-//                    .foregroundColor(.custom(.taskTextGray))
-//                Spacer()
-//                Text("под.\(task.client.address.entranceNumber ?? defaultNumber)")
-//                    .foregroundColor(.custom(.taskTextGray))
-//                Spacer()
-//                Text("эт.\(task.client.address.floorNumber ?? 0)")
-//                    .foregroundColor(.custom(.taskTextGray))
-//            } else {
-//                Image("location")
-//                    .offset(x: -10, y: -17)
-//                Spacer()
-//                Text("(Частный дом)")
-//                    .font(.custom(SFPro.italic.rawValue, size: 20))
-//                    .offset(x: -35)
-//            }
-//
-//        }
-//
-//        .offset(x: -70, y: -25)
-//
-//
-//        Rectangle()
-//            .frame( height: 0.5)
-//            .foregroundColor(Color.black)
-//            .offset(y: -40)
-//
-//        Text(task.taskDescription)
-//            .font(.custom(SFPro.regular.rawValue, size: 24))
-//            .bold()
-//
-//            .frame(maxWidth: 340)
-//            .frame(maxHeight: 25, alignment: .center)
-//            .lineLimit(2, reservesSpace: true)
-//            .minimumScaleFactor(0.5)
-//    }
-//    .frame(maxHeight: 150, alignment: .bottom)
-//
-//    .multilineTextAlignment(.center)
-//
-//}
-//
-//
-//
-//
-//VStack {
-//
-//    Rectangle()
-//        .frame( height: 0.5)
-//        .foregroundColor(Color.black)
-//
-//
-//    HStack{
-//        Text("Договорились:  \(task.contractAmount)")
-//            .font(.custom(SFPro.bold.rawValue, size: 17))
-//            .offset(x: 49)
-//        Spacer()
-//
-//        Text("Итого:")
-//            .font(.custom(SFPro.bold.rawValue, size: 19))
-//            .offset(x: -10)
-//    }
-//    .offset(y: 0)
-//
-//    HStack{
-//        Text("Издержки: \(task.cost)")
-//            .font(.custom(SFPro.regular.rawValue, size: 15))
-//
-//        Text("Доплачено: \(task.extraPayment)")
-//            .font(.custom(SFPro.regular.rawValue, size: 15))
-//        Spacer()
-//
-//        Text("\(task.totalAmount)")
-//            .font(.custom(SFPro.bold.rawValue, size: 16))
-//            .offset(x: -9)
-//    }
-//    .padding(.leading, 17)
-//}
-//.offset(y: -10)
+
