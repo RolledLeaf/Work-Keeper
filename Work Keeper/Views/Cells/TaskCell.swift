@@ -29,11 +29,11 @@ struct TaskRow: View {
         return VStack {
             HStack{
                 Color.custom(statusColor)
-                    .frame(width: 6, height: 130)
+                    .frame(width: 6)
+                    .frame(maxHeight: .infinity)
                     .cornerRadius(15, corners: [.topLeft, .bottomLeft])
                     .offset(x: 5)
-                    .padding(.top, 5)
-                    .padding(.bottom, 5)
+                    .padding(.top, 10)
                 if task.isRemote == false {
                     VStack {
                         HStack {
@@ -59,7 +59,12 @@ struct TaskRow: View {
                                 .opacity(showRepeatClientBubbleLocal ? 1 : 0)
                                 .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleLocal)
                                 Button(action: {
-                                    showRepeatClientBubbleLocal.toggle()
+                                    showRepeatClientBubbleLocal = true
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                        withAnimation {
+                                            showRepeatClientBubbleLocal = false
+                                        }
+                                    }
                                 }) {
                                     Image("repeatBadge")
                                         .resizable()
@@ -78,6 +83,12 @@ struct TaskRow: View {
                                 Text("\(task.client.phoneNumber)")
                                     .font(.custom(SFPro.regular.rawValue, size: 12))
                                     .offset(x: -3)
+                                    .onTapGesture {
+                                           if let url = URL(string: "tel://\(task.client.phoneNumber)"),
+                                              UIApplication.shared.canOpenURL(url) {
+                                               UIApplication.shared.open(url)
+                                           }
+                                       }
                             }
                           
                             .padding(.leading, -70)
@@ -85,7 +96,12 @@ struct TaskRow: View {
                             .opacity(showPhoneNumberCloudLocal ? 1 : 0)
                             .animation(.easeInOut(duration: 0.3), value: showPhoneNumberCloudLocal)
                             Button(action: {
-                                showPhoneNumberCloudLocal.toggle()
+                                showPhoneNumberCloudLocal = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                    withAnimation {
+                                        showPhoneNumberCloudLocal = false
+                                    }
+                                }
                             }) {
                                 Image("call")
                                     .resizable()
@@ -96,25 +112,22 @@ struct TaskRow: View {
                             .buttonStyle(BorderlessButtonStyle())
                         }
                         .padding(.trailing, 5)
-                        
+                        .frame(maxHeight: 35)
                         
                         Text("\(task.client.address.street) \(task.client.address.houseNumber)")
-                            .font(.custom(SFPro.regular.rawValue, size: 32))
+                            .font(.custom(SFPro.regular.rawValue, size: 27))
                             .foregroundColor(.custom(.taskTextGray))
-                        
-                            .padding(.leading, 20)
-                            .padding(.top, -12)
-                            .padding(.bottom, -5)
-                            .frame(width: 300, alignment: .center)
-                            .frame(height: 25)
+                            .frame(maxHeight: 46)
+                            .padding(.leading, 0)
+                            .frame(width: 320, alignment: .center)
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
-                            .minimumScaleFactor(0.5)
+                            .minimumScaleFactor(0.7)
                         if task.client.address.isPrivateHouse == false {
                             HStack {
                                 
                                 Image("location")
-                                    .offset(x: -9, y: -20)
+                                    .offset(x: -9, y: -9)
                                 Spacer()
                                 Text("кв. \(task.client.address.apartmentNumber ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
@@ -130,7 +143,7 @@ struct TaskRow: View {
                             } else {
                                 HStack {
                                 Image("location")
-                                    .offset(y: -20)
+                                    .offset(y: -9)
                                 
                                 Spacer()
                                 Text("(Частный дом)")
@@ -163,7 +176,7 @@ struct TaskRow: View {
                             .padding(.top, -22)
                             .padding(.bottom, 5)
                     }
-                    .frame(maxHeight: 150)
+                    .frame(maxHeight: .infinity)
                 } else {
                     VStack {
                         HStack {
@@ -181,7 +194,7 @@ struct TaskRow: View {
                                         .offset(x: -4)
                                 }
                                 .frame(width: 20)
-                                .offset(x: 9, y: 3)
+                                .offset(x: -5, y: 3)
                                 .opacity(showRepeatClientBubbleRemote ? 1 : 0)
                                 .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleRemote)
                                 Button(action: {
@@ -228,55 +241,52 @@ struct TaskRow: View {
                             .contentShape(Rectangle())
                             .buttonStyle(BorderlessButtonStyle())
                         }
-                        .padding(.top, -20)
+                        .frame(maxHeight: 35)
+                        
                         .padding(.trailing, 5)
      
                         HStack{
                                Image("remote")
-                                   
+                                .offset(y: -2)
                                Spacer()
                        
                                Text("Удалёнка")
-                                   .font(.custom(SFPro.regular.rawValue, size: 30))
+                                   .font(.custom(SFPro.regular.rawValue, size: 27))
                                    .foregroundColor(.custom(.taskTextGray))
-                                   .padding(.top, -15)
-                                   .offset(x: 10, y: 2)
+                                   .offset(x: 10)
                            }
-                        .padding(.top, -20)
-                        .padding(.trailing, 120)
-                        .padding(.leading, 10)
+                        .frame(height: 23)
+                        .padding(.trailing, 125)
+                        .padding(.leading, 8)
                         
                         
                         Rectangle()
                             .frame( height: 0.5)
                             .frame(maxWidth: .infinity)
                             .foregroundColor(Color.black)
-                            .padding(.top, -5)
+                            
                         
                         Text(task.taskDescription)
-                            .font(.custom(SFPro.regular.rawValue, size: 30))
-                            .bold()
+                            .font(.custom(SFPro.bold.rawValue, size: 30))
                             .frame(maxWidth: .infinity, alignment: .center)
+                            .frame(maxHeight: 47)
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
                             .minimumScaleFactor(0.5)
-                            .padding(.leading, 5)
-                            .padding(.trailing, 5)
-                            .offset(y: -7)
-                           
-                        
                     }
-                    .frame(height: 150)
+                    .padding(.top, -5)
+                    .frame(maxHeight: .infinity)
                 }
+                    
             }
-            
-            
-            Rectangle()
-                .frame( height: 0.5)
-                .frame(maxWidth: .infinity)
-                .padding(.top, -9)
-            
+            .frame(maxHeight: .infinity)
+
             VStack{
+                Rectangle()
+                    .frame( height: 0.5)
+                    .frame(maxWidth: .infinity)
+                    
+                
                 HStack{
                     Text("Договорились:  \(task.contractAmount)")
                         .font(.custom(SFPro.bold.rawValue, size: 17))
@@ -289,24 +299,34 @@ struct TaskRow: View {
                 }
                 .padding(.leading, 32)
                 .padding(.trailing, 8)
+                .frame(maxHeight: 12)
                 
                 HStack{
-                    Text("Издержки: \(task.cost)")
+                    Text("Издержки:")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
+                    Text("\(task.cost)")
+                        .font(.custom(SFPro.regular.rawValue, size: 15))
+                        .foregroundColor(Color.custom(.costPaymentRed))
                     
-                    Text("Доплачено: \(task.extraPayment)")
+                    Text("Доплачено:")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
+                    Text("\(task.extraPayment)")
+                        .font(.custom(SFPro.regular.rawValue, size: 15))
+                        .foregroundColor(Color.custom(.extraPaymentGreen))
+                    
                     Spacer()
                     
                     Text("\(task.totalAmount)")
                         .font(.custom(SFPro.bold.rawValue, size: 16))
                     Image("cash")
                 }
+                .frame(maxHeight: 12)
                 .padding(.leading, 11)
                 .padding(.trailing, 8)
-                .padding(.top, -10)
+                .padding(.top, 0)
             }
-            .padding(.top, -12)
+            .frame(maxHeight: 55)
+           
         }
         .background(Color.custom(.taskCellGray))
         .cornerRadius(12)

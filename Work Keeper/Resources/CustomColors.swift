@@ -11,6 +11,8 @@ enum CustomColor: String {
     case taskCellGray = "taskCellGray"
     case taskInfoGray = "taskInfoGray"
     case taskTextGray = "taskTextGray"
+    case extraPaymentGreen = "extraPaymentGreen"
+    case costPaymentRed = "costPaymentRed"
 }
 
 extension Color {

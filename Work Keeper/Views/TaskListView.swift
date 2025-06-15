@@ -16,7 +16,7 @@ struct Task: Identifiable {
     let cost: Int
     let extraPayment: Int
     var totalAmount: Int {
-        contractAmount - cost
+        contractAmount - cost + extraPayment
     }
 }
 
@@ -59,7 +59,7 @@ let clientPetr = Client(firstName: "Петр", lastName: "Иванов", address
 let task1 = Task(scheduledAt: tomorrow ?? date1, client: clientBoris, isRemote: false, taskDescription: "Встретиться с Борисом Джонсоном", taskComment: "", isCompleted: .scheduled, paymentMethod: nil, contractAmount: 3500, cost: 500, extraPayment: 1000)
 let task2 = Task(scheduledAt: today1 ?? date1, client: clientDiana, isRemote: false, taskDescription: "Установить Windows 11", taskComment: nil, isCompleted: .completed, paymentMethod: .creditCard, contractAmount: 5000, cost: 950, extraPayment: 500)
 let task3 = Task(scheduledAt: today2 ?? date1, client: clientJulia, isRemote: false, taskDescription: "Купить в магазине и настроить роутер keenetic. Сдача остаётся мне", taskComment: "Не получилось. Роутер не включается", isCompleted: .canceled, paymentMethod: nil, contractAmount: 0, cost: 0, extraPayment: 0)
-let task4 = Task(scheduledAt: twoDaysAgo ?? date1, client: clientPetr, isRemote: true, taskDescription: "Office install", taskComment: nil, isCompleted: .scheduled, paymentMethod: nil, contractAmount: 1500, cost: 500, extraPayment: 0)
+let task4 = Task(scheduledAt: twoDaysAgo ?? date1, client: clientPetr, isRemote: true, taskDescription: "Office install Office install Office install Office install Office install ", taskComment: nil, isCompleted: .scheduled, paymentMethod: nil, contractAmount: 1500, cost: 500, extraPayment: 0)
 
 let tasks: [Task] = [task1, task2, task3, task4]
 
