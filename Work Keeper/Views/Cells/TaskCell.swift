@@ -283,7 +283,6 @@ struct TaskRow: View {
                             .minimumScaleFactor(0.5)
                             
                     }
-                    .padding(.top, -5)
                     .frame(maxHeight: .infinity)
                 }
                     

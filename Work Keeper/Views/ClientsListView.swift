@@ -1,5 +1,9 @@
 import SwiftUI
 
+
+let clients: [Client] = [clientBoris, clientDiana, clientJulia, clientPetr]
+    
+
 struct ClientsListView: View {
     var body: some View {
         ZStack {
@@ -15,6 +19,7 @@ struct ClientsListView: View {
                             .frame(width: 31, height: 22)
                     }
                     .padding(.leading, 3)
+                    
                     
                     Spacer()
                     
@@ -44,15 +49,24 @@ struct ClientsListView: View {
                     )
                     .padding(.leading, 1)
                     .padding(.trailing, 1)
-                
-                Spacer()
-                    .frame(height: 165)
-                
-                Image("noClientsPlaceholder")
-                    .resizable()
-                    .frame(width: 276, height: 268)
-                
-                Text("Клиентов пока нет")
+                if clients.isEmpty {
+                    
+                    Spacer()
+                        .frame(height: 165)
+                    
+                    Image("noClientsPlaceholder")
+                        .resizable()
+                        .frame(width: 276, height: 268)
+                    
+                    Text("Клиентов пока нет")
+                } else {
+                    List(clients) { client in
+                        ClientsRow(client: client)
+                    }
+                    .listRowSeparator(.hidden)
+                    .listStyle(PlainListStyle())
+                    
+                }
                     
             }
             .frame(maxHeight: .infinity, alignment: .top)
@@ -65,3 +79,4 @@ struct ClientsListView: View {
 #Preview {
     ClientsListView()
 }
+

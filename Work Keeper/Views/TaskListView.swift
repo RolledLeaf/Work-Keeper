@@ -20,7 +20,8 @@ struct Task: Identifiable {
     }
 }
 
-struct Client {
+struct Client: Identifiable {
+    var id = UUID()
     let firstName: String
     let lastName: String?
     let address: Address
@@ -67,6 +68,7 @@ let tasks: [Task] = [task1, task2, task3, task4]
     
     struct TaskListView: View {
         
+        
         var groupedTasks: [String: [Task]] {
             Dictionary(grouping: tasks) { task in
                 let formatter = customDateFormatter
@@ -83,6 +85,7 @@ let tasks: [Task] = [task1, task2, task3, task4]
                     }) {
                         Image("today")
                     }
+                    
                     
                     
                     Button(action: {
@@ -158,6 +161,24 @@ let tasks: [Task] = [task1, task2, task3, task4]
                             Section(header: Text(dateKey).font(.headline)) {
                                 ForEach(groupedTasks[dateKey] ?? []) { task in
                                     TaskRow(task: task)
+                                    
+                                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                             Button(action: {
+                                                    //действие
+                                                }) {
+                                                        Image("cancel")
+                                                        Text("Отменить")
+                                                }
+                                                .tint(Color.custom(.taskCanceledOrange))
+
+                                            Button(action: {
+                                                   //действие
+                                               }) {
+                                                       Image("completed")
+                                                       Text("Завершить")
+                                               }
+                                                .tint(Color.custom(.taskCompleteGreen))
+                                            }
                                 }
                             }
                             .listRowSeparator(.hidden)
