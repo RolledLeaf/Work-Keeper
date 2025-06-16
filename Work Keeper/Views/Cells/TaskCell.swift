@@ -173,7 +173,7 @@ struct TaskRow: View {
                             .minimumScaleFactor(0.5)
                             .padding(.leading, 5)
                             .padding(.trailing, 5)
-                            .padding(.top, -22)
+                            .padding(.top, -15)
                             .padding(.bottom, 5)
                     }
                     .frame(maxHeight: .infinity)
@@ -198,7 +198,12 @@ struct TaskRow: View {
                                 .opacity(showRepeatClientBubbleRemote ? 1 : 0)
                                 .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleRemote)
                                 Button(action: {
-                                    showRepeatClientBubbleRemote.toggle()
+                                    showRepeatClientBubbleRemote = true
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                        withAnimation {
+                                            showRepeatClientBubbleRemote = false
+                                        }
+                                    }
                                 }) {
                                     Image("repeatBadge")
                                         .resizable()
@@ -231,7 +236,10 @@ struct TaskRow: View {
                             .opacity(showPhoneNumberCloudRemote ? 1 : 0)
                             .animation(.easeInOut(duration: 0.3), value: showPhoneNumberCloudRemote)
                             Button(action: {
-                                showPhoneNumberCloudRemote.toggle()
+                                showPhoneNumberCloudRemote = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                    showPhoneNumberCloudRemote = false
+                                }
                             }) {
                                 Image("call")
                                     .resizable()
@@ -269,10 +277,11 @@ struct TaskRow: View {
                         Text(task.taskDescription)
                             .font(.custom(SFPro.bold.rawValue, size: 30))
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .frame(maxHeight: 47)
+                            .frame(maxHeight: 40)
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
                             .minimumScaleFactor(0.5)
+                            
                     }
                     .padding(.top, -5)
                     .frame(maxHeight: .infinity)
@@ -326,7 +335,7 @@ struct TaskRow: View {
                 .padding(.top, 0)
             }
             .frame(maxHeight: 55)
-           
+            .padding(.top, -10)
         }
         .background(Color.custom(.taskCellGray))
         .cornerRadius(12)
