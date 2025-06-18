@@ -77,158 +77,169 @@ let tasks: [Task] = [task1, task2, task3, task4]
         }
         
         var body: some View {
-            VStack {
-              
-                HStack {
-                    Button(action: {
-                        //действие
-                    }) {
-                        Image("today")
-                            .resizable()
-                            .frame(width: 38, height: 38)
+            ZStack {
+                Color(.white).edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        hideKeyboard()
                     }
-                   
-                    
-                    
-                    Button(action: {
-                        //action
-                    }) {
-                        Image("filters")
-                            .resizable()
-                            .frame(width: 35, height: 35)
-                    }
-                   
-                    .padding(.leading, 8)
-                    .padding(.trailing, 10)
-                    
-                    ZStack {
-                        Image("calendar")
-                            .resizable()
-                            .frame(width: 35, height: 35)
-                        
-                        DatePicker("",
-                                   selection: $selectedDate,
-                                   displayedComponents: .date
-                        )
-                        .labelsHidden()
-                        .datePickerStyle(.compact)
-                        .blendMode(.destinationOver)
-                        .frame(width: 35, height: 35)
-                        .contentShape(Rectangle())
-                    }
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        //действие
-                    }) {
-                        Image("addTaskButton")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .padding(.trailing, 5)
-                        
-                    }
-                }
-                .padding(.leading, 3)
                 
-                TextField("Поиск задания", text: .constant(""))
-                    .padding(9)
-                    .padding(.leading, 25)
-                    .background(
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                            Spacer()
+                VStack {
+                    
+                    HStack {
+                        Button(action: {
+                            //действие
+                        }) {
+                            Image("today")
+                                .resizable()
+                                .frame(width: 38, height: 38)
                         }
-                            .padding(.leading, 10)
-                    )
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
-                    )
-                
-                
-              
-                
-                if tasks.isEmpty {
+                        
+                        
+                        
+                        Button(action: {
+                            //action
+                        }) {
+                            Image("filters")
+                                .resizable()
+                                .frame(width: 35, height: 35)
+                        }
+                        
+                        .padding(.leading, 8)
+                        .padding(.trailing, 10)
+                        
+                        ZStack {
+                            Image("calendar")
+                                .resizable()
+                                .frame(width: 35, height: 35)
+                            
+                            DatePicker("",
+                                       selection: $selectedDate,
+                                       displayedComponents: .date
+                            )
+                            .labelsHidden()
+                            .datePickerStyle(.compact)
+                            .blendMode(.destinationOver)
+                            .frame(width: 35, height: 35)
+                            .contentShape(Rectangle())
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            //действие
+                        }) {
+                            Image("addTaskButton")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .padding(.trailing, 5)
+                            
+                        }
+                    }
+                    .padding(.leading, 3)
                     
-                    Spacer()
-                        .frame(height: 117)
+                    TextField("Поиск задания", text: .constant(""))
+                        .submitLabel(.done)
+                           .onSubmit {
+                               hideKeyboard() // кастомная функция
+                           }
+                        .padding(9)
+                        .padding(.leading, 25)
+                        .background(
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.gray)
+                                Spacer()
+                            }
+                                .padding(.leading, 10)
+                        )
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
+                        )
                     
-                    Image("noTasksPlaceholder")
-                        .imageScale(.large)
-                        .foregroundStyle(.tint)
-                        .frame(width: 266, height: 273)
-                        .padding(.leading, 65)
                     
                     
-                    Text("Заданий пока нет")
-                        .font(.custom("SFPROREGULAR", size: 24))
-                        .fontWeight(.bold)
-                        .multilineTextAlignment(.center)
                     
-                    Spacer()
-                } else {
-                    Spacer()
-                        .frame(height: 38)
-                    List {
-                        ForEach(groupedTasks.keys.sorted { $0 > $1 }, id: \.self) { dateKey in
-                            Section(header: Text(dateKey).font(.headline)) {
-                                ForEach(groupedTasks[dateKey] ?? []) { task in
-                                    TaskRow(task: task)
-                                    
-                                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                             Button(action: {
+                    if tasks.isEmpty {
+                        
+                        Spacer()
+                            .frame(height: 117)
+                        
+                        Image("noTasksPlaceholder")
+                            .imageScale(.large)
+                            .foregroundStyle(.tint)
+                            .frame(width: 266, height: 273)
+                            .padding(.leading, 65)
+                        
+                        
+                        Text("Заданий пока нет")
+                            .font(.custom("SFPROREGULAR", size: 24))
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                        
+                        Spacer()
+                    } else {
+                        Spacer()
+                            .frame(height: 38)
+                        List {
+                            ForEach(groupedTasks.keys.sorted { $0 > $1 }, id: \.self) { dateKey in
+                                Section(header: Text(dateKey).font(.headline)) {
+                                    ForEach(groupedTasks[dateKey] ?? []) { task in
+                                        TaskRow(task: task)
+                                        
+                                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                                Button(action: {
                                                     //действие
                                                 }) {
-                                                        Image("cancel")
-                                                        Text("Отменить")
+                                                    Image("cancel")
+                                                    Text("Отменить")
                                                 }
                                                 .tint(Color.custom(.taskCanceledOrange))
-
-                                            Button(action: {
-                                                   //действие
-                                               }) {
-                                                       Image("completed")
-                                                       Text("Завершить")
-                                               }
+                                                
+                                                Button(action: {
+                                                    //действие
+                                                }) {
+                                                    Image("completed")
+                                                    Text("Завершить")
+                                                }
                                                 .tint(Color.custom(.taskCompleteGreen))
                                             }
-                                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                                            Button(action: {
-                                                   //действие
-                                               }) {
-                                                Image("delete")
-                                                       Text("Удалить")
-                                               }
-                                               .tint(Color.custom(.deleteButtonRed))
-
-                                           Button(action: {
-                                                  //действие
-                                              }) {
-                                                      Image("edit")
-                                                      Text("Редактировать")
-                                              }
-                                              .tint(Color.custom(.editButtonGray))
-                                           }
+                                            .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                                Button(action: {
+                                                    //действие
+                                                }) {
+                                                    Image("delete")
+                                                    Text("Удалить")
+                                                }
+                                                .tint(Color.custom(.deleteButtonRed))
+                                                
+                                                Button(action: {
+                                                    //действие
+                                                }) {
+                                                    Image("edit")
+                                                    Text("Редактировать")
+                                                }
+                                                .tint(Color.custom(.editButtonGray))
+                                            }
+                                    }
                                 }
+                                .listRowSeparator(.hidden)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.clear)
+                                )
                             }
-                            .listRowSeparator(.hidden)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color.clear)
-                            )
                         }
+                        
+                        .listStyle(PlainListStyle())
+                        .padding(.leading, -20)
+                        .padding(.trailing, -20)
                     }
-                    
-                    .listStyle(PlainListStyle())
-                    .padding(.leading, -20)
-                    .padding(.trailing, -20)
                 }
+                
+                .padding(.trailing, 16)
+                .padding(.leading, 16)
             }
-            
-            .padding(.trailing, 16)
-            .padding(.leading, 16)
         }
     }
     

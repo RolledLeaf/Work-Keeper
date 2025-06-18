@@ -5,10 +5,17 @@ let clients: [Client] = [clientBoris, clientDiana, clientJulia, clientPetr]
     
 
 struct ClientsListView: View {
+    @State private var showNewClientView = false
+    
     var body: some View {
+      
+        
         ZStack {
             Color(.white).ignoresSafeArea()
-
+                .onTapGesture {
+                    hideKeyboard()
+                }
+            
             VStack {
                 HStack {
                     Button(action: {
@@ -24,7 +31,7 @@ struct ClientsListView: View {
                     Spacer()
                     
                     Button(action: {
-                        //action
+                        showNewClientView = true
                     }) {
                         Image("addClientButton")
                             .resizable()
@@ -36,6 +43,9 @@ struct ClientsListView: View {
                 TextField("Поиск клиента", text: .constant(""))
                     .padding(9)
                     .padding(.leading, 25)
+                    .onTapGesture {
+                        hideKeyboard()
+                    }
                     .background(
                     HStack {
                         Image(systemName: "magnifyingglass")
@@ -74,6 +84,9 @@ struct ClientsListView: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.trailing, 15)
             .padding(.leading, 20)
+        }
+        .sheet(isPresented: $showNewClientView) {
+            NewClientView()
         }
         
     }
