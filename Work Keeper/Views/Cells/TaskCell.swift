@@ -114,7 +114,7 @@ struct TaskRow: View {
                         .padding(.trailing, 5)
                         .frame(maxHeight: 35)
                         
-                        Text("\(task.client.address.street) \(task.client.address.houseNumber)")
+                        Text("\(task.client.address?.street ?? "Адрес не указан") \(task.client.address?.houseNumber ?? "")")
                             .font(.custom(SFPro.regular.rawValue, size: 27))
                             .foregroundColor(.custom(.taskTextGray))
                             .frame(maxHeight: 46)
@@ -123,19 +123,19 @@ struct TaskRow: View {
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
                             .minimumScaleFactor(0.7)
-                        if task.client.address.isPrivateHouse == false {
+                        if task.client.address?.isPrivateHouse == false {
                             HStack {
                                 
                                 Image("location")
                                     .offset(x: -9, y: -9)
                                 Spacer()
-                                Text("кв. \(task.client.address.apartmentNumber ?? defaultNumber)")
+                                Text("кв. \(task.client.address?.apartmentNumber ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
-                                Text("под.\(task.client.address.entranceNumber ?? defaultNumber)")
+                                Text("под.\(task.client.address?.entranceNumber ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
-                                Text("эт.\(task.client.address.floorNumber ?? 0)")
+                                Text("эт.\(task.client.address?.floorNumber ?? 0)")
                                     .foregroundColor(.custom(.taskTextGray))
                             }
                             .padding(.trailing, 90)

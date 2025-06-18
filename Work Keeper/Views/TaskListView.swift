@@ -24,7 +24,7 @@ struct Client: Identifiable {
     var id = UUID()
     let firstName: String
     let lastName: String?
-    let address: Address
+    let address: Address?
     let phoneNumber: String
     //let task: [Task]?
 }
@@ -67,7 +67,7 @@ let tasks: [Task] = [task1, task2, task3, task4]
 
     
     struct TaskListView: View {
-        
+        @State private var selectedDate = Date()
         
         var groupedTasks: [String: [Task]] {
             Dictionary(grouping: tasks) { task in
@@ -84,22 +84,37 @@ let tasks: [Task] = [task1, task2, task3, task4]
                         //действие
                     }) {
                         Image("today")
+                            .resizable()
+                            .frame(width: 38, height: 38)
                     }
-                    
+                   
                     
                     
                     Button(action: {
                         //action
                     }) {
                         Image("filters")
+                            .resizable()
+                            .frame(width: 35, height: 35)
                     }
-                    .padding(.leading, 10)
+                   
+                    .padding(.leading, 8)
                     .padding(.trailing, 10)
                     
-                    Button(action: {
-                        //action
-                    }) {
+                    ZStack {
                         Image("calendar")
+                            .resizable()
+                            .frame(width: 35, height: 35)
+                        
+                        DatePicker("",
+                                   selection: $selectedDate,
+                                   displayedComponents: .date
+                        )
+                        .labelsHidden()
+                        .datePickerStyle(.compact)
+                        .blendMode(.destinationOver)
+                        .frame(width: 35, height: 35)
+                        .contentShape(Rectangle())
                     }
                     
                     Spacer()
@@ -179,6 +194,23 @@ let tasks: [Task] = [task1, task2, task3, task4]
                                                }
                                                 .tint(Color.custom(.taskCompleteGreen))
                                             }
+                                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                            Button(action: {
+                                                   //действие
+                                               }) {
+                                                Image("delete")
+                                                       Text("Удалить")
+                                               }
+                                               .tint(Color.custom(.deleteButtonRed))
+
+                                           Button(action: {
+                                                  //действие
+                                              }) {
+                                                      Image("edit")
+                                                      Text("Редактировать")
+                                              }
+                                              .tint(Color.custom(.editButtonGray))
+                                           }
                                 }
                             }
                             .listRowSeparator(.hidden)
@@ -188,7 +220,7 @@ let tasks: [Task] = [task1, task2, task3, task4]
                             )
                         }
                     }
-                    .listRowSeparator(.hidden)
+                    
                     .listStyle(PlainListStyle())
                     .padding(.leading, -20)
                     .padding(.trailing, -20)

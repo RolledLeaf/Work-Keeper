@@ -7,7 +7,7 @@ let clients: [Client] = [clientBoris, clientDiana, clientJulia, clientPetr]
 struct ClientsListView: View {
     var body: some View {
         ZStack {
-            Color.custom(.newTaskBackgroundGray)?.ignoresSafeArea()
+            Color(.white).ignoresSafeArea()
 
             VStack {
                 HStack {
@@ -61,11 +61,13 @@ struct ClientsListView: View {
                     Text("Клиентов пока нет")
                 } else {
                     List(clients) { client in
-                        ClientsRow(client: client)
+                        ClientRow(client: client)
+                            .listRowSeparator(.hidden)
                     }
                     .listRowSeparator(.hidden)
                     .listStyle(PlainListStyle())
-                    
+                    .padding(.leading, -20)
+                    .padding(.trailing, -20)
                 }
                     
             }
@@ -73,8 +75,11 @@ struct ClientsListView: View {
             .padding(.trailing, 15)
             .padding(.leading, 20)
         }
+        
     }
+    
 }
+
 
 #Preview {
     ClientsListView()
