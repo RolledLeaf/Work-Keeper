@@ -17,6 +17,7 @@ enum CustomColor: String {
     case completedtasksGreen = "completedtasksGreen"
     case editButtonGray = "editButtonGray"
     case deleteButtonRed = "deleteButtonRed"
+    case textTitleGray = "textTitleGray"
 }
 
 extension Color {
