@@ -45,6 +45,7 @@ let today2 = Calendar.current.date(from: DateComponents(year: 2025, month: 6, da
 let tomorrow = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 12, hour: 10, minute: 0))
 let twoDaysAgo = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 10, hour: 10, minute: 0))
 
+private let streets: [String] = ["Академика Пилюгина", "Академика Янгеля", "Березина", "Высоцкого", "Герцина" , "Железнодорожный проезд"]
 
 let address1 = Address(street: "Тверская", houseNumber: "12", apartmentNumber: "45", entranceNumber: "3", floorNumber: 8, isPrivateHouse: false)
 let dianaAddress = Address(street: "Центральный проезд Хорошевского Серебряного Бора", houseNumber: "4", apartmentNumber: "61", entranceNumber: "3", floorNumber: 5, isPrivateHouse: false)

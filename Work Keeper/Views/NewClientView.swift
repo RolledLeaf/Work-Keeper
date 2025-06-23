@@ -27,6 +27,7 @@ struct NewClientView: View {
     @State private var countryCode = ""
     @State private var phoneNumber = ""
     @State private var isPrivateHouse = false
+    @State private var showStreetsView = false
     @FocusState private var focusedField: Field?
     
     enum Field {
@@ -39,6 +40,7 @@ struct NewClientView: View {
         let roomTypes = ["кв", "оф", "каб"]
         let entranceTypes = ["под", "вход"]
         
+           
         
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
@@ -151,7 +153,7 @@ struct NewClientView: View {
                             Spacer()
                             
                             Button(action: {
-                                //действие
+                                showStreetsView = true
                             }) {
                                 Image(systemName: "chevron.right")
                                 
@@ -453,6 +455,10 @@ struct NewClientView: View {
             .onTapGesture {
                 hideKeyboard()
             }
+        }
+        
+        .sheet(isPresented: $showStreetsView) {
+            StreetsListView()
         }
     }
 }

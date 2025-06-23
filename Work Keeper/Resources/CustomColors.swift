@@ -18,6 +18,8 @@ enum CustomColor: String {
     case editButtonGray = "editButtonGray"
     case deleteButtonRed = "deleteButtonRed"
     case textTitleGray = "textTitleGray"
+    case addressListGray = "addressListGray"
+    case separatorLineGray = "separatorLineGray"
 }
 
 extension Color {
