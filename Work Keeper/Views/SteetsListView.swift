@@ -2,9 +2,12 @@ import SwiftUI
 
 
 private let streets: [String] = ["Академика Пилюгина", "Академика Янгеля", "Березина", "Высоцкого", "Герцина" , "Железнодорожный проезд"]
-//private let addresses = ["Академика Пилюгина", "Академика Янгеля", "Березина", "Высоцкого", "Герцина" , "Железнодорожный проезд"]
+
 
 struct StreetsListView: View {
+    @State private var showAddStreetView = false
+    @State private var selectedStreet: String = ""
+    
     var body: some View {
         Spacer()
             .frame(height: 20)
@@ -16,9 +19,15 @@ struct StreetsListView: View {
                 Image("sortAZ")
                 
                 Spacer()
-                Image(systemName: "plus")
-                    .resizable()
-                    .frame(width: 25, height: 25)
+                
+                Button(action: {
+                    showAddStreetView = true
+                }) {
+                    Image(systemName: "plus")
+                        .resizable()
+                        .foregroundColor(.black)
+                        .frame(width: 25, height: 25)
+                }
             }
             .padding(.leading, 27)
             .padding(.trailing, 20)
@@ -26,7 +35,7 @@ struct StreetsListView: View {
             Spacer()
                 .frame(height: 15)
             
-            TextField("Начните вводить адрес", text: .constant(""))
+            TextField("Начните вводить адрес", text: $selectedStreet)
                 .padding(9)
                 .padding(.leading, 25)
                 .onTapGesture {
@@ -81,8 +90,11 @@ struct StreetsListView: View {
         .onTapGesture {
             hideKeyboard()
         }
+        .sheet(isPresented: $showAddStreetView) {
+            AddStreetView()
+        }
     }
-      
+     
 }
 
 #Preview {

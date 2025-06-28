@@ -1,7 +1,11 @@
 import SwiftUI
 
 struct NewTaskView: View {
-    
+    enum Field {
+        case firstName
+        case lastName
+        case phoneNumber
+    }
     
     @State private var firstName: String = ""
     @State private var roomType = "кв"
@@ -26,9 +30,6 @@ struct NewTaskView: View {
     @State private var contractAmountText: String = ""
     @State var contractAmount: Int = 0
     @State var cost: Int = 0
-    var totalAmount: Int {
-        contractAmount - cost
-    }
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State private var maxDescriptionCharactersTextOpacity: Double = 0
     @State private var apartment = ""
@@ -42,11 +43,11 @@ struct NewTaskView: View {
     @State private var selectedDate = Date()
     @FocusState private var focusedField: Field?
     
-    enum Field {
-        case firstName
-        case lastName
-        case phoneNumber
+    var totalAmount: Int {
+        contractAmount - cost
     }
+    
+   
     
     var body: some View {
         
