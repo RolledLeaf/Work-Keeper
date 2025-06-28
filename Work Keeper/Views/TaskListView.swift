@@ -69,6 +69,7 @@ let tasks: [Task] = [task1, task2, task3, task4]
     
     struct TaskListView: View {
         @State private var selectedDate = Date()
+        @State private var showNewTaskView = false
         
         var groupedTasks: [String: [Task]] {
             Dictionary(grouping: tasks) { task in
@@ -127,7 +128,7 @@ let tasks: [Task] = [task1, task2, task3, task4]
                         Spacer()
                         
                         Button(action: {
-                            //действие
+                            showNewTaskView = true
                         }) {
                             Image("addTaskButton")
                                 .resizable()
@@ -240,6 +241,9 @@ let tasks: [Task] = [task1, task2, task3, task4]
                 
                 .padding(.trailing, 16)
                 .padding(.leading, 16)
+            }
+            .sheet(isPresented: $showNewTaskView) {
+                NewTaskView()
             }
         }
     }
