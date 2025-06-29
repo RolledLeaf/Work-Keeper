@@ -7,12 +7,19 @@ struct NewTaskView: View {
         case phoneNumber
     }
     
-    @State private var firstName: String = ""
+    @State private var firstName = ""
     @State private var roomType = "кв"
     @State private var entranceType = "под"
     @State private var street = ""
     @State private var description = ""
     @State private var building = ""
+    @State private var apartment = ""
+    @State private var entrance = ""
+    @State private var floor = ""
+    @State private var countryCode = ""
+    @State private var phoneNumber = ""
+    @State private var costText: String = ""
+    @State private var contractAmountText: String = ""
     
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 8
@@ -26,24 +33,18 @@ struct NewTaskView: View {
     private let maxContractAmountCharacters: Int = 6
     private let maxCostCharacters: Int = 6
     
-    @State private var costText: String = ""
-    @State private var contractAmountText: String = ""
-    @State var contractAmount: Int = 0
-    @State var cost: Int = 0
+    
+    @State var contractAmount: Double = 0
+    @State var cost: Double = 0
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State private var maxDescriptionCharactersTextOpacity: Double = 0
-    @State private var apartment = ""
-    @State private var entrance = ""
-    @State private var floor = ""
-    @State private var countryCode = ""
-    @State private var phoneNumber = ""
     @State private var isPrivateHouse = false
     @State private var isRemote = false
     @State private var showStreetsView = false
     @State private var selectedDate = Date()
     @FocusState private var focusedField: Field?
     
-    var totalAmount: Int {
+    var totalAmount: Double {
         contractAmount - cost
     }
     
@@ -472,17 +473,12 @@ struct NewTaskView: View {
                             .multilineTextAlignment(.center)
                             .keyboardType(.decimalPad)
                             .onChange(of: contractAmountText) { newValue in
-                                var filtered = newValue.filter { $0.isNumber }
-
-                                       // 2. Ограничиваем по количеству символов
-                                if filtered.count > maxContractAmountCharacters {
-                                           filtered = String(filtered.prefix(maxContractAmountCharacters))
-                                       }
-
-                                       // 3. Обновляем строку и число
-                                contractAmountText = filtered
-                                contractAmount = Int(filtered) ?? 0
-                                   }
+                                    if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
+                                        contractAmount = value
+                                    } else {
+                                        contractAmount = 0
+                                    }
+                                }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
@@ -508,18 +504,13 @@ struct NewTaskView: View {
                             .frame(width: 100, height: 30)
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
-                               .onChange(of: costText) { newValue in
-                                   var filtered = newValue.filter { $0.isNumber }
-
-                                          // 2. Ограничиваем по количеству символов
-                                   if filtered.count > maxCostCharacters {
-                                              filtered = String(filtered.prefix(maxCostCharacters))
-                                          }
-
-                                          // 3. Обновляем строку и число
-                                          costText = filtered
-                                          cost = Int(filtered) ?? 0
-                                      }
+                            .onChange(of: costText) { newValue in
+                                    if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
+                                        cost = value
+                                    } else {
+                                        cost = 0
+                                    }
+                                }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
@@ -535,7 +526,7 @@ struct NewTaskView: View {
                         Text("Итого")
                             .font(.custom(SFPro.bold.rawValue, size: 24))
                         
-                        Text("₽  \(totalAmount)")
+                        Text(totalAmount.formattedCurrency())
                             .font(.custom(SFPro.bold.rawValue, size: 24))
                     }
                     
