@@ -3,41 +3,6 @@ import SwiftUI
 
 
 
-struct Task: Identifiable {
-    var id = UUID()
-    let scheduledAt: Date
-    let client: Client
-    let isRemote: Bool
-    let taskDescription: String
-    let taskComment: String?
-    let isCompleted: Status
-    let paymentMethod: PaymentMethod?
-    let contractAmount: Int
-    let cost: Int
-    let extraPayment: Int
-    var totalAmount: Int {
-        contractAmount - cost + extraPayment
-    }
-}
-
-struct Client: Identifiable {
-    var id = UUID()
-    let firstName: String
-    let lastName: String?
-    let address: Address?
-    let phoneNumber: String
-    //let task: [Task]?
-}
-
-struct Address {
-    let street: String
-    let houseNumber: String
-    let apartmentNumber: String?
-    let entranceNumber: String?
-    let floorNumber: Int?
-    let isPrivateHouse: Bool
-}
-
 let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
 let date1 = Date()
 let today1 = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 11, hour: 10, minute: 30))
@@ -47,23 +12,9 @@ let twoDaysAgo = Calendar.current.date(from: DateComponents(year: 2025, month: 6
 
 private let streets: [String] = ["Академика Пилюгина", "Академика Янгеля", "Березина", "Высоцкого", "Герцина" , "Железнодорожный проезд"]
 
-let address1 = Address(street: "Тверская", houseNumber: "12", apartmentNumber: "45", entranceNumber: "3", floorNumber: 8, isPrivateHouse: false)
-let dianaAddress = Address(street: "Центральный проезд Хорошевского Серебряного Бора", houseNumber: "4", apartmentNumber: "61", entranceNumber: "3", floorNumber: 5, isPrivateHouse: false)
-let juliaAddress = Address(street: "Кирова", houseNumber: "1", apartmentNumber: nil, entranceNumber: nil, floorNumber: nil, isPrivateHouse: true)
-let address2 = Address(street: "Нагатинская", houseNumber: "22", apartmentNumber: "14", entranceNumber: "4Б", floorNumber: 12, isPrivateHouse: false)
 
 
-let clientBoris = Client(firstName: "Борис", lastName: "Джонсон", address: address1, phoneNumber: "+79995552211")
-let clientDiana = Client(firstName: "Диана", lastName: nil, address: dianaAddress, phoneNumber: "+79994468872")
-let clientJulia = Client(firstName: "Юлия", lastName: "Петрова", address: juliaAddress, phoneNumber: "+79991234567")
-let clientPetr = Client(firstName: "Петр", lastName: "Иванов", address: address2, phoneNumber: "+79996664599")
-
-let task1 = Task(scheduledAt: tomorrow ?? date1, client: clientBoris, isRemote: false, taskDescription: "Встретиться с Борисом Джонсоном", taskComment: "", isCompleted: .scheduled, paymentMethod: nil, contractAmount: 3500, cost: 500, extraPayment: 1000)
-let task2 = Task(scheduledAt: today1 ?? date1, client: clientDiana, isRemote: false, taskDescription: "Установить Windows 11", taskComment: nil, isCompleted: .completed, paymentMethod: .creditCard, contractAmount: 5000, cost: 950, extraPayment: 500)
-let task3 = Task(scheduledAt: today2 ?? date1, client: clientJulia, isRemote: false, taskDescription: "Купить в магазине и настроить роутер keenetic. Сдача остаётся мне", taskComment: "Не получилось. Роутер не включается", isCompleted: .canceled, paymentMethod: nil, contractAmount: 0, cost: 0, extraPayment: 0)
-let task4 = Task(scheduledAt: twoDaysAgo ?? date1, client: clientPetr, isRemote: true, taskDescription: "Office install Office install Office install Office install Office install ", taskComment: nil, isCompleted: .scheduled, paymentMethod: nil, contractAmount: 1500, cost: 500, extraPayment: 0)
-
-let tasks: [Task] = [task1, task2, task3, task4]
+var tasks: [Task] = []
 
 
     
@@ -74,7 +25,7 @@ let tasks: [Task] = [task1, task2, task3, task4]
         var groupedTasks: [String: [Task]] {
             Dictionary(grouping: tasks) { task in
                 let formatter = customDateFormatter
-                return formatter.string(from: task.scheduledAt)
+                return formatter.string(from: task.scheduledAt ?? today1!) //Force operation
             }
         }
         
