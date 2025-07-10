@@ -20,7 +20,6 @@ final class StreetStore: NSObject, ObservableObject {
     }
     
     func createStreet(name: String) {
-        guard !name.isBlank else { return }
         let street = Street(context: context)
         street.name = name
         
@@ -42,7 +41,6 @@ final class StreetStore: NSObject, ObservableObject {
     }
     
     func updateStreet(street: Street, name: String) {
-        guard !name.isBlank else { return }
         street.name = name
         
         do {

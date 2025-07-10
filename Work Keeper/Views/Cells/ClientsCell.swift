@@ -2,15 +2,15 @@ import SwiftUI
 
 struct ClientRow: View {
     let client: Client
-  
+   
+   
     
     var body: some View {
+        
+        let initials = ((client.firstName?.prefix(1) ?? "") + (client.lastName?.prefix(1) ?? ""))
+        
         ZStack {
             Color.custom(.newTaskBackgroundGray)?.ignoresSafeArea()
-                
-            
-            let initials = (client.firstName.prefix(1) + (client.lastName?.prefix(1) ?? ""))
-            
             
             HStack {
                 ZStack {
@@ -40,7 +40,7 @@ struct ClientRow: View {
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 25, alignment: .center)
                     Spacer()
-                    Text("\(client.phoneNumber)")
+                    Text("\(client.phone)")
                         .font(.custom(SFPro.regular.rawValue, size: 16))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 20, alignment: .center)
@@ -48,7 +48,7 @@ struct ClientRow: View {
                         .foregroundColor(.custom(.taskTextGray))
                         .offset(y: 4)
                     Spacer()
-                    Text("\(client.address?.street ?? "Адрес не указан") \(client.address?.houseNumber ?? "")")
+                    Text("\(client.primaryAddress?.street?.name ?? "Адрес не указан") \(client.primaryAddress?.house ?? "")")
                         .font(.custom(SFPro.regular.rawValue, size: 17))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(height: 34, alignment: .center)

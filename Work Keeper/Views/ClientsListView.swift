@@ -1,14 +1,12 @@
 import SwiftUI
 
 
-let clients: [Client] = [clientBoris, clientDiana, clientJulia, clientPetr]
-    
-
 struct ClientsListView: View {
     @State private var showNewClientView = false
+    @StateObject private var viewModel = ClientsListViewModel()
     
     var body: some View {
-      
+       
         
         ZStack {
             Color(.white).ignoresSafeArea()
@@ -59,7 +57,7 @@ struct ClientsListView: View {
                     )
                     .padding(.leading, 1)
                     .padding(.trailing, 1)
-                if clients.isEmpty {
+                if viewModel.clients.isEmpty {
                     
                     Spacer()
                         .frame(height: 165)
@@ -70,9 +68,9 @@ struct ClientsListView: View {
                     
                     Text("Клиентов пока нет")
                 } else {
-                    List(clients) { client in
+                    List(viewModel.clients) { client in
                         ClientRow(client: client)
-                            .listRowSeparator(.hidden)
+                           
                     }
                     .listRowSeparator(.hidden)
                     .listStyle(PlainListStyle())
@@ -87,6 +85,10 @@ struct ClientsListView: View {
         }
         .sheet(isPresented: $showNewClientView) {
             NewClientView()
+        }
+        
+        .onAppear {
+            viewModel.loadClients()
         }
         
     }

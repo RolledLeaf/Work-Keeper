@@ -6,8 +6,8 @@
         <attribute name="floor" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="house" attributeType="String"/>
         <attribute name="isPrivateHouse" attributeType="Boolean" usesScalarValueType="YES"/>
-        <relationship name="client" maxCount="1" deletionRule="Nullify" destinationEntity="Client" inverseName="addresses" inverseEntity="Client"/>
-        <relationship name="street" maxCount="1" deletionRule="Nullify" destinationEntity="Street" inverseName="addresses" inverseEntity="Street"/>
+        <relationship name="client" maxCount="1" deletionRule="Nullify" destinationEntity="Client" inverseName="address" inverseEntity="Client"/>
+        <relationship name="street" maxCount="1" deletionRule="Nullify" destinationEntity="Street" inverseName="address" inverseEntity="Street"/>
     </entity>
     <entity name="Client" representedClassName="Client" syncable="YES" codeGenerationType="class">
         <attribute name="comment" optional="YES" attributeType="String"/>
@@ -15,18 +15,19 @@
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO" spotlightIndexingEnabled="YES"/>
         <attribute name="lastName" optional="YES" attributeType="String"/>
         <attribute name="phone" attributeType="String"/>
-        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Address" inverseName="client" inverseEntity="Address"/>
+        <relationship name="address" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Address" inverseName="client" inverseEntity="Address"/>
         <relationship name="primaryAddress" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Address"/>
         <relationship name="task" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Task" inverseName="client" inverseEntity="Task"/>
     </entity>
     <entity name="Street" representedClassName="Street" syncable="YES" codeGenerationType="class">
         <attribute name="name" attributeType="String"/>
-        <relationship name="addresses" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Address" inverseName="street" inverseEntity="Address"/>
+        <relationship name="address" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Address" inverseName="street" inverseEntity="Address"/>
     </entity>
     <entity name="Task" representedClassName="Task" syncable="YES" codeGenerationType="class">
         <attribute name="comment" optional="YES" attributeType="String"/>
         <attribute name="contractAmount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="cost" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="extraPayment" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO" spotlightIndexingEnabled="YES"/>
         <attribute name="isRemote" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="scheduledAt" attributeType="Date" usesScalarValueType="NO"/>

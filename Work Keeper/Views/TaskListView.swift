@@ -5,31 +5,25 @@ import SwiftUI
 
 let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
 let date1 = Date()
-let today1 = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 11, hour: 10, minute: 30))
-let today2 = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 11, hour: 14, minute: 00))
-let tomorrow = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 12, hour: 10, minute: 0))
-let twoDaysAgo = Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 10, hour: 10, minute: 0))
 
-private let streets: [String] = ["Академика Пилюгина", "Академика Янгеля", "Березина", "Высоцкого", "Герцина" , "Железнодорожный проезд"]
-
-
-
-var tasks: [Task] = []
-
-
-    
+ 
     struct TaskListView: View {
+        @StateObject private var viewModel = TaskListViewModel()
+       
         @State private var selectedDate = Date()
         @State private var showNewTaskView = false
         
         var groupedTasks: [String: [Task]] {
-            Dictionary(grouping: tasks) { task in
+            Dictionary(grouping: viewModel.tasks) { task in
                 let formatter = customDateFormatter
-                return formatter.string(from: task.scheduledAt ?? today1!) //Force operation
+                return formatter.string(from: task.scheduledAt ?? date1) //Force operation
             }
         }
         
         var body: some View {
+            
+            
+            
             ZStack {
                 Color(.white).edgesIgnoringSafeArea(.all)
                     .onTapGesture {
@@ -113,7 +107,7 @@ var tasks: [Task] = []
                     
                     
                     
-                    if tasks.isEmpty {
+                    if groupedTasks.isEmpty {
                         
                         Spacer()
                             .frame(height: 117)
@@ -195,6 +189,10 @@ var tasks: [Task] = []
             }
             .sheet(isPresented: $showNewTaskView) {
                 NewTaskView()
+            }
+            
+            .onAppear {
+                viewModel.loadTasks()
             }
         }
     }

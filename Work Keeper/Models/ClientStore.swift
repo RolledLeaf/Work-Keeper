@@ -20,7 +20,7 @@ func createClient(firstName: String,
         client.id = UUID()
         client.firstName = firstName
         client.lastName = lastName
-    client.addresses = NSSet(array: addresses)
+    client.address = NSSet(array: addresses)
         client.phone = phone
         client.comment = comment
         
@@ -54,7 +54,7 @@ func createClient(firstName: String,
       
         client.firstName = firstName
         client.lastName = lastName
-        client.addresses = NSSet(array: addresses)
+        client.address = NSSet(array: addresses)
         client.phone = phone
         client.comment = comment
         
@@ -75,3 +75,5 @@ func createClient(firstName: String,
     }
     
 }
+
+

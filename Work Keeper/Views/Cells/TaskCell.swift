@@ -10,6 +10,7 @@ struct TaskRow: View {
     @State private var showRepeatClientBubbleRemote = false
     @State private var showCashIcon = false
     @State private var showCreditCardIcon = false
+    @State var viewModel = TaskListViewModel()
     
     let task: Task
     
@@ -17,7 +18,7 @@ struct TaskRow: View {
         
         let statusColor: CustomColor
         
-        switch task.isCompleted {
+        switch task.status {
         case .scheduled:
             statusColor = .taskInProgressYellow
         case .completed:
@@ -37,7 +38,7 @@ struct TaskRow: View {
                 if task.isRemote == false {
                     VStack {
                         HStack {
-                            Text(task.scheduledAt.formattedAsTime())
+                            Text(task.scheduledAt?.formattedAsTime() ?? "\(date1)") //Некрасиво развёрнут опционал даты
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
@@ -73,18 +74,18 @@ struct TaskRow: View {
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
                                 .contentShape(Circle())
-                                Text(task.client.firstName)
+                                Text(task.client?.firstName ?? "")
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
                             }
                             .padding(.trailing, 35)
                             Spacer()
                             ZStack {
                                 Image("phoneNumberCloud")
-                                Text("\(task.client.phoneNumber)")
+                                Text("\(task.client?.phone)")
                                     .font(.custom(SFPro.regular.rawValue, size: 12))
                                     .offset(x: -3)
                                     .onTapGesture {
-                                           if let url = URL(string: "tel://\(task.client.phoneNumber)"),
+                                        if let url = URL(string: "tel://\(task.client?.phone)"),
                                               UIApplication.shared.canOpenURL(url) {
                                                UIApplication.shared.open(url)
                                            }
@@ -114,7 +115,7 @@ struct TaskRow: View {
                         .padding(.trailing, 5)
                         .frame(maxHeight: 35)
                         
-                        Text("\(task.client.address?.street ?? "Адрес не указан") \(task.client.address?.houseNumber ?? "")")
+                        Text("\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")")
                             .font(.custom(SFPro.regular.rawValue, size: 27))
                             .foregroundColor(.custom(.taskTextGray))
                             .frame(maxHeight: 46)
@@ -123,19 +124,19 @@ struct TaskRow: View {
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
                             .minimumScaleFactor(0.7)
-                        if task.client.address?.isPrivateHouse == false {
+                        if task.client?.primaryAddress?.isPrivateHouse == false {
                             HStack {
                                 
                                 Image("location")
                                     .offset(x: -9, y: -9)
                                 Spacer()
-                                Text("кв. \(task.client.address?.apartmentNumber ?? defaultNumber)")
+                                Text("кв. \(task.client?.primaryAddress?.apartment ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
-                                Text("под.\(task.client.address?.entranceNumber ?? defaultNumber)")
+                                Text("под.\(task.client?.primaryAddress?.entrance ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
-                                Text("эт.\(task.client.address?.floorNumber ?? 0)")
+                                Text("эт.\(task.client?.primaryAddress?.floor ?? 0)")
                                     .foregroundColor(.custom(.taskTextGray))
                             }
                             .padding(.trailing, 90)
@@ -163,7 +164,7 @@ struct TaskRow: View {
                             .foregroundColor(Color.black)
                             .padding(.top, -15)
                         
-                        Text(task.taskDescription)
+                        Text(task.taskDescription ?? "")
                             .font(.custom(SFPro.regular.rawValue, size: 19))
                             .bold()
                             .frame(maxWidth: 350, alignment: .center)
@@ -180,7 +181,7 @@ struct TaskRow: View {
                 } else {
                     VStack {
                         HStack {
-                            Text(task.scheduledAt.formattedAsTime())
+                            Text(task.scheduledAt?.formattedAsTime() ?? "\(date1)") //Некрасиво развёрнут опционал даты
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
@@ -212,7 +213,7 @@ struct TaskRow: View {
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
                                 .contentShape(Rectangle())
-                                Text(task.client.firstName)
+                                Text(task.client?.firstName ?? "")
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
                             }
                             .offset(x: 6)
@@ -221,11 +222,11 @@ struct TaskRow: View {
                             Spacer()
                             ZStack {
                                 Image("phoneNumberCloud")
-                                Text("\(task.client.phoneNumber)")
+                                Text("\(task.client?.phone)")
                                     .font(.custom(SFPro.regular.rawValue, size: 12))
                                     .offset(x: -3)
                                     .onTapGesture {
-                                           if let url = URL(string: "tel://\(task.client.phoneNumber)"),
+                                           if let url = URL(string: "tel://\(task.client?.phone)"),
                                               UIApplication.shared.canOpenURL(url) {
                                                UIApplication.shared.open(url)
                                            }
@@ -274,7 +275,7 @@ struct TaskRow: View {
                             .foregroundColor(Color.black)
                             
                         
-                        Text(task.taskDescription)
+                        Text(task.taskDescription ?? "")
                             .font(.custom(SFPro.bold.rawValue, size: 30))
                             .frame(maxWidth: .infinity, alignment: .center)
                             .frame(maxHeight: 40)
