@@ -9,6 +9,28 @@ final class StreetStore: NSObject, ObservableObject {
         self.context = context
     }
     
+    func createOrFetchStreet(name: String) -> Street {
+        let request: NSFetchRequest<Street> = Street.fetchRequest()
+        request.predicate = NSPredicate(format: "name == %@", name)
+        request.fetchLimit = 1
+        
+        do {
+            if let existing = try context.fetch(request).first {
+                return existing
+            } else {
+                let street = Street(context: context)
+                street.name = name
+                try context.save()
+                return street
+            }
+        } catch {
+            print("Error in createOrFetchStreet: \(error)")
+            let street = Street(context: context)
+            street.name = name
+            return street
+        }
+    }
+    
     func fetchStreets() -> [Street] {
         let request: NSFetchRequest<Street> = Street.fetchRequest()
         do {

@@ -33,6 +33,36 @@ func createClient(firstName: String,
         return client
     }
                       
+func createOrFetchClient(firstName: String,
+                         lastName: String?,
+                         addresses: [Address],
+                         phone: String,
+                         comment: String?) -> Client {
+    
+    let request: NSFetchRequest<Client> = Client.fetchRequest()
+    request.predicate = NSPredicate(format: "firstName == %@ AND phone == %@", firstName, phone)
+    request.fetchLimit = 1
+    
+    do {
+        if let existing = try context.fetch(request).first {
+            return existing
+        } else {
+            return createClient(firstName: firstName,
+                                lastName: lastName,
+                                addresses: addresses,
+                                phone: phone,
+                                comment: comment)
+        }
+    } catch {
+        print("Error in createOrFetchClient: \(error)")
+        return createClient(firstName: firstName,
+                            lastName: lastName,
+                            addresses: addresses,
+                            phone: phone,
+                            comment: comment)
+    }
+}
+    
     func fetchClients() -> [Client] {
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Client.firstName, ascending: true)]
@@ -75,5 +105,3 @@ func createClient(firstName: String,
     }
     
 }
-
-

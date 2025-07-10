@@ -33,7 +33,7 @@
         <attribute name="scheduledAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="statusString" optional="YES" attributeType="String"/>
         <attribute name="taskDescription" optional="YES" attributeType="String"/>
-        <attribute name="totalAmount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="totalAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="client" maxCount="1" deletionRule="Nullify" destinationEntity="Client" inverseName="task" inverseEntity="Client"/>
     </entity>
 </model>

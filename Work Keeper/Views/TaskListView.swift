@@ -153,7 +153,7 @@ let date1 = Date()
                                             }
                                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                                 Button(action: {
-                                                    //действие
+                                                    viewModel.delete(task)
                                                 }) {
                                                     Image("delete")
                                                     Text("Удалить")
@@ -187,7 +187,9 @@ let date1 = Date()
                 .padding(.trailing, 16)
                 .padding(.leading, 16)
             }
-            .sheet(isPresented: $showNewTaskView) {
+            .sheet(isPresented: $showNewTaskView, onDismiss: {
+                viewModel.loadTasks()
+            }) {
                 NewTaskView()
             }
             

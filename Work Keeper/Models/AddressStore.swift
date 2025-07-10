@@ -12,7 +12,7 @@ final class AddressStore: NSObject {
     func createAddress(house: String,
                        apartment: String?,
                        entrance: String?,
-                       floor: Int,
+                       floor: Int16,
                        isPrivateHouse: Bool,
                        street: Street
     ) -> Address {
@@ -23,12 +23,40 @@ final class AddressStore: NSObject {
         address.floor = Int16(floor)
         address.isPrivateHouse = isPrivateHouse
         address.street = street
-        do {
-            try context.save()
-        } catch {
-            print("Error creating address: \(error)")
-        }
         return address
+    }
+    
+    func createOrFetchAddress(house: String,
+                              apartment: String?,
+                              entrance: String?,
+                              floor: Int16,
+                              isPrivateHouse: Bool,
+                              street: Street) -> Address {
+        
+        let request: NSFetchRequest<Address> = Address.fetchRequest()
+        request.predicate = NSPredicate(format: "street.name == %@ AND house == %@", street.name ?? "", house)
+        request.fetchLimit = 1
+
+        do {
+            if let existing = try context.fetch(request).first {
+                return existing
+            } else {
+                return createAddress(house: house,
+                                     apartment: apartment,
+                                     entrance: entrance,
+                                     floor: floor,
+                                     isPrivateHouse: isPrivateHouse,
+                                     street: street)
+            }
+        } catch {
+            print("Error in createOrFetchAddress: \(error)")
+            return createAddress(house: house,
+                                 apartment: apartment,
+                                 entrance: entrance,
+                                 floor: floor,
+                                 isPrivateHouse: isPrivateHouse,
+                                 street: street)
+        }
     }
     
     func updateAddress(_ address: Address,
@@ -72,7 +100,3 @@ final class AddressStore: NSObject {
     }
     
 }
-
-
-
-
