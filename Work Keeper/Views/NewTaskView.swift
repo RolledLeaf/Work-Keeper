@@ -8,6 +8,7 @@ struct NewTaskView: View {
     }
     
     @StateObject private var viewModel = CreateTaskViewModel()
+    @StateObject private var clientsListViewModel = ClientsListViewModel()
     
     @State private var firstName = ""
     @State private var roomType = "кв"
@@ -43,12 +44,13 @@ struct NewTaskView: View {
     @State private var isPrivateHouse = false
     @State private var isRemote = false
     @State private var showStreetsView = false
+    @State private var showClientListToPickView = false
     @State private var selectedDate = Date()
     @FocusState private var focusedField: Field?
     
     @Environment(\.dismiss)
     private var dismiss
-  
+    
     
     var body: some View {
         
@@ -115,11 +117,11 @@ struct NewTaskView: View {
                                 if viewModel.description.count >= maxDescriptionCharactersCount {
                                     DescriptionCharactersTextOpacity = 1
                                 } else { DescriptionCharactersTextOpacity = 0
-                                        
-                                    }
+                                    
+                                }
                                 
                             }
-                    
+                        
                     }
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
@@ -174,7 +176,7 @@ struct NewTaskView: View {
                                     }
                                 
                                 Button(action: {
-                                    //action
+                                    showClientListToPickView = true
                                 })
                                 {
                                     Image(systemName: "chevron.right")
@@ -480,12 +482,12 @@ struct NewTaskView: View {
                             .multilineTextAlignment(.center)
                             .keyboardType(.decimalPad)
                             .onChange(of: viewModel.contractAmountText) { newValue in
-                                    if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
-                                        viewModel.contractAmount = value
-                                    } else {
-                                        viewModel.contractAmount = 0
-                                    }
+                                if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
+                                    viewModel.contractAmount = value
+                                } else {
+                                    viewModel.contractAmount = 0
                                 }
+                            }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
@@ -495,7 +497,7 @@ struct NewTaskView: View {
                     .padding(.trailing, 48)
                     
                     
-               
+                    
                     
                     
                     HStack {
@@ -512,12 +514,12 @@ struct NewTaskView: View {
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
                             .onChange(of: viewModel.costText) { newValue in
-                                    if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
-                                        viewModel.cost = value
-                                    } else {
-                                        viewModel.cost = 0
-                                    }
+                                if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
+                                    viewModel.cost = value
+                                } else {
+                                    viewModel.cost = 0
                                 }
+                            }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
@@ -593,6 +595,24 @@ struct NewTaskView: View {
         .sheet(isPresented: $showStreetsView) {
             StreetsListView()
         }
+        .sheet(isPresented: $showClientListToPickView, onDismiss: {
+            if let selectedClient = clientsListViewModel.selectedClient {
+                viewModel.firstName = selectedClient.firstName ?? ""
+                viewModel.phone = selectedClient.phone ?? ""
+                if let primaryAddress = selectedClient.address?.first(where: {
+                    ($0 as? Address)?.isPrimary == true
+                }) as? Address {
+                    viewModel.streetName = primaryAddress.street?.name ?? ""
+                    viewModel.house = primaryAddress.house ?? ""
+                    viewModel.apartment = primaryAddress.apartment ?? ""
+                    viewModel.entrance = primaryAddress.entrance ?? ""
+                    viewModel.floor = primaryAddress.floor
+                    viewModel.floorText = "\(primaryAddress.floor)"
+                }
+            }
+        }) {
+            ClientListToPickView(viewModel: clientsListViewModel)
+        }
     }
 }
 
@@ -601,575 +621,3 @@ struct NewTaskView: View {
     NewTaskView()
 }
 
-
-
-
-
-
-//struct NewTaskView: View {
-//    enum Field {
-//        case firstName
-//    }
-//    
-//    @StateObject private var viewModel = CreateTaskViewModel()
-//
-//    private let maxFirstNameCharactersCount: Int = 13
-//    private let maxBuildingCharactersCount: Int = 8
-//    private let maxStreetCharactersCount: Int = 44
-//    private let maxDescriptionCharactersCount: Int = 85
-//    private let maxApartmentCharactersCount: Int = 6
-//    private let maxEntranceCharactersCount: Int = 3
-//    private let maxFloorCharactersCount: Int = 3
-//    private let maxCountryCodeCharactersCount: Int = 3
-//    private let maxPhoneNumberCharactersCount: Int = 14
-//    private let maxContractAmountCharacters: Int = 6
-//    private let maxCostCharacters: Int = 6
-//    
-// 
-//    @State private var maxStreetCharactersTextOpacity: Double = 0
-//    @State private var maxDescriptionCharactersTextOpacity: Double = 0
-//    @State private var showStreetsView = false
-//    @State private var selectedDate = Date()
-//    
-//    @FocusState private var focusedField: Field?
-//    
-//    @Environment(\.dismiss)
-//    private var dismiss
-//   
-//    var body: some View {
-//        
-//        let roomTypes = ["кв", "оф", "каб"]
-//        let entranceTypes = ["под", "вход"]
-//   
-//        ZStack {
-//            Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
-//            
-//            ScrollView {
-//                
-//                VStack {
-//                    Text("Новое задание")
-//                        .font(.system(size: 24, weight: .bold, design: .default))
-//                        .foregroundColor(Color.black)
-//                        .offset(y: 30)
-//                    Spacer()
-//                        .frame(height: 50)
-//                    
-//                    HStack {
-//                        Text("Описание")
-//                            .padding(.leading, 21)
-//                            .foregroundColor(Color.custom(.textTitleGray))
-//                            .font(.system(size: 19, weight: .regular, design: .default))
-//                            .background(Color.clear)
-//                        Spacer()
-//                        
-//                        DatePicker("time", selection: $viewModel.scheduledAt, displayedComponents: .hourAndMinute
-//                        )
-//                        .labelsHidden()
-//                        .datePickerStyle(.compact)
-//                        .frame(maxWidth: 70, maxHeight: 35)
-//                        .contentShape(Rectangle())
-//                        
-//                        
-//                        
-//                        
-//                        DatePicker("Date", selection: $viewModel.scheduledAt, displayedComponents: .date
-//                        )
-//                        .labelsHidden()
-//                        .datePickerStyle(.compact)
-//                        .frame(maxWidth: 120, maxHeight: 35)
-//                        .contentShape(Rectangle())
-//                        
-//                    }
-//                    .padding(.trailing, 20)
-//                    
-//                    ZStack {
-//                        Color.white
-//                        TextEditor(text: $viewModel.description)
-//                            .font(.system(size: 20, weight: .regular, design: .default))
-//                            .padding(.horizontal, 16)
-//                            .frame(minHeight: 80, maxHeight: 100)
-//                            .lineLimit(2, reservesSpace: false)
-//                            .minimumScaleFactor(0.6)
-//                            .multilineTextAlignment(.leading)
-//                            .onChange(of: viewModel.description) { newValue in
-//                                if newValue.count > maxDescriptionCharactersCount {
-//                                    viewModel.description = String(newValue.prefix(maxDescriptionCharactersCount))
-//                                }
-//                                
-//                                if viewModel.description.count >= maxDescriptionCharactersCount {
-//                                    maxDescriptionCharactersTextOpacity = 1
-//                                } else { maxDescriptionCharactersTextOpacity = 0
-//                                        
-//                                    }
-//                                
-//                            }
-//                    
-//                    }
-//                    .overlay(
-//                        RoundedRectangle(cornerRadius: 12)
-//                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                    )
-//                    .padding(.horizontal, 16)
-//                    
-//                    Text("максимум символов \(maxDescriptionCharactersCount)")
-//                        .font(.system(size: 12, weight: .medium))
-//                        .foregroundColor(.red)
-//                        .opacity(maxDescriptionCharactersTextOpacity)
-//                    
-//                    Spacer()
-//                        .frame(height: 20)
-//                    
-//                    HStack {
-//                        Text("Клиент")
-//                            .foregroundColor(Color.custom(.textTitleGray))
-//                            .font(.system(size: 18, weight: .regular, design: .default))
-//                            .background(Color.clear)
-//                            .frame(width: 100, alignment: .leading)
-//                            .frame(height: 15)
-//                        
-//                        Spacer()
-//                        
-//                        Text("Номер телефона")
-//                            .padding(.leading, 21)
-//                            .foregroundColor(Color.custom(.textTitleGray))
-//                            .font(.system(size: 18, weight: .regular, design: .default))
-//                            .background(Color.clear)
-//                            .frame(height: 15)
-//                        
-//                    }
-//                    .padding(.leading, 20)
-//                    .padding(.trailing, 33)
-//                    
-//                    HStack {
-//                        ZStack {
-//                            Color.white
-//                                .cornerRadius(8)
-//                            
-//                            HStack {
-//                                TextField("Имя", text: $viewModel.firstName)
-//                                    .font(.system(size: 19, weight: .regular, design: .default))
-//                                    .padding(.leading, 11)
-//                                    .background(Color.clear)
-//                                    .submitLabel(.next)
-//                                    .onChange(of: viewModel.firstName) { newValue in
-//                                        if newValue.count > maxFirstNameCharactersCount { viewModel.firstName = String(newValue.prefix(maxFirstNameCharactersCount))
-//                                            
-//                                        }
-//                                    }
-//                                
-//                                Button(action: {
-//                                    //action
-//                                })
-//                                {
-//                                    Image(systemName: "chevron.right")
-//                                        .padding(.trailing, 4)
-//                                        .tint(Color.black)
-//                                }
-//                            }
-//                        }
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 8)
-//                            
-//                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                        )
-//                        .cornerRadius(8)
-//                        .frame(width: 170)
-//                        .frame(height: 40, alignment: .center)
-//                        
-//                        Spacer()
-//                        
-//                        HStack {
-//                            
-//                            ZStack {
-//                                Color.white
-//                                TextField("", text: $viewModel.phone)
-//                                    .font(.system(size: 19, weight: .regular, design: .default))
-//                                    .foregroundColor(.black)
-//                                    .offset(x: 8)
-//                                    .keyboardType(.phonePad)
-//                                    .onChange(of: viewModel.phone) { newValue in
-//                                        if newValue.count > maxPhoneNumberCharactersCount {
-//                                            viewModel.phone = String(newValue.prefix(maxPhoneNumberCharactersCount))
-//                                        }
-//                                    }
-//                            }
-//                            .cornerRadius(10)
-//                            .frame(width: 170, height: 40)
-//                            .overlay(
-//                                RoundedRectangle(cornerRadius: 10)
-//                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                            )
-//                            
-//                        }
-//                        
-//                        
-//                    }
-//                    .padding(.horizontal, 20)
-//                    
-//                    
-//                    Rectangle()
-//                        .frame(height: 0.5)
-//                        .foregroundColor(.custom(.separatorLineGray))
-//                    
-//                    Spacer()
-//                        .frame(height: 15)
-//                    
-//                    //address section
-//                    HStack {
-//                        Text("Адрес")
-//                            .padding(.leading, 21)
-//                            .foregroundColor(Color.custom(.textTitleGray))
-//                            .font(.system(size: 19, weight: .regular, design: .default))
-//                            .background(Color.clear)
-//                        
-//                        Spacer()
-//                        
-//                        Text("Удалёнка")
-//                            .font(.custom(SFPro.italic.rawValue, size: 20))
-//                            .padding(.horizontal)
-//                            .frame(width: 150, alignment: .trailing)
-//                            .offset(x: 65)
-//                        
-//                        Toggle("", isOn: $viewModel.isRemote)
-//                            .padding(.horizontal)
-//                            .padding(.trailing, 40)
-//                    }
-//                    
-//                    ZStack {
-//                        Color.white
-//                        
-//                        HStack {
-//                            
-//                            Spacer()
-//                            TextField(text: $viewModel.street)
-//                                .font(.system(size: 20, weight: .regular, design: .default))
-//                                .frame(width: 320)
-//                                .frame(height: 50)
-//                                .lineLimit(1, reservesSpace: false)
-//                                .minimumScaleFactor(0.5)
-//                                .multilineTextAlignment(.leading)
-//                            //.onChange(of: street) { oldValue, newValue in
-//                                .onChange(of: viewModel.street) { newValue in
-//                                    if newValue.count > maxStreetCharactersCount {
-//                                        viewModel.street = String(newValue.prefix(maxStreetCharactersCount))
-//                                    }
-//                                    if viewModel.street.count >= maxStreetCharactersCount  {
-//                                        maxStreetCharactersTextOpacity = 1
-//                                    } else {
-//                                        maxStreetCharactersTextOpacity = 0
-//                                    }
-//                                }
-//                            
-//                            
-//                            
-//                            Spacer()
-//                            
-//                            Button(action: {
-//                                showStreetsView = true
-//                            }) {
-//                                Image(systemName: "chevron.right")
-//                                
-//                            }
-//                            .tint(Color(.black))
-//                            .offset(x: -5)
-//                        }
-//                        
-//                    }
-//                    .frame(height: 50)
-//                    .cornerRadius(10)
-//                    .overlay(
-//                        RoundedRectangle(cornerRadius: 10)
-//                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                    )
-//                    .padding(.horizontal, 20)
-//                    
-//                    Text("максимум символов \(maxStreetCharactersCount)")
-//                        .font(.system(size: 12, weight: .medium))
-//                        .foregroundColor(.red)
-//                        .opacity(maxStreetCharactersTextOpacity)
-//                    //Street section end
-//                    
-//                    
-//                    
-//                    
-//                    
-//                    HStack {
-//                        
-//                        Text("дом -")
-//                            .font(.system(size: 16, weight: .medium))
-//                            .foregroundColor(.black)
-//                        
-//                        
-//                        ZStack {
-//                            Color.white
-//                            TextField("", text: $viewModel.building)
-//                                .font(.system(size: 19, weight: .regular, design: .default))
-//                                .multilineTextAlignment(.center)
-//                                .onChange(of: viewModel.building) { newValue in
-//                                    if newValue.count > maxBuildingCharactersCount {
-//                                        viewModel.building = String(newValue.prefix(maxBuildingCharactersCount))
-//                                    }
-//                                }
-//                        }
-//                        .cornerRadius(5)
-//                        .frame(width: 75, height: 30)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 5)
-//                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                        )
-//                        Spacer()
-//                        
-//                        
-//                        Menu {
-//                            ForEach(roomTypes, id: \.self) { type in
-//                                Button(type) {
-//                                    viewModel.roomType = type
-//                                }
-//                            }
-//                        } label: {
-//                            Text(viewModel.roomType)
-//                                .font(.system(size: 16, weight: .medium))
-//                                .foregroundColor(.black)
-//                            Image(systemName: "triangle.fill")
-//                                .resizable()
-//                                .frame(width: 8, height: 5)
-//                                .rotationEffect(.degrees(180))
-//                                .foregroundColor(.black)
-//                        }
-//                        ZStack {
-//                            Color.white
-//                            TextField("", text: $viewModel.apartment)
-//                                .font(.system(size: 19, weight: .regular, design: .default))
-//                                .multilineTextAlignment(.center)
-//                                .onChange(of: viewModel.apartment) { newValue in
-//                                    if newValue.count > maxApartmentCharactersCount {
-//                                        viewModel.apartment = String(newValue.prefix(maxApartmentCharactersCount))
-//                                    }
-//                                }
-//                        }
-//                        .cornerRadius(5)
-//                        .frame(width: 66, height: 30)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 5)
-//                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                        )
-//                        Spacer()
-//                        
-//                        Menu {
-//                            ForEach(entranceTypes, id: \.self) { type in
-//                                Button(type) {
-//                                    viewModel.entranceType = type
-//                                }
-//                            }
-//                        } label: {
-//                            Text(viewModel.entranceType)
-//                                .font(.system(size: 16, weight: .medium))
-//                                .foregroundColor(.black)
-//                            Image(systemName: "triangle.fill")
-//                                .resizable()
-//                                .frame(width: 8, height: 5)
-//                                .rotationEffect(.degrees(180))
-//                                .foregroundColor(.black)
-//                        }
-//                        ZStack {
-//                            Color.white
-//                            TextField("", text: $viewModel.entrance)
-//                                .font(.system(size: 19, weight: .regular, design: .default))
-//                                .multilineTextAlignment(.center)
-//                                .onChange(of: viewModel.entrance) { newValue in
-//                                    if newValue.count > maxEntranceCharactersCount {
-//                                        viewModel.entrance = String(newValue.prefix(maxEntranceCharactersCount))
-//                                    }
-//                                }
-//                        }
-//                        .cornerRadius(5)
-//                        .frame(width: 37, height: 30)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 5)
-//                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                        )
-//                    }
-//                    .padding(.horizontal, 20)
-//                    
-//                    Spacer()
-//                        .frame(height: 17)
-//                    
-//                    // Стек Этаж - Частный дом, Начало
-//                    HStack {
-//                        
-//                        Text("эт -")
-//                            .font(.system(size: 16, weight: .medium))
-//                            .foregroundColor(.black)
-//                        
-//                        ZStack {
-//                            Color.white
-//                            TextField("", text: $viewModel.floor)
-//                                .multilineTextAlignment(.center)
-//                                .font(.system(size: 19, weight: .regular, design: .default))
-//                        }
-//                        .cornerRadius(5)
-//                        .frame(width: 40, height: 30)
-//                        
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 5)
-//                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                        )
-//                        
-//                        Text("Частный дом")
-//                            .font(.custom(SFPro.italic.rawValue, size: 20))
-//                            .padding(.horizontal)
-//                            .frame(width: 150)
-//                            .offset(x: 35)
-//                        
-//                        Toggle("", isOn: $viewModel.isPrivateHouse)
-//                            .padding(.horizontal)
-//                        
-//                    }
-//                    // Стек Этаж - Частный дом, конец
-//                    .padding(.horizontal, 35)
-//                    
-//                    Rectangle()
-//                        .frame(height: 0.5)
-//                        .foregroundColor(.custom(.separatorLineGray))
-//                    
-//                    
-//                    HStack {
-//                        Text("Оплата")
-//                            .padding(.leading, 21)
-//                            .foregroundColor(Color.custom(.textTitleGray))
-//                            .font(.system(size: 19, weight: .regular, design: .default))
-//                            .background(Color.clear)
-//                        
-//                        Spacer()
-//                    }
-//                    
-//                    HStack {
-//                        Text("Договорились")
-//                            .padding(.leading, 21)
-//                            .foregroundColor(Color(.black))
-//                            .font(.system(size: 19, weight: .regular, design: .default))
-//                            .background(Color.clear)
-//                        Spacer()
-//                        
-//                        TextField("0", text: $viewModel.contractAmountText)
-//                            .font(.system(size: 19, weight: .regular, design: .default))
-//                            .frame(width: 100, height: 30)
-//                            .multilineTextAlignment(.center)
-//                            .keyboardType(.decimalPad)
-//                            .onChange(of: viewModel.contractAmountText) { newValue in
-//                                    if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
-//                                        viewModel.contractAmount = value
-//                                    } else {
-//                                        viewModel.contractAmount = 0
-//                                    }
-//                                }
-//                            .background(
-//                                RoundedRectangle(cornerRadius: 5)
-//                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                                    .fill(Color.white)
-//                            )
-//                    }
-//                    .padding(.trailing, 48)
-//                    
-//                    
-//               
-//                    
-//                    
-//                    HStack {
-//                        Text("Издержки")
-//                            .padding(.leading, 21)
-//                            .foregroundColor(Color(.black))
-//                            .font(.system(size: 19, weight: .regular, design: .default))
-//                            .background(Color.clear)
-//                        Spacer()
-//                        
-//                        TextField("0", text: $viewModel.costText)
-//                            .font(.system(size: 19, weight: .regular, design: .default))
-//                            .frame(width: 100, height: 30)
-//                            .multilineTextAlignment(.center)
-//                            .keyboardType(.numberPad)
-//                            .onChange(of: viewModel.costText) { newValue in
-//                                    if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
-//                                        viewModel.cost = value
-//                                    } else {
-//                                        viewModel.cost = 0
-//                                    }
-//                                }
-//                            .background(
-//                                RoundedRectangle(cornerRadius: 5)
-//                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-//                                    .fill(Color.white)
-//                            )
-//                    }
-//                    .padding(.trailing, 48)
-//                    
-//                    Spacer()
-//                        .frame(height: 15)
-//                    
-//                    HStack {
-//                        Text("Итого")
-//                            .font(.custom(SFPro.bold.rawValue, size: 24))
-//                        
-//                        Text(viewModel.totalAmount.formattedCurrency())
-//                            .font(.custom(SFPro.bold.rawValue, size: 24))
-//                    }
-//                    
-//                    
-//                    Spacer()
-//                        .frame(height: 20)
-//                    
-//                    HStack {
-//                        Button(action: {
-//                            dismiss()
-//                        }) {
-//                            ZStack {
-//                                Rectangle()
-//                                    .tint(Color.custom(.cancelButtonRed))
-//                                Text("Отменить")
-//                                    .tint(Color.white)
-//                            }
-//                        }
-//                        .cornerRadius(16)
-//                        .frame(width: 166, height: 60)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 16)
-//                                .stroke(Color(.black), lineWidth: 0.5)
-//                        )
-//                        
-//                        Button(action: {
-//                            viewModel.saveTask()
-//                            dismiss()
-//                        }) {
-//                            ZStack {
-//                                Rectangle()
-//                                    .tint(Color.custom(.inactiveButtonGray))
-//                                Text("Cоздать")
-//                                    .tint(Color.white)
-//                            }
-//                        }
-//                        .cornerRadius(16)
-//                        .frame(width: 166, height: 60)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 16)
-//                                .stroke(Color(.black), lineWidth: 0.5)
-//                        )
-//                    }
-//                    Spacer()
-//                } // end of main VStack
-//                
-//            }
-//            .onTapGesture {
-//                hideKeyboard()
-//            }
-//        }
-//        
-//        .sheet(isPresented: $showStreetsView) {
-//            StreetsListView()
-//        }
-//    }
-//}
-//
-//
-//#Preview {
-//    NewTaskView()
-//}

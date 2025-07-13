@@ -3,7 +3,9 @@ import SwiftUI
 
 struct ClientListToPickView: View {
     @State private var showNewClientView = false
-    @StateObject private var viewModel = ClientsListViewModel()
+    @StateObject var viewModel = ClientsListViewModel()
+    @Environment(\.dismiss)
+    private var dismiss
     
     var body: some View {
        
@@ -70,6 +72,10 @@ struct ClientListToPickView: View {
                 } else {
                     List(viewModel.clients) { client in
                         ClientRow(client: client)
+                            .onTapGesture {
+                                viewModel.pickClient(client)
+                                dismiss()
+                            }
                            
                     }
                     .listRowSeparator(.hidden)
@@ -82,10 +88,9 @@ struct ClientListToPickView: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.trailing, 15)
             .padding(.leading, 20)
+            .padding(.top, 20)
         }
-        .sheet(isPresented: $showNewClientView) {
-            NewClientView()
-        }
+        
         
         .onAppear {
             viewModel.loadClients()

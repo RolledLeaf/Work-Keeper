@@ -5,6 +5,7 @@ import Combine
 
 final class ClientsListViewModel: ObservableObject {
     @Published var clients: [Client] = []
+    @Published var selectedClient: Client?
 
     private let store = ClientStore()
 
@@ -12,6 +13,10 @@ final class ClientsListViewModel: ObservableObject {
         loadClients()
     }
 
+    func pickClient(_ client: Client) {
+        selectedClient = client
+    }
+    
     func loadClients() {
         clients = store.fetchClients()
     }
