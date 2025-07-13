@@ -9,16 +9,17 @@ let date1 = Date()
  
     struct TaskListView: View {
         @StateObject private var viewModel = TaskListViewModel()
-       
         @State private var selectedDate = Date()
         @State private var showNewTaskView = false
         
+       
         var groupedTasks: [String: [Task]] {
             Dictionary(grouping: viewModel.tasks) { task in
                 let formatter = customDateFormatter
                 return formatter.string(from: task.scheduledAt ?? date1) //Force operation
             }
         }
+        
         
         var body: some View {
             
@@ -144,7 +145,8 @@ let date1 = Date()
                                                 .tint(Color.custom(.taskCanceledOrange))
                                                 
                                                 Button(action: {
-                                                    //действие
+                                                    viewModel.completeTask(task: task)
+                                                    viewModel.loadTasks()
                                                 }) {
                                                     Image("completed")
                                                     Text("Завершить")

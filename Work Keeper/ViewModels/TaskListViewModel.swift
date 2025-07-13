@@ -18,8 +18,11 @@ final class TaskListViewModel: ObservableObject {
         store.deleteTask(task)
         loadTasks()
     }
+    
+    func completeTask(task: Task) {
+       store.makeCompleted(task)
+    }
 }
-
 
 final class CreateTaskViewModel: ObservableObject {
     @Published var scheduledAt: Date = Date()
@@ -53,6 +56,8 @@ final class CreateTaskViewModel: ObservableObject {
     private let addressStore = AddressStore()
     private let clientStore = ClientStore()
     private let taskStore = TaskStore()
+    
+  
 
     func saveTask() {
         let street = streetStore.createOrFetchStreet(name: streetName)
@@ -78,10 +83,10 @@ final class CreateTaskViewModel: ObservableObject {
             isPrimary: true
         )
 
-        // Свяжи адрес с клиентом
+        // link the address with the client
         client.addToAddress(address)
 
-        // Теперь создаём задание
+        // Create  task
         taskStore.createTask(
             scheduledAt: scheduledAt,
             client: client,

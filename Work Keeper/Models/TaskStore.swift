@@ -39,6 +39,15 @@ final class TaskStore: NSObject, ObservableObject {
         return task
     }
     
+    func makeCompleted(_ task: Task) {
+        task.status = .completed
+        do {
+            try context.save()
+        } catch {
+            print("❌ Error changing status of task: \(error)")
+        }
+    }
+    
     func fetchTasks() -> [Task] {
         let request: NSFetchRequest<Task> = Task.fetchRequest()
         request.sortDescriptors = [

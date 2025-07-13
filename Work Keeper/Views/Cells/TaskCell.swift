@@ -21,8 +21,8 @@ struct TaskRow: View {
         return tasks.count
     }
     
+  
     let task: Task
-   
     
     var body: some View {
         
@@ -200,24 +200,28 @@ struct TaskRow: View {
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
-                            Spacer()
-                            HStack {
+                          
                                 ZStack {
                                     Image("repeatClientCloud")
+
                                     Text("Клиент\nрепит")
                                         .font(.custom(SFPro.regular.rawValue, size: 12))
                                         .multilineTextAlignment(.center)
                                         .offset(x: -4)
+                                        
                                 }
                                 .frame(width: 20)
-                                .offset(x: -5, y: 3)
-                                .opacity(showRepeatClientBubbleRemote ? 1 : 0)
-                                .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleRemote)
+                                .offset(x: -8, y: 2)
+                                .opacity(showRepeatClientBubbleLocal ? 1 : 0)
+                                .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleLocal)
+                            
+                               
+                            
                                 Button(action: {
-                                    showRepeatClientBubbleRemote = true
+                                    showRepeatClientBubbleLocal = true
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                                         withAnimation {
-                                            showRepeatClientBubbleRemote = false
+                                            showRepeatClientBubbleLocal = false
                                         }
                                     }
                                 }) {
@@ -227,34 +231,40 @@ struct TaskRow: View {
                                         .padding(6)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .contentShape(Rectangle())
+                                .contentShape(Circle())
+                                .opacity(repeatBadgeOpacity)
+                                .onAppear {
+                                    repeatBadgeOpacity = clientTasksCount > 1 ? 1 : 0
+                                }
+                            
                                 Text(task.client?.firstName ?? "")
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
-                            }
-                            .offset(x: 6)
-                            .padding(.trailing, 35)
-                           
+                            
                             Spacer()
+                            
                             ZStack {
                                 Image("phoneNumberCloud")
-                                Text("\(task.client?.phone)")
+                                Text("\(task.client?.phone ?? "")")
                                     .font(.custom(SFPro.regular.rawValue, size: 12))
                                     .offset(x: -3)
                                     .onTapGesture {
-                                           if let url = URL(string: "tel://\(task.client?.phone)"),
+                                        if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
                                               UIApplication.shared.canOpenURL(url) {
                                                UIApplication.shared.open(url)
                                            }
                                        }
                             }
+                          
                             .padding(.leading, -70)
-                            .offset(x: 10, y: 3)
-                            .opacity(showPhoneNumberCloudRemote ? 1 : 0)
-                            .animation(.easeInOut(duration: 0.3), value: showPhoneNumberCloudRemote)
+                            .offset(x: 11)
+                            .opacity(showPhoneNumberCloudLocal ? 1 : 0)
+                            .animation(.easeInOut(duration: 0.3), value: showPhoneNumberCloudLocal)
                             Button(action: {
-                                showPhoneNumberCloudRemote = true
+                                showPhoneNumberCloudLocal = true
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                                    showPhoneNumberCloudRemote = false
+                                    withAnimation {
+                                        showPhoneNumberCloudLocal = false
+                                    }
                                 }
                             }) {
                                 Image("call")
@@ -265,10 +275,9 @@ struct TaskRow: View {
                             .contentShape(Rectangle())
                             .buttonStyle(BorderlessButtonStyle())
                         }
-                        .frame(maxHeight: 35)
-                        
                         .padding(.trailing, 5)
-     
+                        .frame(maxHeight: 35)
+
                         HStack{
                                Image("remote")
                                 .offset(y: -2)
