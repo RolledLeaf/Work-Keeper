@@ -56,21 +56,32 @@ final class CreateTaskViewModel: ObservableObject {
 
     func saveTask() {
         let street = streetStore.createOrFetchStreet(name: streetName)
+
+        // Сначала создаём или подтягиваем клиента без адреса
+        let client = clientStore.createOrFetchClient(
+            firstName: firstName,
+            lastName: lastName,
+            addresses: [],
+            phone: phone,
+            comment: comment.isEmpty ? nil : comment
+        )
+
+        // Теперь создаём или подтягиваем адрес, уже зная client и isPrimary
         let address = addressStore.createOrFetchAddress(
             house: house,
             apartment: apartment,
             entrance: entrance,
             floor: floor,
             isPrivateHouse: isPrivateHouse,
-            street: street
+            street: street,
+            client: client,
+            isPrimary: true
         )
-        let client = clientStore.createOrFetchClient(
-            firstName: firstName,
-            lastName: lastName,
-            addresses: [address],
-            phone: phone,
-            comment: comment.isEmpty ? nil : comment
-        )
+
+        // Свяжи адрес с клиентом
+        client.addToAddress(address)
+
+        // Теперь создаём задание
         taskStore.createTask(
             scheduledAt: scheduledAt,
             client: client,

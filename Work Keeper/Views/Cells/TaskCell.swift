@@ -10,9 +10,19 @@ struct TaskRow: View {
     @State private var showRepeatClientBubbleRemote = false
     @State private var showCashIcon = false
     @State private var showCreditCardIcon = false
+    @State private var repeatBadgeOpacity: Double = 0
+    @State private var creditCardOpacity: Double = 0
+    @State private var cashOpacity: Double = 0
     @State var viewModel = TaskListViewModel()
     
+ 
+    var clientTasksCount: Int {
+        guard let tasks = task.client?.task as? Set<Task> else { return 0 }
+        return tasks.count
+    }
+    
     let task: Task
+   
     
     var body: some View {
         
@@ -42,10 +52,7 @@ struct TaskRow: View {
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
-                            Spacer()
-                            
-                            //Стек имени
-                            HStack {
+                          
                                 ZStack {
                                     Image("repeatClientCloud")
 
@@ -59,6 +66,9 @@ struct TaskRow: View {
                                 .offset(x: -8, y: 2)
                                 .opacity(showRepeatClientBubbleLocal ? 1 : 0)
                                 .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleLocal)
+                            
+                               
+                            
                                 Button(action: {
                                     showRepeatClientBubbleLocal = true
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -74,18 +84,23 @@ struct TaskRow: View {
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
                                 .contentShape(Circle())
+                                .opacity(repeatBadgeOpacity)
+                                .onAppear {
+                                    repeatBadgeOpacity = clientTasksCount > 1 ? 1 : 0
+                                }
+                            
                                 Text(task.client?.firstName ?? "")
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
-                            }
-                            .padding(.trailing, 35)
+                            
                             Spacer()
+                            
                             ZStack {
                                 Image("phoneNumberCloud")
-                                Text("\(task.client?.phone)")
+                                Text("\(task.client?.phone ?? "")")
                                     .font(.custom(SFPro.regular.rawValue, size: 12))
                                     .offset(x: -3)
                                     .onTapGesture {
-                                        if let url = URL(string: "tel://\(task.client?.phone)"),
+                                        if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
                                               UIApplication.shared.canOpenURL(url) {
                                                UIApplication.shared.open(url)
                                            }
@@ -133,10 +148,10 @@ struct TaskRow: View {
                                 Text("кв. \(task.client?.primaryAddress?.apartment ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
-                                Text("под.\(task.client?.primaryAddress?.entrance ?? defaultNumber)")
+                                Text("под. \(task.client?.primaryAddress?.entrance ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
-                                Text("эт.\(task.client?.primaryAddress?.floor ?? 0)")
+                                Text("эт. \(task.client?.primaryAddress?.floor ?? 0)")
                                     .foregroundColor(.custom(.taskTextGray))
                             }
                             .padding(.trailing, 90)
@@ -297,7 +312,7 @@ struct TaskRow: View {
                     
                 
                 HStack{
-                    Text("Договорились:  \(task.contractAmount)")
+                    Text("Договорились:  \(task.contractAmount.formattedCurrency())")
                         .font(.custom(SFPro.bold.rawValue, size: 17))
                     
                     Spacer()
@@ -313,19 +328,19 @@ struct TaskRow: View {
                 HStack{
                     Text("Издержки:")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
-                    Text("\(task.cost)")
+                    Text("\(task.cost.formattedCurrency())")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
                         .foregroundColor(Color.custom(.costPaymentRed))
                     
                     Text("Доплачено:")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
-                    Text("\(task.extraPayment)")
+                    Text("\(task.extraPayment.formattedCurrency())")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
                         .foregroundColor(Color.custom(.extraPaymentGreen))
                     
                     Spacer()
                     
-                    Text("\(task.totalAmount)")
+                    Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(SFPro.bold.rawValue, size: 16))
                     Image("cash")
                 }
@@ -340,8 +355,11 @@ struct TaskRow: View {
         .background(Color.custom(.taskCellGray))
         .cornerRadius(12)
         
+        
     }
+       
 }
+
 
 #Preview {
     TaskListView()

@@ -35,12 +35,12 @@ struct ClientRow: View {
                 .padding(.leading, 8)
                 
                 VStack {
-                    Text("\(client.firstName) \(client.lastName ?? "")")
+                    Text("\(client.firstName ?? "") \(client.lastName ?? "")")
                         .font(.custom(SFPro.bold.rawValue, size: 24))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 25, alignment: .center)
                     Spacer()
-                    Text("\(client.phone)")
+                    Text("\(client.phone ?? "")")
                         .font(.custom(SFPro.regular.rawValue, size: 16))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 20, alignment: .center)

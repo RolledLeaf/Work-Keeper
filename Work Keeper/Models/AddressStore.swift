@@ -23,15 +23,21 @@ final class AddressStore: NSObject {
         address.floor = Int16(floor)
         address.isPrivateHouse = isPrivateHouse
         address.street = street
+      
+        
         return address
     }
+    
+    
     
     func createOrFetchAddress(house: String,
                               apartment: String?,
                               entrance: String?,
                               floor: Int16,
                               isPrivateHouse: Bool,
-                              street: Street) -> Address {
+                              street: Street,
+                              client: Client,
+                              isPrimary: Bool) -> Address {
         
         let request: NSFetchRequest<Address> = Address.fetchRequest()
         request.predicate = NSPredicate(format: "street.name == %@ AND house == %@", street.name ?? "", house)
@@ -41,21 +47,36 @@ final class AddressStore: NSObject {
             if let existing = try context.fetch(request).first {
                 return existing
             } else {
-                return createAddress(house: house,
-                                     apartment: apartment,
-                                     entrance: entrance,
-                                     floor: floor,
-                                     isPrivateHouse: isPrivateHouse,
-                                     street: street)
+                let address = createAddress(house: house,
+                                            apartment: apartment,
+                                            entrance: entrance,
+                                            floor: floor,
+                                            isPrivateHouse: isPrivateHouse,
+                                            street: street)
+                address.client = client
+                address.isPrimary = isPrimary
+
+                if isPrimary {
+                    if let addresses = client.address as? Set<Address> {
+                        for addr in addresses where addr != address {
+                            addr.isPrimary = false
+                        }
+                    }
+                }
+
+                return address
             }
         } catch {
             print("Error in createOrFetchAddress: \(error)")
-            return createAddress(house: house,
-                                 apartment: apartment,
-                                 entrance: entrance,
-                                 floor: floor,
-                                 isPrivateHouse: isPrivateHouse,
-                                 street: street)
+            let address = createAddress(house: house,
+                                        apartment: apartment,
+                                        entrance: entrance,
+                                        floor: floor,
+                                        isPrivateHouse: isPrivateHouse,
+                                        street: street)
+            address.client = client
+            address.isPrimary = isPrimary
+            return address
         }
     }
     

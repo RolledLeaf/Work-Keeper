@@ -105,3 +105,13 @@ func createOrFetchClient(firstName: String,
     }
     
 }
+
+extension Client {
+    var addressesArray: [Address] {
+        (address as? Set<Address>)?.sorted { $0.house ?? "" < $1.house ?? "" } ?? []
+    }
+
+    var primaryAddress: Address? {
+        addressesArray.first(where: { $0.isPrimary })
+    }
+}

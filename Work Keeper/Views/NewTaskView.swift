@@ -38,8 +38,8 @@ struct NewTaskView: View {
     
     @State var contractAmount: Double = 0
     @State var cost: Double = 0
-    @State private var maxStreetCharactersTextOpacity: Double = 0
-    @State private var maxDescriptionCharactersTextOpacity: Double = 0
+    @State private var StreetCharactersTextOpacity: Double = 0
+    @State private var DescriptionCharactersTextOpacity: Double = 0
     @State private var isPrivateHouse = false
     @State private var isRemote = false
     @State private var showStreetsView = false
@@ -113,8 +113,8 @@ struct NewTaskView: View {
                                 }
                                 
                                 if viewModel.description.count >= maxDescriptionCharactersCount {
-                                    maxDescriptionCharactersTextOpacity = 1
-                                } else { maxDescriptionCharactersTextOpacity = 0
+                                    DescriptionCharactersTextOpacity = 1
+                                } else { DescriptionCharactersTextOpacity = 0
                                         
                                     }
                                 
@@ -130,7 +130,7 @@ struct NewTaskView: View {
                     Text("максимум символов \(maxDescriptionCharactersCount)")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.red)
-                        .opacity(maxDescriptionCharactersTextOpacity)
+                        .opacity(DescriptionCharactersTextOpacity)
                     
                     Spacer()
                         .frame(height: 20)
@@ -270,9 +270,9 @@ struct NewTaskView: View {
                                         viewModel.streetName = String(newValue.prefix(maxStreetCharactersCount))
                                     }
                                     if viewModel.streetName.count >= maxStreetCharactersCount  {
-                                        maxStreetCharactersTextOpacity = 1
+                                        StreetCharactersTextOpacity = 1
                                     } else {
-                                        maxStreetCharactersTextOpacity = 0
+                                        StreetCharactersTextOpacity = 0
                                     }
                                 }
                             
@@ -302,7 +302,7 @@ struct NewTaskView: View {
                     Text("максимум символов \(maxStreetCharactersCount)")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.red)
-                        .opacity(maxStreetCharactersTextOpacity)
+                        .opacity(StreetCharactersTextOpacity)
                     //Street section end
                     
                     
