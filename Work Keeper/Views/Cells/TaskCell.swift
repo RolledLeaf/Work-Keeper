@@ -329,6 +329,7 @@ struct TaskRow: View {
                     Text("Итого:")
                         .font(.custom(SFPro.bold.rawValue, size: 19))
                     Image("creditCard")
+                        .opacity(creditCardOpacity)
                 }
                 .padding(.leading, 32)
                 .padding(.trailing, 8)
@@ -352,6 +353,7 @@ struct TaskRow: View {
                     Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(SFPro.bold.rawValue, size: 16))
                     Image("cash")
+                        .opacity(cashOpacity)
                 }
                 .frame(maxHeight: 12)
                 .padding(.leading, 11)

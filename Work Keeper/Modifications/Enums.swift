@@ -6,18 +6,28 @@ enum Status: String, CaseIterable {
     case canceled
 }
 
-enum PaymentMethod: String, Codable {
-    case creditCard
-    case cash
-}
-
-
 extension Status {
     var title: String {
         switch self {
         case .scheduled: return "Назначено"
         case .completed: return "Выполнено"
         case .canceled:  return "Отменено"
+        }
+    }
+}
+
+
+enum PaymentType: String, Codable {
+    case transfer
+    case cash
+    
+    
+    var id: String { self.rawValue }
+    
+    var title: String {
+        switch self {
+        case .cash: return "Наличные"
+        case .transfer: return "Перевод"
         }
     }
 }

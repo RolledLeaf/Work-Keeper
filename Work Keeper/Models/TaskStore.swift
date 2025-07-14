@@ -39,8 +39,37 @@ final class TaskStore: NSObject, ObservableObject {
         return task
     }
     
-    func makeCompleted(_ task: Task) {
+    func makeCompleted(_ task: Task,
+                       comment: String?,
+                       contractAmount: Double,
+                       cost: Double?,
+                       extraPayment: Double?,
+                       paymentType: PaymentType) {
         task.status = .completed
+        task.comment = comment
+        task.contractAmount = contractAmount
+        task.cost = cost ?? 0
+        task.extraPayment = extraPayment ?? 0
+        task.paymentType = paymentType.rawValue
+        task.totalAmount = task.contractAmount + (extraPayment ?? 0) - (cost ?? 0)
+        do {
+            try context.save()
+        } catch {
+            print("❌ Error completing task: \(error)")
+        }
+    }
+    
+    func makeScheduled(_ task: Task) {
+        task.status = .scheduled
+        do {
+            try context.save()
+        } catch {
+            print("❌ Error changing status of task: \(error)")
+        }
+    }
+    
+    func makeCanceled(_ task: Task) {
+        task.status = .canceled
         do {
             try context.save()
         } catch {
@@ -78,6 +107,7 @@ final class TaskStore: NSObject, ObservableObject {
                     isRemote: Bool,
                     status: Status,
                     contractAmount: Double,
+                    extraPayment: Double?,
                     cost: Double?) {
         
         task.scheduledAt = scheduledAt
@@ -87,7 +117,8 @@ final class TaskStore: NSObject, ObservableObject {
         task.statusString = status.rawValue
         task.contractAmount = contractAmount
         task.cost = cost ?? 0
-        task.totalAmount = contractAmount - (cost ?? 0)
+        task.extraPayment = extraPayment ?? 0
+        task.totalAmount = contractAmount + (extraPayment ?? 0) - (cost ?? 0)
         
         do {
             try context.save()

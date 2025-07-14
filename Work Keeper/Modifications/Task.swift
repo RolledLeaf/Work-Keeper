@@ -10,3 +10,11 @@ extension Task {
         }
     }
 }
+
+
+extension Task {
+    var payment: PaymentType {
+        get { PaymentType(rawValue: paymentType ?? "" ) ?? .cash }
+        set { paymentType = newValue.rawValue }
+    }
+}

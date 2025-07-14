@@ -30,6 +30,7 @@
         <attribute name="extraPayment" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO" spotlightIndexingEnabled="YES"/>
         <attribute name="isRemote" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="paymentType" optional="YES" attributeType="String"/>
         <attribute name="scheduledAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="statusString" optional="YES" attributeType="String"/>
         <attribute name="taskDescription" optional="YES" attributeType="String"/>

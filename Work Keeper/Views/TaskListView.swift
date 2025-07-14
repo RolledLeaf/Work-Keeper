@@ -11,6 +11,8 @@ let date1 = Date()
         @StateObject private var viewModel = TaskListViewModel()
         @State private var selectedDate = Date()
         @State private var showNewTaskView = false
+        @State private var showCompleteTaskView: Bool = false
+        @State private var selectedTask: Task?
         
        
         var groupedTasks: [String: [Task]] {
@@ -137,7 +139,8 @@ let date1 = Date()
                                         
                                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                                 Button(action: {
-                                                    //действие
+                                                    viewModel.cancelTask(task: task)
+                                                    viewModel.loadTasks()
                                                 }) {
                                                     Image("cancel")
                                                     Text("Отменить")
@@ -145,8 +148,8 @@ let date1 = Date()
                                                 .tint(Color.custom(.taskCanceledOrange))
                                                 
                                                 Button(action: {
-                                                    viewModel.completeTask(task: task)
-                                                    viewModel.loadTasks()
+                                                    selectedTask = task
+                                                    showCompleteTaskView = true
                                                 }) {
                                                     Image("completed")
                                                     Text("Завершить")
@@ -193,6 +196,14 @@ let date1 = Date()
                 viewModel.loadTasks()
             }) {
                 NewTaskView()
+            }
+            .sheet(isPresented: $showCompleteTaskView, onDismiss: { viewModel.loadTasks()
+            }) {
+                if let task = selectedTask {
+                    CompleteTaskView(viewModel: CompleteTaskViewModel(task: task))
+                } else {
+                    Text("Не выбрано задание")
+                }
             }
             
             .onAppear {

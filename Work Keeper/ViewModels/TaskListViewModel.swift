@@ -19,8 +19,14 @@ final class TaskListViewModel: ObservableObject {
         loadTasks()
     }
     
-    func completeTask(task: Task) {
-       store.makeCompleted(task)
+   
+    
+    func scheduleTask(task: Task) {
+        store.makeScheduled(task)
+    }
+    
+    func cancelTask(task: Task) {
+        store.makeCanceled(task)
     }
 }
 
@@ -44,6 +50,7 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var contractAmount: Double = 0
     @Published var cost: Double? = nil
     @Published var costText: String = ""
+    @Published var selectedPayment: PaymentType = .cash
     
     var totalAmount: Double {
         contractAmount - (cost ?? 0)
@@ -96,5 +103,40 @@ final class CreateTaskViewModel: ObservableObject {
             contractAmount: contractAmount,
             cost: cost
         )
+    }
+}
+
+
+final class CompleteTaskViewModel: ObservableObject {
+    @Published var comment: String = ""
+    @Published var contractAmountText: String = ""
+    @Published var contractAmount: Double = 0
+    @Published var costText: String = ""
+    @Published var cost: Double = 0
+    @Published var extraPaymentText: String = ""
+    @Published var extraPayment: Double? = 0
+    @Published var paymentType: PaymentType = .cash
+    var finalAmount: Double {
+        contractAmount + (extraPayment ?? 0) - cost
+    }
+    
+
+    private let task: Task
+    private let store = TaskStore()
+
+    init(task: Task) {
+        self.task = task
+        self.comment = task.comment ?? ""
+        self.cost = task.cost
+        self.paymentType = PaymentType(rawValue: task.paymentType ?? "") ?? .cash
+    }
+
+    func complete() {
+        store.makeCompleted(task,
+                            comment: comment,
+                            contractAmount: contractAmount,
+                            cost: cost,
+                            extraPayment: extraPayment,
+                            paymentType: paymentType)
     }
 }
