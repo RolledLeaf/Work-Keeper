@@ -41,11 +41,14 @@ struct NewTaskView: View {
     @State var cost: Double = 0
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var DescriptionCharactersTextOpacity: Double = 0
+    @State private var streetChevronOpacity: Double = 1
     @State private var isPrivateHouse = false
     @State private var isRemote = false
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
+    @State private var hideScrollContentBackground = false
     @State private var selectedDate = Date()
+    @State private var textFieldColor: CustomColor = .pureWhite
     @FocusState private var focusedField: Field?
     
     @Environment(\.dismiss)
@@ -251,13 +254,24 @@ struct NewTaskView: View {
                         Toggle("", isOn: $viewModel.isRemote)
                             .padding(.horizontal)
                             .padding(.trailing, 40)
+                            .onChange(of: viewModel.isRemote) { _, newValue in
+                                if newValue == true {
+                                    viewModel.shouldBlockEditing = true
+                                    hideScrollContentBackground = true
+                                    streetChevronOpacity = 0
+                                    textFieldColor = CustomColor.inactiveFiledGray
+                                } else {
+                                    streetChevronOpacity = 1
+                                    viewModel.shouldBlockEditing = false
+                                    hideScrollContentBackground = false
+                                    textFieldColor = .pureWhite
+                                }
+                            }
                     }
                     
                     ZStack {
-                        Color.white
-                        
+                        Color.custom(textFieldColor)
                         HStack {
-                            
                             Spacer()
                             TextEditor(text: $viewModel.streetName)
                                 .font(.system(size: 20, weight: .regular, design: .default))
@@ -266,8 +280,11 @@ struct NewTaskView: View {
                                 .lineLimit(1, reservesSpace: false)
                                 .minimumScaleFactor(0.5)
                                 .multilineTextAlignment(.leading)
+                                .disabled(viewModel.shouldBlockEditing)
+                                .background(Color.custom(textFieldColor))
+                                .scrollContentBackground(hideScrollContentBackground ? .hidden : .visible)
                             //.onChange(of: street) { oldValue, newValue in
-                                .onChange(of: viewModel.streetName) { newValue in
+                                .onChange(of: viewModel.streetName) { _, newValue in
                                     if newValue.count > maxStreetCharactersCount {
                                         viewModel.streetName = String(newValue.prefix(maxStreetCharactersCount))
                                     }
@@ -278,19 +295,18 @@ struct NewTaskView: View {
                                     }
                                 }
                             
-                            
-                            
                             Spacer()
                             
                             Button(action: {
                                 showStreetsView = true
                             }) {
                                 Image(systemName: "chevron.right")
-                                
+                                    .opacity(streetChevronOpacity)
                             }
                             .tint(Color(.black))
                             .offset(x: -5)
                         }
+                        
                         
                     }
                     .frame(height: 50)
@@ -298,18 +314,18 @@ struct NewTaskView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                        
                     )
                     .padding(.horizontal, 20)
+                    
+                    
+                    
                     
                     Text("максимум символов \(maxStreetCharactersCount)")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.red)
                         .opacity(StreetCharactersTextOpacity)
                     //Street section end
-                    
-                    
-                    
-                    
                     
                     HStack {
                         
@@ -319,10 +335,11 @@ struct NewTaskView: View {
                         
                         
                         ZStack {
-                            Color.white
+                            Color.custom(textFieldColor)
                             TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .disabled(viewModel.shouldBlockEditing)
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -355,10 +372,11 @@ struct NewTaskView: View {
                                 .foregroundColor(.black)
                         }
                         ZStack {
-                            Color.white
+                            Color.custom(textFieldColor)
                             TextField("", text: $viewModel.apartment)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .disabled(viewModel.shouldBlockEditing)
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharactersCount {
                                         viewModel.apartment = String(newValue.prefix(maxApartmentCharactersCount))
@@ -390,10 +408,11 @@ struct NewTaskView: View {
                                 .foregroundColor(.black)
                         }
                         ZStack {
-                            Color.white
+                            Color.custom(textFieldColor)
                             TextField("", text: $viewModel.entrance)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .disabled(viewModel.shouldBlockEditing)
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharactersCount {
                                         viewModel.entrance = String(newValue.prefix(maxEntranceCharactersCount))
@@ -420,9 +439,10 @@ struct NewTaskView: View {
                             .foregroundColor(.black)
                         
                         ZStack {
-                            Color.white
+                            Color.custom(textFieldColor)
                             TextField("", text: $viewModel.floorText)
                                 .multilineTextAlignment(.center)
+                                .disabled(viewModel.shouldBlockEditing)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .onChange(of: viewModel.floorText) { newValue in
                                     if let value = Int16(newValue) {

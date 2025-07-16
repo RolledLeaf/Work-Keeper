@@ -50,6 +50,7 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var cost: Double? = nil
     @Published var costText: String = ""
     @Published var selectedPayment: PaymentType = .cash
+    @Published var shouldBlockEditing = false
     
     var totalAmount: Double {
         contractAmount - (cost ?? 0)

@@ -20,6 +20,8 @@ enum CustomColor: String {
     case textTitleGray = "textTitleGray"
     case addressListGray = "addressListGray"
     case separatorLineGray = "separatorLineGray"
+    case inactiveFiledGray = "inactiveFiledGray"
+    case pureWhite = "pureWhite"
 }
 
 extension Color {
