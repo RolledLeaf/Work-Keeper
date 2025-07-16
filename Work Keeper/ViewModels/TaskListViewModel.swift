@@ -3,6 +3,7 @@ import Combine
 
 final class TaskListViewModel: ObservableObject {
     @Published var tasks: [Task] = []
+    @Published var comment: String = ""
     
     private let store = TaskStore()
     
@@ -25,9 +26,7 @@ final class TaskListViewModel: ObservableObject {
         store.makeScheduled(task)
     }
     
-    func cancelTask(task: Task) {
-        store.makeCanceled(task)
-    }
+ 
 }
 
 final class CreateTaskViewModel: ObservableObject {
@@ -126,8 +125,11 @@ final class CompleteTaskViewModel: ObservableObject {
 
     init(task: Task) {
         self.task = task
+        self.contractAmount = task.contractAmount
+        self.contractAmountText = "\(Int(task.contractAmount))"
         self.comment = task.comment ?? ""
         self.cost = task.cost
+        self.costText = "\(Int(task.cost))"
         self.paymentType = PaymentType(rawValue: task.paymentType ?? "") ?? .cash
     }
 
@@ -138,5 +140,21 @@ final class CompleteTaskViewModel: ObservableObject {
                             cost: cost,
                             extraPayment: extraPayment,
                             paymentType: paymentType)
+    }
+}
+
+final class CancelTaskViewModel: ObservableObject {
+    @Published var comment: String = ""
+
+    private let task: Task
+    private let store = TaskStore()
+
+    init(task: Task) {
+        self.task = task
+        self.comment = task.comment ?? ""
+    }
+
+    func cancel() {
+        store.makeCanceled(task, comment: comment)
     }
 }

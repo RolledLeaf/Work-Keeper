@@ -14,7 +14,8 @@ extension Task {
 
 extension Task {
     var payment: PaymentType {
-        get { PaymentType(rawValue: paymentType ?? "" ) ?? .cash }
+        get { PaymentType(rawValue: paymentType ?? "" ) ?? .none }
         set { paymentType = newValue.rawValue }
     }
 }
+

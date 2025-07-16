@@ -21,6 +21,7 @@ struct CompleteTaskView: View {
            
                 Text("Завершение задания")
                     .font(.custom(SFPro.regular.rawValue, size: 36))
+                    .padding(.top, 20)
                 
                 Spacer()
                     .frame(height: 48)
@@ -81,7 +82,7 @@ struct CompleteTaskView: View {
                         .background(Color.clear)
                     Spacer()
                     
-                    TextField("0", text: $viewModel.contractAmountText)
+                    TextField("", text: $viewModel.contractAmountText)
                         .font(.system(size: 19, weight: .regular, design: .default))
                         .frame(width: 100, height: 30)
                         .multilineTextAlignment(.center)
@@ -114,7 +115,7 @@ struct CompleteTaskView: View {
                         .background(Color.clear)
                     Spacer()
                     
-                    TextField("0", text: $viewModel.costText)
+                    TextField("", text: $viewModel.costText)
                         .font(.system(size: 19, weight: .regular, design: .default))
                         .frame(width: 100, height: 30)
                         .multilineTextAlignment(.center)
@@ -166,24 +167,27 @@ struct CompleteTaskView: View {
                 }
                 .padding(.trailing, 48)
                 
-                Spacer()
-                    .frame(height: 31)
+                Picker("Тип оплаты", selection: $viewModel.paymentType) {
+                    Text("Наличные").tag(PaymentType.cash)
+                    Text("Перевод").tag(PaymentType.transfer)
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 200)
+          
+            
                 
+                Spacer()
+                    
                 
                 HStack {
                     Text("Итого")
-                        .font(.custom(SFPro.bold.rawValue, size: 24))
+                        .font(.custom(SFPro.bold.rawValue, size: 32))
                     
-                    Text(String(format: "%.2f ₽", viewModel.finalAmount))
-                        .font(.custom(SFPro.bold.rawValue, size: 24))
+                    Text(String(viewModel.finalAmount.formattedCurrency()))
+                        .font(.custom(SFPro.bold.rawValue, size: 32))
                 }
-                
-                
+
               
-                
-                
-                
-                Spacer()
                 
                 HStack {
                     Button(action: {
@@ -209,7 +213,7 @@ struct CompleteTaskView: View {
                     }) {
                         ZStack {
                             Rectangle()
-                                .tint(Color.custom(.inactiveButtonGray))
+                                .tint(Color.black)
                             Text("Завершить")
                                 .tint(Color.white)
                         }
@@ -221,14 +225,11 @@ struct CompleteTaskView: View {
                             .stroke(Color(.black), lineWidth: 0.5)
                     )
                 }
-             
-
             }
-            
-            
         }
         
         
     } //End global of ZStack
     
 }
+

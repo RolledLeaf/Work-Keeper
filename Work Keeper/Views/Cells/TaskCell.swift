@@ -354,6 +354,12 @@ struct TaskRow: View {
                         .font(.custom(SFPro.bold.rawValue, size: 16))
                     Image("cash")
                         .opacity(cashOpacity)
+                        .onAppear {
+                            updatePaymentIcons()
+                        }
+                        .onChange(of: task.paymentType ?? "") { _ in
+                            updatePaymentIcons()
+                        }
                 }
                 .frame(maxHeight: 12)
                 .padding(.leading, 11)
@@ -378,3 +384,19 @@ struct TaskRow: View {
 
     
 
+
+// MARK: - Payment Icon Logic
+private extension TaskRow {
+    func updatePaymentIcons() {
+        if task.paymentType == PaymentType.cash.rawValue {
+            cashOpacity = 1
+            creditCardOpacity = 0
+        } else if task.paymentType == PaymentType.transfer.rawValue {
+            cashOpacity = 0
+            creditCardOpacity = 1
+        } else {
+            cashOpacity = 0
+            creditCardOpacity = 0
+        }
+    }
+}

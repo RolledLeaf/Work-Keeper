@@ -20,6 +20,7 @@ extension Status {
 enum PaymentType: String, Codable {
     case transfer
     case cash
+    case none
     
     
     var id: String { self.rawValue }
@@ -28,6 +29,7 @@ enum PaymentType: String, Codable {
         switch self {
         case .cash: return "Наличные"
         case .transfer: return "Перевод"
+            case .none: return "Нет"
         }
     }
 }

@@ -68,12 +68,17 @@ final class TaskStore: NSObject, ObservableObject {
         }
     }
     
-    func makeCanceled(_ task: Task) {
+    func makeCanceled(_ task: Task, comment: String?) {
         task.status = .canceled
+        task.comment = comment
+        task.contractAmount = 0
+        task.cost = 0
+        task.totalAmount = 0
+        task.paymentType = .none
         do {
             try context.save()
         } catch {
-            print("❌ Error changing status of task: \(error)")
+            print("❌ Error canceling task: \(error)")
         }
     }
     
