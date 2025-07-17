@@ -22,6 +22,7 @@ enum CustomColor: String {
     case separatorLineGray = "separatorLineGray"
     case inactiveFiledGray = "inactiveFiledGray"
     case pureWhite = "pureWhite"
+    case taskViewGreen = "taskViewGreen"
 }
 
 extension Color {
