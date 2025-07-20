@@ -30,7 +30,7 @@ struct TaskRow: View {
         
         switch task.status {
         case .scheduled:
-            statusColor = .taskInProgressYellow
+            statusColor = .taskViewYellow
         case .completed:
             statusColor = .taskCompleteGreen
         case .canceled:
@@ -180,13 +180,13 @@ struct TaskRow: View {
                             .padding(.top, -15)
                         
                         Text(task.taskDescription ?? "")
-                            .font(.custom(SFPro.regular.rawValue, size: 19))
+                            .font(.custom(SFPro.regular.rawValue, size: 22))
                             .bold()
-                            .frame(maxWidth: 350, alignment: .center)
-                            .frame(height: 35)
+                            .frame(maxWidth: 355, alignment: .center)
+                            .frame(height: 40)
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
-                            .minimumScaleFactor(0.5)
+                            .minimumScaleFactor(0.65)
                             .padding(.leading, 5)
                             .padding(.trailing, 5)
                             .padding(.top, -15)

@@ -2,30 +2,45 @@ import SwiftUI
 
 struct TaskView: View {
  
-    @State var textFieldText = "Установить впн на роутер Keenetic"
-    @State var commentText = " Win 11 pro (3BN89-7W2HJ-HDRGD-7PJ9D-PYT6Y), Of (CBNTB-M333J-HQGD9-J9CHT-MKQ4X) (375023 440170 561052 "
-
+    @ObservedObject var viewModel = TaskListViewModel()
+  
+    let task: Task
+  
     
     var body: some View {
         
-       
+        let taskStatusColor: CustomColor = {
+            switch task.status {
+            case .completed: return .taskCompleteGreen
+            case .scheduled: return .taskViewYellow
+            case .canceled:  return .taskCanceledOrange
+            }
+        }()
         
-        ZStack {
+        let taskStatusString: String = {
+            switch task.status {
+            case .completed: return "Завершено"
+            case .scheduled: return "Запланировано"
+            case .canceled:  return "Отменено"
+            }
+        }()
+        
+        return   ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             VStack {
                 
                 Text("Просмотр задания")
-                    .font(.custom(SFPro.regular.rawValue, size: 25))
-                
+                    .font(.custom(SFPro.regular.rawValue, size: 27))
+                    .frame(height: 20)
                 HStack {
                     
                     VStack {
-                        Text("Герман")
-                            .font(.custom(SFPro.bold.rawValue, size: 20))
+                        Text(task.client?.firstName ?? "")
+                            .font(.custom(SFPro.bold.rawValue, size: 26))
                         Spacer()
                             .frame(height: 6)
                         
-                        Text("+7 999 222 33 44")
+                        Text(task.client?.phone ?? "")
                             .font(.custom(SFPro.regular.rawValue, size: 16))
                             .foregroundColor(.custom(.taskTextGray))
                     }
@@ -34,8 +49,8 @@ struct TaskView: View {
                     
                     
                     ZStack {
-                        Color.custom(.taskViewGreen)
-                        Text("Завершено")
+                        Color.custom(taskStatusColor)
+                        Text(taskStatusString)
                             .frame(width: 133, height: 33)
                         
                             .foregroundColor(.white)
@@ -49,7 +64,7 @@ struct TaskView: View {
                     
                     
                 }
-                .padding(.top, 24)
+                .padding(.top, 10)
                 .padding(.leading, 32)
                 .padding(.trailing, 20)
                 
@@ -62,29 +77,48 @@ struct TaskView: View {
                     VStack {
                         HStack {
                             
-                            Image("mapPinBlack")
-                                .offset(x: 20)
-                                
-                               
+                            if task.isRemote {
+                                Image("remote")
+                                    .offset(x: 20)
+                                    .offset(y: 5)
+                            } else {
+                                Image("mapPinBlack")
+                                    .offset(x: 20)
+                                    .offset(y: 5)
+                            }
+                            
                             Spacer()
                             
-                            Text("Центральный проезд Хорошевского Серебряного Бора 12")
-                                .font(.custom(SFPro.regular.rawValue, size: 17))
-                                .multilineTextAlignment(.center)
-                                .lineLimit(2)
-                                .minimumScaleFactor(0.7)
-                                .frame(maxWidth: 306)
-                                .offset(y: 7)
+                            if task.isRemote {
+                                Text("Удалёнка")
+                                    .font(.custom(SFPro.regular.rawValue, size: 24))
+                                    .multilineTextAlignment(.center)
+                                    .lineLimit(2)
+                                    .frame(maxWidth: 306)
+                                    .offset(x: -7, y: 7)
+                                    
+                            } else {
+                                Text("\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")")
+                                    .font(.custom(SFPro.regular.rawValue, size: 24))
+                                    .multilineTextAlignment(.center)
+                                    .lineLimit(2)
+                                    .minimumScaleFactor(0.8)
+                                    .frame(width: 270)
+                                    .offset(y: 8)
+                            }
+                            
                             
                             Spacer()
                                 
                             
                         }
+                        Spacer()
+                        
                         HStack{
                             Spacer()
                             Rectangle()
                                 .frame(width: 345, height: 0.5)
-                                .padding(.top, 4)
+                                .padding(.top, 5)
                         }
                         
                         Spacer()
@@ -96,13 +130,14 @@ struct TaskView: View {
                             
                             
                             
-                            Text("17 июля 2025")
-                            
+                            Text(task.scheduledAt?.formattedAsDate() ?? "")
+                                .font(.custom(SFPro.regular.rawValue, size: 20))
                             Spacer()
                             
                             Image(systemName: "clock")
                             
-                            Text("11:00")
+                            Text(task.scheduledAt?.formattedAsTime() ?? "")
+                                .font(.custom(SFPro.regular.rawValue, size: 20))
          
                         }
                         .padding(.leading, 21)
@@ -135,18 +170,17 @@ struct TaskView: View {
                     
                 }
                 .padding(.leading, 30)
-                .padding(.trailing, 37)
+                .padding(.trailing, 45)
                 
                 ZStack {
                     Color.custom(.inactiveFiledGray)
                     VStack {
                         
-                        Text(textFieldText)
-                            .font(.custom(SFPro.regular.rawValue, size: 18))
+                        Text(task.taskDescription ?? "")
+                            .font(.custom(SFPro.regular.rawValue, size: 20))
                             .multilineTextAlignment(.center)
-
                             .frame(height: 82, alignment: .center)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 5)
                     }
                 }
                 .frame(height: 82)
@@ -169,14 +203,14 @@ struct TaskView: View {
                     
                 }
                 .padding(.leading, 30)
-                .padding(.trailing, 37)
+                .padding(.trailing, 45)
                 
                 ZStack {
                     Color.custom(.inactiveFiledGray)
                     VStack {
                         
-                        Text(commentText)
-                            .font(.custom(SFPro.regular.rawValue, size: 18))
+                        Text(task.comment ?? "")
+                            .font(.custom(SFPro.regular.rawValue, size: 20))
                             .multilineTextAlignment(.center)
 
                             .frame(height: 96, alignment: .center)
@@ -211,7 +245,7 @@ struct TaskView: View {
                             Text("Договорились")
                                 .font(.custom(SFPro.regular.rawValue, size: 20))
                             Spacer()
-                            Text("3000")
+                            Text("\(task.contractAmount.formattedCurrency())")
                                 .font(.custom(SFPro.regular.rawValue, size: 20))
                         }
                         .padding(.leading, 29)
@@ -229,7 +263,7 @@ struct TaskView: View {
                             Text("Издержки")
                                 .font(.custom(SFPro.regular.rawValue, size: 20))
                             Spacer()
-                            Text("3000")
+                            Text("\(task.cost.formattedCurrency())")
                                 .font(.custom(SFPro.regular.rawValue, size: 20))
                         }
                         .padding(.leading, 29)
@@ -247,7 +281,7 @@ struct TaskView: View {
                             Text("Доплата")
                                 .font(.custom(SFPro.regular.rawValue, size: 20))
                             Spacer()
-                            Text("3000")
+                            Text("\(task.extraPayment.formattedCurrency())")
                                 .font(.custom(SFPro.regular.rawValue, size: 20))
                         }
                         .padding(.leading, 29)
@@ -265,7 +299,7 @@ struct TaskView: View {
                             Text("Итого")
                                 .font(.custom(SFPro.bold.rawValue, size: 24))
                             Spacer()
-                            Text("3000")
+                            Text("\(task.totalAmount.formattedCurrency())")
                                 .font(.custom(SFPro.bold.rawValue, size: 24))
                         }
                         .padding(.leading, 29)
@@ -285,11 +319,10 @@ struct TaskView: View {
                 )
                 Spacer()
             }
+            .toolbar(.hidden, for: .tabBar)
+            .navigationBarBackButtonHidden(false)
         }
     }
 }
 
 
-#Preview {
-    TaskView()
-}

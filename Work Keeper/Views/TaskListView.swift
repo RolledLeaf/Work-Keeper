@@ -6,38 +6,39 @@ import SwiftUI
 let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
 let date1 = Date()
 
- 
-    struct TaskListView: View {
-        @StateObject private var viewModel = TaskListViewModel()
-       
-        @State private var selectedDate = Date()
-        @State private var showNewTaskView = false
-        @State private var showCompleteTaskView = false
-        @State private var showPopup = false
-        @State private var selectedTask: Task?
-        @State private var selectedTaskForComplete: Task?
-        
-       
-        var groupedTasks: [String: [Task]] {
-            Dictionary(grouping: viewModel.tasks) { task in
-                let formatter = customDateFormatter
-                return formatter.string(from: task.scheduledAt ?? date1) //Force operation
-            }
+
+struct TaskListView: View {
+    @StateObject private var viewModel = TaskListViewModel()
+    
+    @State private var selectedDate = Date()
+    @State private var showNewTaskView = false
+    @State private var showCompleteTaskView = false
+    @State private var showPopup = false
+    @State private var selectedTask: Task?
+    @State private var navigateToTaskView = false
+    @State private var taskToShow: Task?
+    @State private var selectedTaskForComplete: Task?
+    @State private var selectedTaskForDetails: Task?
+    
+    var groupedTasks: [String: [Task]] {
+        Dictionary(grouping: viewModel.tasks) { task in
+            let formatter = customDateFormatter
+            return formatter.string(from: task.scheduledAt ?? date1) //Force operation
         }
+    }
+    
+    var body: some View {
         
         
-        var body: some View {
-            
-            
-            
+        NavigationStack {
             ZStack {
                 Color(.white).edgesIgnoringSafeArea(.all)
                     .onTapGesture {
                         hideKeyboard()
                     }
                 
-              
-                        
+                
+                
                 
                 VStack {
                     
@@ -95,9 +96,9 @@ let date1 = Date()
                     
                     TextField("Поиск задания", text: .constant(""))
                         .submitLabel(.done)
-                           .onSubmit {
-                               hideKeyboard() // кастомная функция
-                           }
+                        .onSubmit {
+                            hideKeyboard() // кастомная функция
+                        }
                         .padding(9)
                         .padding(.leading, 25)
                         .background(
@@ -137,11 +138,17 @@ let date1 = Date()
                     } else {
                         Spacer()
                             .frame(height: 38)
+                        NavigationStack {
                         List {
                             ForEach(groupedTasks.keys.sorted { $0 > $1 }, id: \.self) { dateKey in
                                 Section(header: Text(dateKey).font(.headline)) {
                                     ForEach(groupedTasks[dateKey] ?? []) { task in
                                         TaskRow(task: task)
+                                            .contentShape(Rectangle())
+                                            .onTapGesture {
+                                                selectedTask = task
+                                            }
+                                        
                                         
                                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                                 Button(action: {
@@ -149,7 +156,6 @@ let date1 = Date()
                                                     withAnimation {
                                                         showPopup = true
                                                     }
-                                         
                                                 }) {
                                                     Image("cancel")
                                                     Text("Отменить")
@@ -195,6 +201,12 @@ let date1 = Date()
                         .listStyle(PlainListStyle())
                         .padding(.leading, -20)
                         .padding(.trailing, -20)
+                        .navigationDestination(item: $selectedTask) { task in
+                            TaskView(task: task)
+                        }
+                    }
+                        .navigationTitle("")
+                        .navigationBarTitleDisplayMode(.inline)
                     }
                 }
                 
@@ -205,44 +217,44 @@ let date1 = Date()
                     ZStack {
                         Color.black.opacity(0.3)
                             .ignoresSafeArea()
-
+                        
                         VStack {
-                           
+                            
                             VStack(spacing: 16) {
                                 Spacer()
                                     .frame(height: 15)
                                 HStack {
                                     Image(systemName: "exclamationmark.triangle.fill")
-                                                       .foregroundColor(.red)
-                                                       .font(.system(size: 40))
+                                        .foregroundColor(.red)
+                                        .font(.system(size: 40))
                                     
                                     Text("Вы уверены, что хотите отменить задание?")
                                         .font(.custom(SFPro.regular.rawValue, size: 24))
-                                                      .multilineTextAlignment(.center)
-                                                      
+                                        .multilineTextAlignment(.center)
+                                    
                                 }
                                 
                                 Text("Его статус изменится на отменённый, итоговая сумма обнулится")
-                                                    
-                                                        .font(.system(size: 20))
-                                                    .foregroundColor(.gray)
-                                                    .multilineTextAlignment(.center)
-                                                    .padding(.horizontal)
+                                
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.gray)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
                                 
                                 
                                 VStack(alignment: .leading) {
                                     Text("Комментарий")
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
-                                  
+                                    
                                     ZStack {
                                         Color.white
-                                    TextEditor(text: $viewModel.comment)
-                                        .frame(height: 90)
-                                        .padding(4)
-                                        .lineLimit(1, reservesSpace: false)
-                                        .minimumScaleFactor(0.5)
-                                        .multilineTextAlignment(.leading)
+                                        TextEditor(text: $viewModel.comment)
+                                            .frame(height: 90)
+                                            .padding(4)
+                                            .lineLimit(1, reservesSpace: false)
+                                            .minimumScaleFactor(0.5)
+                                            .multilineTextAlignment(.leading)
                                     }
                                     .frame(height: 90)
                                     .cornerRadius(10)
@@ -265,7 +277,7 @@ let date1 = Date()
                                                 .tint(Color.black)
                                         }
                                     }
-                                  
+                                    
                                     .cornerRadius(7)
                                     .frame(width: 128)
                                     .frame(height: 42)
@@ -274,24 +286,24 @@ let date1 = Date()
                                             .stroke(Color(.black), lineWidth: 0.5)
                                     )
                                     
-                                  Button(action: {
-                                      if let task = selectedTask {
-                                          let cancelVM = CancelTaskViewModel(task: task)
-                                          cancelVM.comment = viewModel.comment
-                                          cancelVM.cancel()
-                                          
-                                          }
-                                      viewModel.loadTasks()
-                                      withAnimation {
-                                          showPopup = false
-                                      }
-                                  }) {
-                                      ZStack {
-                                          Rectangle()
-                                              .tint(Color.custom(.cancelButtonRed))
-                                          Text("Отменить задание")
-                                              .tint(Color.white)
-                                      }
+                                    Button(action: {
+                                        if let task = selectedTask {
+                                            let cancelVM = CancelTaskViewModel(task: task)
+                                            cancelVM.comment = viewModel.comment
+                                            cancelVM.cancel()
+                                            
+                                        }
+                                        viewModel.loadTasks()
+                                        withAnimation {
+                                            showPopup = false
+                                        }
+                                    }) {
+                                        ZStack {
+                                            Rectangle()
+                                                .tint(Color.custom(.cancelButtonRed))
+                                            Text("Отменить задание")
+                                                .tint(Color.white)
+                                        }
                                     }
                                     .cornerRadius(7)
                                     .frame( height: 42)
@@ -305,7 +317,7 @@ let date1 = Date()
                                 }
                                 Spacer()
                                     .frame(height: 20)
-  
+                                
                             }
                             .padding(.horizontal, 24)
                             .background(RoundedRectangle(cornerRadius: 20).fill(Color.white))
@@ -318,6 +330,8 @@ let date1 = Date()
                         }
                     }
                 }
+                
+                
                 
             }
             .sheet(isPresented: $showNewTaskView, onDismiss: {
@@ -335,12 +349,11 @@ let date1 = Date()
             .onAppear {
                 viewModel.loadTasks()
             }
-        }
+        } // end of Navigation stack
+        
     }
-    
-    #Preview {
-        TaskListView()
-    }
+}
 
-
-
+#Preview {
+    TaskListView()
+}

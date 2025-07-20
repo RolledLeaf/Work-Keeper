@@ -4,6 +4,9 @@ import Combine
 final class TaskListViewModel: ObservableObject {
     @Published var tasks: [Task] = []
     @Published var comment: String = ""
+    @Published var firstName: String = ""
+    @Published var lastName: String = ""
+    @Published var phone: String = ""
     
     private let store = TaskStore()
     

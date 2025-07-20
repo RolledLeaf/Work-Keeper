@@ -23,7 +23,7 @@ struct ClientRow: View {
                     
                     ZStack {
                         Rectangle()
-                            .foregroundColor(Color.custom(.taskInProgressYellow))
+                            .foregroundColor(Color.custom(.taskViewYellow))
                             .cornerRadius(12)
                             .frame(width: 23, height: 23)
                         Text("\(1)")
@@ -63,7 +63,7 @@ struct ClientRow: View {
                 VStack {
                     ZStack {
                         Rectangle()
-                            .foregroundColor(Color.custom(.completedtasksGreen))
+                            .foregroundColor(Color.custom(.completedTaskGreen))
                             .cornerRadius(12)
                             .frame(width: 23, height: 23)
                         Text("\(2)")
