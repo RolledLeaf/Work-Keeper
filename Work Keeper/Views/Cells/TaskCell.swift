@@ -10,16 +10,27 @@ struct TaskRow: View {
     @State private var showRepeatClientBubbleRemote = false
     @State private var showCashIcon = false
     @State private var showCreditCardIcon = false
+    @State private var repeatBadgeOpacity: Double = 0
+    @State private var creditCardOpacity: Double = 0
+    @State private var cashOpacity: Double = 0
+    @State var viewModel = TaskListViewModel()
     
+ 
+    var clientTasksCount: Int {
+        guard let tasks = task.client?.task as? Set<Task> else { return 0 }
+        return tasks.count
+    }
+    
+  
     let task: Task
     
     var body: some View {
         
         let statusColor: CustomColor
         
-        switch task.isCompleted {
+        switch task.status {
         case .scheduled:
-            statusColor = .taskInProgressYellow
+            statusColor = .taskViewYellow
         case .completed:
             statusColor = .taskCompleteGreen
         case .canceled:
@@ -37,14 +48,11 @@ struct TaskRow: View {
                 if task.isRemote == false {
                     VStack {
                         HStack {
-                            Text(task.scheduledAt.formattedAsTime())
+                            Text(task.scheduledAt?.formattedAsTime() ?? "\(date1)") //Некрасиво развёрнут опционал даты
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
-                            Spacer()
-                            
-                            //Стек имени
-                            HStack {
+                          
                                 ZStack {
                                     Image("repeatClientCloud")
 
@@ -58,6 +66,9 @@ struct TaskRow: View {
                                 .offset(x: -8, y: 2)
                                 .opacity(showRepeatClientBubbleLocal ? 1 : 0)
                                 .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleLocal)
+                            
+                               
+                            
                                 Button(action: {
                                     showRepeatClientBubbleLocal = true
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -73,18 +84,23 @@ struct TaskRow: View {
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
                                 .contentShape(Circle())
-                                Text(task.client.firstName)
+                                .opacity(repeatBadgeOpacity)
+                                .onAppear {
+                                    repeatBadgeOpacity = clientTasksCount > 1 ? 1 : 0
+                                }
+                            
+                                Text(task.client?.firstName ?? "")
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
-                            }
-                            .padding(.trailing, 35)
+                            
                             Spacer()
+                            
                             ZStack {
                                 Image("phoneNumberCloud")
-                                Text("\(task.client.phoneNumber)")
+                                Text("\(task.client?.phone ?? "")")
                                     .font(.custom(SFPro.regular.rawValue, size: 12))
                                     .offset(x: -3)
                                     .onTapGesture {
-                                           if let url = URL(string: "tel://\(task.client.phoneNumber)"),
+                                        if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
                                               UIApplication.shared.canOpenURL(url) {
                                                UIApplication.shared.open(url)
                                            }
@@ -114,7 +130,7 @@ struct TaskRow: View {
                         .padding(.trailing, 5)
                         .frame(maxHeight: 35)
                         
-                        Text("\(task.client.address.street) \(task.client.address.houseNumber)")
+                        Text("\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")")
                             .font(.custom(SFPro.regular.rawValue, size: 27))
                             .foregroundColor(.custom(.taskTextGray))
                             .frame(maxHeight: 46)
@@ -123,19 +139,19 @@ struct TaskRow: View {
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
                             .minimumScaleFactor(0.7)
-                        if task.client.address.isPrivateHouse == false {
+                        if task.client?.primaryAddress?.isPrivateHouse == false {
                             HStack {
                                 
                                 Image("location")
                                     .offset(x: -9, y: -9)
                                 Spacer()
-                                Text("кв. \(task.client.address.apartmentNumber ?? defaultNumber)")
+                                Text("кв. \(task.client?.primaryAddress?.apartment ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
-                                Text("под.\(task.client.address.entranceNumber ?? defaultNumber)")
+                                Text("под. \(task.client?.primaryAddress?.entrance ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
-                                Text("эт.\(task.client.address.floorNumber ?? 0)")
+                                Text("эт. \(task.client?.primaryAddress?.floor ?? 0)")
                                     .foregroundColor(.custom(.taskTextGray))
                             }
                             .padding(.trailing, 90)
@@ -163,14 +179,14 @@ struct TaskRow: View {
                             .foregroundColor(Color.black)
                             .padding(.top, -15)
                         
-                        Text(task.taskDescription)
-                            .font(.custom(SFPro.regular.rawValue, size: 19))
+                        Text(task.taskDescription ?? "")
+                            .font(.custom(SFPro.regular.rawValue, size: 22))
                             .bold()
-                            .frame(maxWidth: 350, alignment: .center)
-                            .frame(height: 35)
+                            .frame(maxWidth: 355, alignment: .center)
+                            .frame(height: 40)
                             .multilineTextAlignment(.center)
                             .lineLimit(2, reservesSpace: false)
-                            .minimumScaleFactor(0.5)
+                            .minimumScaleFactor(0.65)
                             .padding(.leading, 5)
                             .padding(.trailing, 5)
                             .padding(.top, -15)
@@ -180,28 +196,32 @@ struct TaskRow: View {
                 } else {
                     VStack {
                         HStack {
-                            Text(task.scheduledAt.formattedAsTime())
+                            Text(task.scheduledAt?.formattedAsTime() ?? "\(date1)") //Некрасиво развёрнут опционал даты
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
-                            Spacer()
-                            HStack {
+                          
                                 ZStack {
                                     Image("repeatClientCloud")
+
                                     Text("Клиент\nрепит")
                                         .font(.custom(SFPro.regular.rawValue, size: 12))
                                         .multilineTextAlignment(.center)
                                         .offset(x: -4)
+                                        
                                 }
                                 .frame(width: 20)
-                                .offset(x: -5, y: 3)
-                                .opacity(showRepeatClientBubbleRemote ? 1 : 0)
-                                .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleRemote)
+                                .offset(x: -8, y: 2)
+                                .opacity(showRepeatClientBubbleLocal ? 1 : 0)
+                                .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleLocal)
+                            
+                               
+                            
                                 Button(action: {
-                                    showRepeatClientBubbleRemote = true
+                                    showRepeatClientBubbleLocal = true
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                                         withAnimation {
-                                            showRepeatClientBubbleRemote = false
+                                            showRepeatClientBubbleLocal = false
                                         }
                                     }
                                 }) {
@@ -211,34 +231,40 @@ struct TaskRow: View {
                                         .padding(6)
                                 }
                                 .buttonStyle(BorderlessButtonStyle())
-                                .contentShape(Rectangle())
-                                Text(task.client.firstName)
+                                .contentShape(Circle())
+                                .opacity(repeatBadgeOpacity)
+                                .onAppear {
+                                    repeatBadgeOpacity = clientTasksCount > 1 ? 1 : 0
+                                }
+                            
+                                Text(task.client?.firstName ?? "")
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
-                            }
-                            .offset(x: 6)
-                            .padding(.trailing, 35)
-                           
+                            
                             Spacer()
+                            
                             ZStack {
                                 Image("phoneNumberCloud")
-                                Text("\(task.client.phoneNumber)")
+                                Text("\(task.client?.phone ?? "")")
                                     .font(.custom(SFPro.regular.rawValue, size: 12))
                                     .offset(x: -3)
                                     .onTapGesture {
-                                           if let url = URL(string: "tel://\(task.client.phoneNumber)"),
+                                        if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
                                               UIApplication.shared.canOpenURL(url) {
                                                UIApplication.shared.open(url)
                                            }
                                        }
                             }
+                          
                             .padding(.leading, -70)
-                            .offset(x: 10, y: 3)
-                            .opacity(showPhoneNumberCloudRemote ? 1 : 0)
-                            .animation(.easeInOut(duration: 0.3), value: showPhoneNumberCloudRemote)
+                            .offset(x: 11)
+                            .opacity(showPhoneNumberCloudLocal ? 1 : 0)
+                            .animation(.easeInOut(duration: 0.3), value: showPhoneNumberCloudLocal)
                             Button(action: {
-                                showPhoneNumberCloudRemote = true
+                                showPhoneNumberCloudLocal = true
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                                    showPhoneNumberCloudRemote = false
+                                    withAnimation {
+                                        showPhoneNumberCloudLocal = false
+                                    }
                                 }
                             }) {
                                 Image("call")
@@ -249,10 +275,9 @@ struct TaskRow: View {
                             .contentShape(Rectangle())
                             .buttonStyle(BorderlessButtonStyle())
                         }
-                        .frame(maxHeight: 35)
-                        
                         .padding(.trailing, 5)
-     
+                        .frame(maxHeight: 35)
+
                         HStack{
                                Image("remote")
                                 .offset(y: -2)
@@ -274,7 +299,7 @@ struct TaskRow: View {
                             .foregroundColor(Color.black)
                             
                         
-                        Text(task.taskDescription)
+                        Text(task.taskDescription ?? "")
                             .font(.custom(SFPro.bold.rawValue, size: 30))
                             .frame(maxWidth: .infinity, alignment: .center)
                             .frame(maxHeight: 40)
@@ -296,7 +321,7 @@ struct TaskRow: View {
                     
                 
                 HStack{
-                    Text("Договорились:  \(task.contractAmount)")
+                    Text("Договорились:  \(task.contractAmount.formattedCurrency())")
                         .font(.custom(SFPro.bold.rawValue, size: 17))
                     
                     Spacer()
@@ -304,6 +329,7 @@ struct TaskRow: View {
                     Text("Итого:")
                         .font(.custom(SFPro.bold.rawValue, size: 19))
                     Image("creditCard")
+                        .opacity(creditCardOpacity)
                 }
                 .padding(.leading, 32)
                 .padding(.trailing, 8)
@@ -312,21 +338,28 @@ struct TaskRow: View {
                 HStack{
                     Text("Издержки:")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
-                    Text("\(task.cost)")
+                    Text("\(task.cost.formattedCurrency())")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
                         .foregroundColor(Color.custom(.costPaymentRed))
                     
                     Text("Доплачено:")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
-                    Text("\(task.extraPayment)")
+                    Text("\(task.extraPayment.formattedCurrency())")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
                         .foregroundColor(Color.custom(.extraPaymentGreen))
                     
                     Spacer()
                     
-                    Text("\(task.totalAmount)")
+                    Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(SFPro.bold.rawValue, size: 16))
                     Image("cash")
+                        .opacity(cashOpacity)
+                        .onAppear {
+                            updatePaymentIcons()
+                        }
+                        .onChange(of: task.paymentType ?? "") { _ in
+                            updatePaymentIcons()
+                        }
                 }
                 .frame(maxHeight: 12)
                 .padding(.leading, 11)
@@ -339,8 +372,11 @@ struct TaskRow: View {
         .background(Color.custom(.taskCellGray))
         .cornerRadius(12)
         
+        
     }
+       
 }
+
 
 #Preview {
     TaskListView()
@@ -348,3 +384,19 @@ struct TaskRow: View {
 
     
 
+
+// MARK: - Payment Icon Logic
+private extension TaskRow {
+    func updatePaymentIcons() {
+        if task.paymentType == PaymentType.cash.rawValue {
+            cashOpacity = 1
+            creditCardOpacity = 0
+        } else if task.paymentType == PaymentType.transfer.rawValue {
+            cashOpacity = 0
+            creditCardOpacity = 1
+        } else {
+            cashOpacity = 0
+            creditCardOpacity = 0
+        }
+    }
+}
