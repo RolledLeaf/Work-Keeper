@@ -61,6 +61,7 @@ final class TaskStore: NSObject, ObservableObject {
     
     func makeScheduled(_ task: Task) {
         task.status = .scheduled
+        task.paymentType = .none
         do {
             try context.save()
         } catch {

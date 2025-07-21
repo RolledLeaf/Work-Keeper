@@ -15,10 +15,11 @@ struct TaskListView: View {
     @State private var showCompleteTaskView = false
     @State private var showPopup = false
     @State private var selectedTask: Task?
+    @State private var taskToCancel: Task?
     @State private var navigateToTaskView = false
-    @State private var taskToShow: Task?
+   
     @State private var selectedTaskForComplete: Task?
-    @State private var selectedTaskForDetails: Task?
+   
     
     var groupedTasks: [String: [Task]] {
         Dictionary(grouping: viewModel.tasks) { task in
@@ -28,6 +29,8 @@ struct TaskListView: View {
     }
     
     var body: some View {
+        
+        
         
         
         NavigationStack {
@@ -151,25 +154,68 @@ struct TaskListView: View {
                                         
                                         
                                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                                Button(action: {
-                                                    selectedTask = task
-                                                    withAnimation {
-                                                        showPopup = true
+                                                switch task.status {
+                                                case .scheduled:
+                                                    Button(action: {
+                                                        taskToCancel = task
+                                                        withAnimation {
+                                                            showPopup = true
+                                                        }
+                                                    }) {
+                                                        Image("cancel")
+                                                        Text("Отменить")
                                                     }
-                                                }) {
-                                                    Image("cancel")
-                                                    Text("Отменить")
+                                                    .tint(Color.custom(.taskCanceledOrange))
+
+                                                    Button(action: {
+                                                        selectedTaskForComplete = task
+                                                        showCompleteTaskView = true
+                                                    }) {
+                                                        Image("completed")
+                                                        Text("Завершить")
+                                                    }
+                                                    .tint(Color.custom(.taskCompleteGreen))
+
+                                                case .completed:
+                                                    Button(action: {
+                                                        taskToCancel = task
+                                                        withAnimation {
+                                                            showPopup = true
+                                                        }
+                                                    }) {
+                                                        Image("cancel")
+                                                        Text("Отменить")
+                                                    }
+                                                    .tint(Color.custom(.taskCanceledOrange))
+                                                    
+                                                    Button(action: {
+                                                        viewModel.scheduleTask(task: task)
+                                                        viewModel.loadTasks()
+                                                    }) {
+                                                        Image("inProgress")
+                                                        Text("Запланировать")
+                                                    }
+                                                    .tint(Color.custom(.taskViewYellow))
+
+                                                case .canceled:
+                                                    Button(action: {
+                                                        viewModel.scheduleTask(task: task)
+                                                        viewModel.loadTasks()
+                                                    }) {
+                                                        Image("inProgress")
+                                                        Text("Запланировать")
+                                                    }
+                                                    .tint(Color.custom(.taskViewYellow))
+
+                                                    Button(action: {
+                                                        selectedTaskForComplete = task
+                                                        showCompleteTaskView = true
+                                                    }) {
+                                                        Image("completed")
+                                                        Text("Завершить")
+                                                    }
+                                                    .tint(Color.custom(.taskCompleteGreen))
                                                 }
-                                                .tint(Color.custom(.taskCanceledOrange))
-                                                
-                                                Button(action: {
-                                                    selectedTaskForComplete = task
-                                                    showCompleteTaskView = true
-                                                }) {
-                                                    Image("completed")
-                                                    Text("Завершить")
-                                                }
-                                                .tint(Color.custom(.taskCompleteGreen))
                                             }
                                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                                 Button(action: {
@@ -287,7 +333,7 @@ struct TaskListView: View {
                                     )
                                     
                                     Button(action: {
-                                        if let task = selectedTask {
+                                        if let task = taskToCancel {
                                             let cancelVM = CancelTaskViewModel(task: task)
                                             cancelVM.comment = viewModel.comment
                                             cancelVM.cancel()
