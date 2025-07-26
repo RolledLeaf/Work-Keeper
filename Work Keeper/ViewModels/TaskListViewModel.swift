@@ -162,3 +162,132 @@ final class CancelTaskViewModel: ObservableObject {
         store.makeCanceled(task, comment: comment)
     }
 }
+
+final class EditTaskViewModel: ObservableObject {
+    // MARK: - Input properties bound to the UI
+    @Published var scheduledAt: Date
+    @Published var descriptionText: String
+    @Published var comment: String
+    @Published var isRemote: Bool
+    @Published var status: Status
+    @Published var contractAmountText: String
+    @Published var costText: String
+    @Published var extraPaymentText: String
+    @Published var paymentType: PaymentType
+    // Client and address fields
+    @Published var firstName: String
+    @Published var lastName: String
+    @Published var phoneNumber: String
+    @Published var streetName: String
+    @Published var house: String
+    @Published var apartment: String
+    @Published var entrance: String
+    @Published var floorText: String
+    @Published var isPrivateHouse: Bool
+  
+    @Published var shouldBlockEditing = false
+
+    private var floor: Int16? {
+        Int16(floorText)
+    }
+    
+    // MARK: - Computed Numeric Values
+    private var contractAmount: Double {
+        Double(contractAmountText) ?? 0
+    }
+    private var cost: Double? {
+        Double(costText)
+    }
+    private var extraPayment: Double? {
+        Double(extraPaymentText)
+    }
+    
+    private var totalAmount: Double {
+        contractAmount + (extraPayment ?? 0) - (cost ?? 0)
+    }
+
+    // MARK: - Internal
+    private let task: Task
+    private let store = TaskStore()
+
+    // MARK: - Initialization
+    init(task: Task) {
+        self.task = task
+        // Populate from existing Task
+        self.scheduledAt = task.scheduledAt ?? Date()
+        self.descriptionText = task.taskDescription ?? ""
+        self.comment = task.comment ?? ""
+        self.isRemote = task.isRemote
+        self.status = Status(rawValue: task.statusString ?? "") ?? .scheduled
+        self.contractAmountText = String(format: "%.0f", task.contractAmount)
+        if task.cost > 0 {
+            self.costText = String(format: "%.0f", task.cost)
+        } else {
+            self.costText = ""
+        }
+        if task.extraPayment > 0 {
+            self.extraPaymentText = String(format: "%.0f", task.extraPayment)
+        } else {
+            self.extraPaymentText = ""
+        }
+        self.paymentType = PaymentType(rawValue: task.paymentType ?? "") ?? .cash
+
+        // Populate client info
+        self.firstName = task.client?.firstName ?? ""
+        self.lastName = task.client?.lastName ?? ""
+        self.phoneNumber = task.client?.phone ?? ""
+
+        // Populate address info (primary address)
+        if let address = (task.client?.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
+            self.streetName = address.street?.name ?? ""
+            self.house = address.house ?? ""
+            self.apartment = address.apartment ?? ""
+            self.entrance = address.entrance ?? ""
+            self.floorText = "\(address.floor)"
+            self.isPrivateHouse = address.isPrivateHouse
+        } else {
+            self.streetName = ""
+            self.house = ""
+            self.apartment = ""
+            self.entrance = ""
+            self.floorText = ""
+            self.isPrivateHouse = false
+        }
+    }
+
+    // MARK: - Public methods
+    /// Apply changes and save to Core Data
+    func update() {
+        // Update client properties
+        if let client = task.client {
+            client.firstName = firstName
+            client.lastName = lastName
+            client.phone = phoneNumber
+        }
+
+        // Update primary address
+        if let address = (task.client?.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
+            address.street?.name = streetName
+            address.house = house
+            address.apartment = apartment
+            address.entrance = entrance
+            address.floor = Int16(floorText) ?? 0
+            address.isPrivateHouse = isPrivateHouse
+        }
+
+        store.updateTask(
+            task,
+            scheduledAt: scheduledAt,
+            client: task.client!,
+            taskDescription: descriptionText.isEmpty ? nil : descriptionText,
+            comment: comment.isEmpty ? nil : comment,
+            isRemote: isRemote,
+            status: status,
+            contractAmount: contractAmount,
+            extraPayment: extraPayment,
+            paymentType: paymentType,
+            cost: cost
+        )
+    }
+}
+
