@@ -362,7 +362,7 @@ struct NewTaskView: View {
                                 }
                             }
                         } label: {
-                            Text(viewModel.roomType)
+                            Text(viewModel.roomType ?? "кв.")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.black)
                             Image(systemName: "triangle.fill")
@@ -399,7 +399,7 @@ struct NewTaskView: View {
                                 }
                             }
                         } label: {
-                            Text(viewModel.entranceType)
+                            Text(viewModel.entranceType ?? "под.")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.black)
                             Image(systemName: "triangle.fill")
@@ -589,6 +589,7 @@ struct NewTaskView: View {
                         Button(action: {
                             viewModel.saveTask()
                             dismiss()
+                            
                         }) {
                             ZStack {
                                 Rectangle()

@@ -54,8 +54,8 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var costText: String = ""
     @Published var selectedPayment: PaymentType = .cash
     @Published var shouldBlockEditing = false
-    @Published var roomType = "кв"
-    @Published var entranceType = "под"
+    @Published  var roomType: String?
+    @Published  var entranceType: String?
     
     var totalAmount: Double {
         contractAmount - (cost ?? 0)
@@ -63,8 +63,11 @@ final class CreateTaskViewModel: ObservableObject {
     
  
     
-    let roomTypes = ["кв", "оф", "каб"]
-    let entranceTypes = ["под", "вход"]
+   
+    
+    let roomTypes = ["кв.", "оф.", "каб."]
+    let entranceTypes = ["под.", "вход."]
+    
     
 
     private let streetStore = StreetStore()
@@ -95,7 +98,9 @@ final class CreateTaskViewModel: ObservableObject {
             isPrivateHouse: isPrivateHouse,
             street: street,
             client: client,
-            isPrimary: true
+            isPrimary: true,
+            roomType: roomType ?? "кв.",
+            entranceType: entranceType ?? "под."
         )
 
         // link the address with the client
@@ -111,6 +116,20 @@ final class CreateTaskViewModel: ObservableObject {
             contractAmount: contractAmount,
             cost: cost
         )
+        print("""
+         ✅ Задание успешно создано:
+         📆 Дата: \(scheduledAt)
+         👤 Клиент: \(firstName) \(lastName), телефон: \(phone)
+         🏠 Адрес: \(streetName), дом: \(house), \(roomType) \(apartment), \(entranceType) \(entrance), этаж \(floor)
+         📝 Описание: \(description)
+         💬 Комментарий: \(comment)
+         🌍 Удалённо: \(isRemote ? "Да" : "Нет")
+         💵 Сумма по договору: \(contractAmount)
+         💸 Издержки: \(cost ?? 0)
+         Тип помещения: \(roomType)
+         Тип Входа: \(entranceType)
+         🧾 Статус: \(status.rawValue)
+         """)
     }
 }
 
@@ -198,11 +217,11 @@ final class EditTaskViewModel: ObservableObject {
     @Published var extraPayment: Double?
     
     
-    @Published  var roomType = "кв"
-    @Published  var entranceType = "под"
+    @Published  var roomType: String?
+    @Published  var entranceType: String?
     
-    let roomTypes = ["кв", "оф", "каб"]
-    let entranceTypes = ["под", "вход"]
+    let roomTypes = ["кв.", "оф.", "каб."]
+    let entranceTypes = ["под.", "вход."]
     
     // MARK: - Computed Numeric Values
 
@@ -250,6 +269,8 @@ final class EditTaskViewModel: ObservableObject {
             self.entrance = address.entrance ?? ""
             self.floorText = "\(address.floor)"
             self.isPrivateHouse = address.isPrivateHouse
+            self.roomType = address.roomType ?? "кв."
+            self.entranceType = address.entranceType ?? "под."
         } else {
             self.streetName = ""
             self.house = ""
@@ -257,6 +278,8 @@ final class EditTaskViewModel: ObservableObject {
             self.entrance = ""
             self.floorText = ""
             self.isPrivateHouse = false
+            self.roomType =  ""
+            self.entranceType = ""
         }
     }
 
@@ -278,6 +301,8 @@ final class EditTaskViewModel: ObservableObject {
             address.entrance = entrance
             address.floor = Int16(floorText) ?? 0
             address.isPrivateHouse = isPrivateHouse
+            address.entranceType = entranceType
+            address.roomType = roomType
         }
 
         store.updateTask(
@@ -293,6 +318,21 @@ final class EditTaskViewModel: ObservableObject {
             paymentType: paymentType ?? .none,
             cost: cost
         )
+        
+        print("""
+         ✅ Задание успешно изменено:
+         📆 Дата: \(scheduledAt)
+         👤 Клиент: \(firstName) \(lastName), телефон: \(phoneNumber)
+         🏠 Адрес: \(streetName), дом: \(house), \(roomType) \(apartment), \(entranceType) \(entrance), этаж \(floor)
+         📝 Описание: \(descriptionText)
+         💬 Комментарий: \(comment)
+         🌍 Удалённо: \(isRemote ? "Да" : "Нет")
+         💵 Сумма по договору: \(contractAmount)
+         💸 Издержки: \(cost ?? 0)
+         Тип помещения: \(roomType)
+         Тип Входа: \(entranceType)
+         🧾 Статус: \(status)
+         """)
     }
 }
 

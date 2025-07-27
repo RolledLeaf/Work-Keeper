@@ -14,7 +14,9 @@ final class AddressStore: NSObject {
                        entrance: String?,
                        floor: Int16,
                        isPrivateHouse: Bool,
-                       street: Street
+                       street: Street,
+                       roomType: String,
+                           entranceType: String
     ) -> Address {
         let address = Address(context: context)
         address.house = house
@@ -23,7 +25,9 @@ final class AddressStore: NSObject {
         address.floor = Int16(floor)
         address.isPrivateHouse = isPrivateHouse
         address.street = street
-      
+        address.roomType = roomType
+        address.entranceType = entranceType
+        
         
         return address
     }
@@ -37,7 +41,9 @@ final class AddressStore: NSObject {
                               isPrivateHouse: Bool,
                               street: Street,
                               client: Client,
-                              isPrimary: Bool) -> Address {
+                              isPrimary: Bool,
+                              roomType: String,
+                                  entranceType: String) -> Address {
         
         let request: NSFetchRequest<Address> = Address.fetchRequest()
         request.predicate = NSPredicate(format: "street.name == %@ AND house == %@", street.name ?? "", house)
@@ -52,7 +58,9 @@ final class AddressStore: NSObject {
                                             entrance: entrance,
                                             floor: floor,
                                             isPrivateHouse: isPrivateHouse,
-                                            street: street)
+                                            street: street,
+                                            roomType: roomType, entranceType: entranceType
+                )
                 address.client = client
                 address.isPrimary = isPrimary
 
@@ -73,7 +81,9 @@ final class AddressStore: NSObject {
                                         entrance: entrance,
                                         floor: floor,
                                         isPrivateHouse: isPrivateHouse,
-                                        street: street)
+                                        street: street,
+                                        roomType: roomType,
+                                        entranceType: entranceType)
             address.client = client
             address.isPrimary = isPrimary
             return address
@@ -85,13 +95,17 @@ final class AddressStore: NSObject {
                      apartment: String?,
                      entrance: String?,
                      floor: Int,
-                     isPrivateHouse: Bool
+                     isPrivateHouse: Bool,
+                       roomType: String,
+                           entranceType: String
     ) {
         address.house = house
         address.apartment = apartment
         address.entrance = entrance
         address.floor = Int16(floor)
         address.isPrivateHouse = isPrivateHouse
+        address.entranceType = entranceType
+        address.roomType = roomType
         
         do {
             try context.save()

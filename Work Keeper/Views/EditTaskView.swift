@@ -420,7 +420,7 @@ struct EditTaskView: View {
                                 }
                             }
                         } label: {
-                            Text(viewModel.roomType)
+                            Text(viewModel.roomType ?? "кв.")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.black)
                             Image(systemName: "triangle.fill")
@@ -457,7 +457,7 @@ struct EditTaskView: View {
                                 }
                             }
                         } label: {
-                            Text(viewModel.entranceType)
+                            Text(viewModel.entranceType ?? "под.")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.black)
                             Image(systemName: "triangle.fill")
