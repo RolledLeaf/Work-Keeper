@@ -54,13 +54,18 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var costText: String = ""
     @Published var selectedPayment: PaymentType = .cash
     @Published var shouldBlockEditing = false
+    @Published var roomType = "кв"
+    @Published var entranceType = "под"
     
     var totalAmount: Double {
         contractAmount - (cost ?? 0)
     }
     
-    @Published private var roomType = "кв"
-    @Published private var entranceType = "под"
+ 
+    
+    let roomTypes = ["кв", "оф", "каб"]
+    let entranceTypes = ["под", "вход"]
+    
 
     private let streetStore = StreetStore()
     private let addressStore = AddressStore()
@@ -192,11 +197,15 @@ final class EditTaskViewModel: ObservableObject {
     @Published var cost: Double?
     @Published var extraPayment: Double?
     
+    
+    @Published  var roomType = "кв"
+    @Published  var entranceType = "под"
+    
+    let roomTypes = ["кв", "оф", "каб"]
+    let entranceTypes = ["под", "вход"]
+    
     // MARK: - Computed Numeric Values
-  
-    
-    
-    
+
      var totalAmount: Double {
         contractAmount + (extraPayment ?? 0) - (cost ?? 0)
     }
@@ -274,7 +283,7 @@ final class EditTaskViewModel: ObservableObject {
         store.updateTask(
             task,
             scheduledAt: scheduledAt,
-            client: task.client!,
+            client: task.client!, // force operation!
             taskDescription: descriptionText.isEmpty ? nil : descriptionText,
             comment: comment.isEmpty ? nil : comment,
             isRemote: isRemote,

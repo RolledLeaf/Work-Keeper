@@ -156,9 +156,7 @@ struct EditTaskView: View {
                             .font(.system(size: 19, weight: .regular, design: .default))
                             .background(Color.clear)
                         Spacer()
-                        
-                        
-                        
+                
                     }
                     .padding(.trailing, 20)
                     
@@ -197,7 +195,7 @@ struct EditTaskView: View {
                         .opacity(maxCharachtersWarningCommentTextOpacity)
                     
                     Spacer()
-                        .frame(height: 20)
+                        .frame(height: 10)
                     
                     HStack {
                         Text("Клиент")
@@ -217,6 +215,7 @@ struct EditTaskView: View {
                             .frame(height: 15)
                         
                     }
+                    .offset(y: -8)
                     .padding(.leading, 20)
                     .padding(.trailing, 33)
                     
@@ -285,6 +284,7 @@ struct EditTaskView: View {
                         
                     }
                     .padding(.horizontal, 20)
+                    .offset(y: -8)
                     
                     
                     Rectangle()
@@ -413,15 +413,14 @@ struct EditTaskView: View {
                         )
                         Spacer()
                         
-                        
                         Menu {
-                            ForEach(roomTypes, id: \.self) { type in
+                            ForEach(viewModel.roomTypes, id: \.self) { type in
                                 Button(type) {
-                                    roomType = type
+                                    viewModel.roomType = type
                                 }
                             }
                         } label: {
-                            Text(roomType)
+                            Text(viewModel.roomType)
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.black)
                             Image(systemName: "triangle.fill")
@@ -430,6 +429,7 @@ struct EditTaskView: View {
                                 .rotationEffect(.degrees(180))
                                 .foregroundColor(.black)
                         }
+                        
                         ZStack {
                             Color.custom(textFieldColor)
                             TextField("", text: $viewModel.apartment)
@@ -451,13 +451,13 @@ struct EditTaskView: View {
                         Spacer()
                         
                         Menu {
-                            ForEach(entranceTypes, id: \.self) { type in
+                            ForEach(viewModel.entranceTypes, id: \.self) { type in
                                 Button(type) {
-                                    entranceType = type
+                                    viewModel.entranceType = type
                                 }
                             }
                         } label: {
-                            Text(entranceType)
+                            Text(viewModel.entranceType)
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.black)
                             Image(systemName: "triangle.fill")
@@ -609,6 +609,48 @@ struct EditTaskView: View {
                     
                     Spacer()
                         .frame(height: 15)
+                    
+                    HStack {
+                        Text("Доплачено")
+                            .padding(.leading, 21)
+                            .foregroundColor(Color(.black))
+                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .background(Color.clear)
+                        Spacer()
+                        
+                        TextField("0", text: $viewModel.extraPaymentText)
+                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .frame(width: 100, height: 30)
+                            .multilineTextAlignment(.center)
+                            .keyboardType(.numberPad)
+                            .onChange(of: viewModel.extraPaymentText) { newValue in
+                                if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
+                                    viewModel.extraPayment = value
+                                } else {
+                                    viewModel.extraPayment = 0
+                                }
+                            }
+                            .background(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .fill(Color.white)
+                            )
+                    }
+                    .padding(.trailing, 48)
+                    
+                    Spacer()
+                        .frame(height: 15)
+                    
+                    Picker("Тип оплаты", selection: $viewModel.paymentType) {
+                        Text("Наличные").tag(PaymentType.cash)
+                        Text("Перевод").tag(PaymentType.transfer)
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 200)
+                    
+                    Spacer()
+                        .frame(height: 15)
+                    
                     
                     HStack {
                         Text("Итого")

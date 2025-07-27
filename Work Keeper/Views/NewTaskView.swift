@@ -57,9 +57,9 @@ struct NewTaskView: View {
     
     var body: some View {
         
-        let roomTypes = ["кв", "оф", "каб"]
-        let entranceTypes = ["под", "вход"]
         
+            let roomTypes = ["кв", "оф", "каб"]
+            let entranceTypes = ["под", "вход"]
         
         
         ZStack {
@@ -356,13 +356,13 @@ struct NewTaskView: View {
                         
                         
                         Menu {
-                            ForEach(roomTypes, id: \.self) { type in
+                            ForEach(viewModel.roomTypes, id: \.self) { type in
                                 Button(type) {
-                                    roomType = type
+                                    viewModel.roomType = type
                                 }
                             }
                         } label: {
-                            Text(roomType)
+                            Text(viewModel.roomType)
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.black)
                             Image(systemName: "triangle.fill")
@@ -371,6 +371,7 @@ struct NewTaskView: View {
                                 .rotationEffect(.degrees(180))
                                 .foregroundColor(.black)
                         }
+                        
                         ZStack {
                             Color.custom(textFieldColor)
                             TextField("", text: $viewModel.apartment)
@@ -392,13 +393,13 @@ struct NewTaskView: View {
                         Spacer()
                         
                         Menu {
-                            ForEach(entranceTypes, id: \.self) { type in
+                            ForEach(viewModel.entranceTypes, id: \.self) { type in
                                 Button(type) {
-                                    entranceType = type
+                                    viewModel.entranceType = type
                                 }
                             }
                         } label: {
-                            Text(entranceType)
+                            Text(viewModel.entranceType)
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.black)
                             Image(systemName: "triangle.fill")
