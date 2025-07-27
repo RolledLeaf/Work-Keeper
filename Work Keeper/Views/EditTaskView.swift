@@ -1,17 +1,15 @@
-
-
 import SwiftUI
 
-struct NewTaskView: View {
-   
+struct EditTaskView: View {
     
-    @StateObject private var viewModel = CreateTaskViewModel()
+    @ObservedObject var viewModel: EditTaskViewModel
     @StateObject private var clientsListViewModel = ClientsListViewModel()
-  
+   
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 8
     private let maxStreetCharactersCount: Int = 44
     private let maxDescriptionCharactersCount: Int = 85
+    private let maxCommentCharactersCount: Int = 85
     private let maxApartmentCharactersCount: Int = 6
     private let maxEntranceCharactersCount: Int = 3
     private let maxFloorCharactersCount: Int = 3
@@ -21,26 +19,30 @@ struct NewTaskView: View {
     private let maxCostCharacters: Int = 6
 
     @State private var StreetCharactersTextOpacity: Double = 0
-    @State private var DescriptionCharactersTextOpacity: Double = 0
+    @State private var maxCharachtersWarningTextOpacity: Double = 0
+    @State private var maxCharachtersWarningCommentTextOpacity: Double = 0
     @State private var streetChevronOpacity: Double = 1
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
     @State private var hideScrollContentBackground = false
     @State private var textFieldColor: CustomColor = .pureWhite
-    
-    
+ 
     @Environment(\.dismiss)
     private var dismiss
-
+    
+    init(viewModel: EditTaskViewModel) {
+           // Передаём viewModel в свойство @ObservedObject
+           self._viewModel = ObservedObject(wrappedValue: viewModel)
+       }
     var body: some View {
-        
+   
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             
             ScrollView {
                 
                 VStack {
-                    Text("Новое задание")
+                    Text("Редактирование задания")
                         .font(.system(size: 24, weight: .bold, design: .default))
                         .foregroundColor(Color.black)
                         .offset(y: 30)
@@ -77,21 +79,21 @@ struct NewTaskView: View {
                     
                     ZStack {
                         Color.white
-                        TextEditor(text: $viewModel.description)
+                        TextEditor(text: $viewModel.descriptionText)
                             .font(.system(size: 20, weight: .regular, design: .default))
                             .padding(.horizontal, 16)
                             .frame(minHeight: 80, maxHeight: 100)
                             .lineLimit(2, reservesSpace: false)
                             .minimumScaleFactor(0.6)
                             .multilineTextAlignment(.leading)
-                            .onChange(of: viewModel.description) { newValue in
+                            .onChange(of: viewModel.descriptionText) { newValue in
                                 if newValue.count > maxDescriptionCharactersCount {
-                                    viewModel.description = String(newValue.prefix(maxDescriptionCharactersCount))
+                                    viewModel.descriptionText = String(newValue.prefix(maxDescriptionCharactersCount))
                                 }
                                 
-                                if viewModel.description.count >= maxDescriptionCharactersCount {
-                                    DescriptionCharactersTextOpacity = 1
-                                } else { DescriptionCharactersTextOpacity = 0
+                                if viewModel.descriptionText.count >= maxDescriptionCharactersCount {
+                                    maxCharachtersWarningTextOpacity = 1
+                                } else { maxCharachtersWarningTextOpacity = 0
                                     
                                 }
                                 
@@ -107,10 +109,55 @@ struct NewTaskView: View {
                     Text("максимум символов \(maxDescriptionCharactersCount)")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.red)
-                        .opacity(DescriptionCharactersTextOpacity)
+                        .opacity(maxCharachtersWarningTextOpacity)
+                    
+                    HStack {
+                        Text("Комментарий")
+                            .padding(.leading, 21)
+                            .foregroundColor(Color.custom(.textTitleGray))
+                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .background(Color.clear)
+                        Spacer()
+                
+                    }
+                    .padding(.trailing, 20)
+                    
+                    ZStack {
+                        Color.white
+                        TextEditor(text: $viewModel.comment)
+                            .font(.system(size: 20, weight: .regular, design: .default))
+                            .padding(.horizontal, 16)
+                            .frame(minHeight: 80, maxHeight: 100)
+                            .lineLimit(2, reservesSpace: false)
+                            .minimumScaleFactor(0.6)
+                            .multilineTextAlignment(.leading)
+                            .onChange(of: viewModel.comment) { newValue in
+                                if newValue.count > maxCommentCharactersCount {
+                                    viewModel.comment = String(newValue.prefix(maxCommentCharactersCount))
+                                }
+                                
+                                if viewModel.comment.count >= maxCommentCharactersCount {
+                                    maxCharachtersWarningCommentTextOpacity = 1
+                                } else { maxCharachtersWarningCommentTextOpacity = 0
+                                    
+                                }
+                                
+                            }
+                        
+                    }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                    )
+                    .padding(.horizontal, 16)
+                    
+                    Text("максимум символов \(maxCommentCharactersCount)")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.red)
+                        .opacity(maxCharachtersWarningCommentTextOpacity)
                     
                     Spacer()
-                        .frame(height: 20)
+                        .frame(height: 10)
                     
                     HStack {
                         Text("Клиент")
@@ -130,6 +177,7 @@ struct NewTaskView: View {
                             .frame(height: 15)
                         
                     }
+                    .offset(y: -8)
                     .padding(.leading, 20)
                     .padding(.trailing, 33)
                     
@@ -175,14 +223,14 @@ struct NewTaskView: View {
                             
                             ZStack {
                                 Color.white
-                                TextField("", text: $viewModel.phone)
+                                TextField("", text: $viewModel.phoneNumber)
                                     .font(.system(size: 19, weight: .regular, design: .default))
                                     .foregroundColor(.black)
                                     .offset(x: 8)
                                     .keyboardType(.phonePad)
-                                    .onChange(of: viewModel.phone) { newValue in
+                                    .onChange(of: viewModel.phoneNumber) { newValue in
                                         if newValue.count > maxPhoneNumberCharactersCount {
-                                            viewModel.phone = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                                            viewModel.phoneNumber = String(newValue.prefix(maxPhoneNumberCharactersCount))
                                         }
                                     }
                             }
@@ -198,6 +246,7 @@ struct NewTaskView: View {
                         
                     }
                     .padding(.horizontal, 20)
+                    .offset(y: -8)
                     
                     
                     Rectangle()
@@ -325,7 +374,6 @@ struct NewTaskView: View {
                                 .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
                         )
                         Spacer()
-                        
                         
                         Menu {
                             ForEach(viewModel.roomTypes, id: \.self) { type in
@@ -525,6 +573,48 @@ struct NewTaskView: View {
                         .frame(height: 15)
                     
                     HStack {
+                        Text("Доплачено")
+                            .padding(.leading, 21)
+                            .foregroundColor(Color(.black))
+                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .background(Color.clear)
+                        Spacer()
+                        
+                        TextField("0", text: $viewModel.extraPaymentText)
+                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .frame(width: 100, height: 30)
+                            .multilineTextAlignment(.center)
+                            .keyboardType(.numberPad)
+                            .onChange(of: viewModel.extraPaymentText) { newValue in
+                                if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
+                                    viewModel.extraPayment = value
+                                } else {
+                                    viewModel.extraPayment = 0
+                                }
+                            }
+                            .background(
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .fill(Color.white)
+                            )
+                    }
+                    .padding(.trailing, 48)
+                    
+                    Spacer()
+                        .frame(height: 15)
+                    
+                    Picker("Тип оплаты", selection: $viewModel.paymentType) {
+                        Text("Наличные").tag(PaymentType.cash)
+                        Text("Перевод").tag(PaymentType.transfer)
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 200)
+                    
+                    Spacer()
+                        .frame(height: 15)
+                    
+                    
+                    HStack {
                         Text("Итого")
                             .font(.custom(SFPro.bold.rawValue, size: 24))
                         
@@ -559,14 +649,13 @@ struct NewTaskView: View {
                         )
                         
                         Button(action: {
-                            viewModel.saveTask()
+                            viewModel.update()
                             dismiss()
-                            
                         }) {
                             ZStack {
                                 Rectangle()
                                     .tint(Color.custom(.inactiveButtonGray))
-                                Text("Cоздать")
+                                Text("Сохранить")
                                     .tint(Color.white)
                             }
                         }
@@ -592,7 +681,7 @@ struct NewTaskView: View {
         .sheet(isPresented: $showClientListToPickView, onDismiss: {
             if let selectedClient = clientsListViewModel.selectedClient {
                 viewModel.firstName = selectedClient.firstName ?? ""
-                viewModel.phone = selectedClient.phone ?? ""
+                viewModel.phoneNumber = selectedClient.phone ?? ""
                 if let primaryAddress = selectedClient.address?.first(where: {
                     ($0 as? Address)?.isPrimary == true
                 }) as? Address {
@@ -600,7 +689,7 @@ struct NewTaskView: View {
                     viewModel.house = primaryAddress.house ?? ""
                     viewModel.apartment = primaryAddress.apartment ?? ""
                     viewModel.entrance = primaryAddress.entrance ?? ""
-                    viewModel.floor = primaryAddress.floor
+                  
                     viewModel.floorText = "\(primaryAddress.floor)"
                 }
             }
@@ -611,7 +700,4 @@ struct NewTaskView: View {
 }
 
 
-#Preview {
-    NewTaskView()
-}
 

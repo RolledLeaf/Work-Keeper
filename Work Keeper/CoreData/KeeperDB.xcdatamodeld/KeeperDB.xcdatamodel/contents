@@ -3,10 +3,12 @@
     <entity name="Address" representedClassName="Address" syncable="YES" codeGenerationType="class">
         <attribute name="apartment" optional="YES" attributeType="String"/>
         <attribute name="entrance" optional="YES" attributeType="String"/>
+        <attribute name="entranceType" optional="YES" attributeType="String" defaultValueString="под."/>
         <attribute name="floor" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="house" attributeType="String"/>
         <attribute name="isPrimary" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isPrivateHouse" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="roomType" optional="YES" attributeType="String" defaultValueString="кв."/>
         <relationship name="client" maxCount="1" deletionRule="Nullify" destinationEntity="Client" inverseName="address" inverseEntity="Client"/>
         <relationship name="street" maxCount="1" deletionRule="Nullify" destinationEntity="Street" inverseName="address" inverseEntity="Street"/>
     </entity>

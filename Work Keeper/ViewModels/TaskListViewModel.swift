@@ -54,13 +54,21 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var costText: String = ""
     @Published var selectedPayment: PaymentType = .cash
     @Published var shouldBlockEditing = false
+    @Published  var roomType: String?
+    @Published  var entranceType: String?
     
     var totalAmount: Double {
         contractAmount - (cost ?? 0)
     }
     
-    @Published private var roomType = "кв"
-    @Published private var entranceType = "под"
+ 
+    
+   
+    
+    let roomTypes = ["кв.", "оф.", "каб."]
+    let entranceTypes = ["под.", "вход."]
+    
+    
 
     private let streetStore = StreetStore()
     private let addressStore = AddressStore()
@@ -90,7 +98,9 @@ final class CreateTaskViewModel: ObservableObject {
             isPrivateHouse: isPrivateHouse,
             street: street,
             client: client,
-            isPrimary: true
+            isPrimary: true,
+            roomType: roomType ?? "кв.",
+            entranceType: entranceType ?? "под."
         )
 
         // link the address with the client
@@ -106,6 +116,20 @@ final class CreateTaskViewModel: ObservableObject {
             contractAmount: contractAmount,
             cost: cost
         )
+        print("""
+         ✅ Задание успешно создано:
+         📆 Дата: \(scheduledAt)
+         👤 Клиент: \(firstName) \(lastName), телефон: \(phone)
+         🏠 Адрес: \(streetName), дом: \(house), \(roomType) \(apartment), \(entranceType) \(entrance), этаж \(floor)
+         📝 Описание: \(description)
+         💬 Комментарий: \(comment)
+         🌍 Удалённо: \(isRemote ? "Да" : "Нет")
+         💵 Сумма по договору: \(contractAmount)
+         💸 Издержки: \(cost ?? 0)
+         Тип помещения: \(roomType)
+         Тип Входа: \(entranceType)
+         🧾 Статус: \(status.rawValue)
+         """)
     }
 }
 
@@ -162,3 +186,157 @@ final class CancelTaskViewModel: ObservableObject {
         store.makeCanceled(task, comment: comment)
     }
 }
+
+final class EditTaskViewModel: ObservableObject {
+    // MARK: - Input properties bound to the UI
+    @Published var scheduledAt: Date
+    @Published var descriptionText: String
+    @Published var comment: String
+    @Published var isRemote: Bool
+    @Published var status: Status
+    @Published var contractAmountText: String
+    @Published var costText: String
+    @Published var extraPaymentText: String
+    @Published var paymentType: PaymentType?
+    // Client and address fields
+    @Published var firstName: String
+    @Published var lastName: String
+    @Published var phoneNumber: String
+    @Published var streetName: String
+    @Published var house: String
+    @Published var apartment: String
+    @Published var entrance: String
+    @Published var floorText: String
+    @Published var isPrivateHouse: Bool
+  
+    @Published var shouldBlockEditing = false
+
+    @Published var floor: Int16?
+    @Published var contractAmount: Double
+    @Published var cost: Double?
+    @Published var extraPayment: Double?
+    
+    
+    @Published  var roomType: String?
+    @Published  var entranceType: String?
+    
+    let roomTypes = ["кв.", "оф.", "каб."]
+    let entranceTypes = ["под.", "вход."]
+    
+    // MARK: - Computed Numeric Values
+
+     var totalAmount: Double {
+        contractAmount + (extraPayment ?? 0) - (cost ?? 0)
+    }
+
+    // MARK: - Internal
+    private let task: Task
+    private let store = TaskStore()
+
+    // MARK: - Initialization
+    init(task: Task) {
+        self.task = task
+        // Populate from existing Task
+        self.scheduledAt = task.scheduledAt ?? Date()
+        self.descriptionText = task.taskDescription ?? ""
+        self.comment = task.comment ?? ""
+        self.isRemote = task.isRemote
+        self.status = Status(rawValue: task.statusString ?? "") ?? .scheduled
+        self.contractAmountText = String(format: "%.0f", task.contractAmount)
+        self.contractAmount = task.contractAmount
+        if task.cost > 0 {
+            self.costText = String(format: "%.0f", task.cost)
+        } else {
+            self.costText = ""
+        }
+        if task.extraPayment > 0 {
+            self.extraPaymentText = String(format: "%.0f", task.extraPayment)
+        } else {
+            self.extraPaymentText = ""
+        }
+       
+
+        // Populate client info
+        self.firstName = task.client?.firstName ?? ""
+        self.lastName = task.client?.lastName ?? ""
+        self.phoneNumber = task.client?.phone ?? ""
+
+        // Populate address info (primary address)
+        if let address = (task.client?.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
+            self.streetName = address.street?.name ?? ""
+            self.house = address.house ?? ""
+            self.apartment = address.apartment ?? ""
+            self.entrance = address.entrance ?? ""
+            self.floorText = "\(address.floor)"
+            self.isPrivateHouse = address.isPrivateHouse
+            self.roomType = address.roomType ?? "кв."
+            self.entranceType = address.entranceType ?? "под."
+        } else {
+            self.streetName = ""
+            self.house = ""
+            self.apartment = ""
+            self.entrance = ""
+            self.floorText = ""
+            self.isPrivateHouse = false
+            self.roomType =  ""
+            self.entranceType = ""
+        }
+    }
+
+    // MARK: - Public methods
+    /// Apply changes and save to Core Data
+    func update() {
+        // Update client
+        guard let client = task.client else {
+            print("❌ Ошибка: у задачи отсутствует клиент")
+            return
+        }
+
+        // Обновляем клиента и адрес, как и раньше
+        client.firstName = firstName
+        client.lastName = lastName
+        client.phone = phoneNumber
+
+        if let address = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
+            address.street?.name = streetName
+            address.house = house
+            address.apartment = apartment
+            address.entrance = entrance
+            address.floor = Int16(floorText) ?? 0
+            address.isPrivateHouse = isPrivateHouse
+            address.entranceType = entranceType
+            address.roomType = roomType
+        }
+
+        // безопасный вызов updateTask
+        store.updateTask(
+            task,
+            scheduledAt: scheduledAt,
+            client: client,
+            taskDescription: descriptionText.isEmpty ? nil : descriptionText,
+            comment: comment.isEmpty ? nil : comment,
+            isRemote: isRemote,
+            status: status,
+            contractAmount: contractAmount,
+            extraPayment: extraPayment,
+            paymentType: paymentType ?? .none,
+            cost: cost
+        )
+        
+        print("""
+         ✅ Задание успешно изменено:
+         📆 Дата: \(scheduledAt)
+         👤 Клиент: \(firstName) \(lastName), телефон: \(phoneNumber)
+         🏠 Адрес: \(streetName), дом: \(house), \(roomType) \(apartment), \(entranceType) \(entrance), этаж \(floor)
+         📝 Описание: \(descriptionText)
+         💬 Комментарий: \(comment)
+         🌍 Удалённо: \(isRemote ? "Да" : "Нет")
+         💵 Сумма по договору: \(contractAmount)
+         💸 Издержки: \(cost ?? 0)
+         Тип помещения: \(roomType)
+         Тип Входа: \(entranceType)
+         🧾 Статус: \(status)
+         """)
+    }
+}
+

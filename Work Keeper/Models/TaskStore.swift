@@ -61,6 +61,7 @@ final class TaskStore: NSObject, ObservableObject {
     
     func makeScheduled(_ task: Task) {
         task.status = .scheduled
+        task.paymentType = .none
         do {
             try context.save()
         } catch {
@@ -108,23 +109,35 @@ final class TaskStore: NSObject, ObservableObject {
     func updateTask(_ task: Task,
                     scheduledAt: Date,
                     client: Client,
-                    description: String?,
+                    taskDescription: String?,
+                    comment: String?,
                     isRemote: Bool,
                     status: Status,
                     contractAmount: Double,
                     extraPayment: Double?,
+                    paymentType: PaymentType,
                     cost: Double?) {
         
+        // Update core fields
         task.scheduledAt = scheduledAt
         task.client = client
-        task.taskDescription = description
+        task.taskDescription = taskDescription
+        task.comment = comment
         task.isRemote = isRemote
+        
+        // Update status
         task.statusString = status.rawValue
+        
+        // Update financials
         task.contractAmount = contractAmount
         task.cost = cost ?? 0
         task.extraPayment = extraPayment ?? 0
+        task.paymentType = paymentType.rawValue
+        
+        // Recalculate total
         task.totalAmount = contractAmount + (extraPayment ?? 0) - (cost ?? 0)
         
+        // Save changes
         do {
             try context.save()
         } catch {
