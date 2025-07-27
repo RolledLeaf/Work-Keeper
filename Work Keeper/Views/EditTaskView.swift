@@ -505,9 +505,9 @@ struct EditTaskView: View {
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .onChange(of: viewModel.floorText) { newValue in
                                     if let value = Int16(newValue) {
-                                        floor = Int(value)
+                                        viewModel.floor = value
                                     } else {
-                                        floor = 0
+                                        viewModel.floor = 0
                                     }
                                 }
                         }
@@ -562,9 +562,9 @@ struct EditTaskView: View {
                             .keyboardType(.decimalPad)
                             .onChange(of: viewModel.contractAmountText) { newValue in
                                 if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
-                                    contractAmount = value
+                                    viewModel.contractAmount = value
                                 } else {
-                                    contractAmount = 0
+                                    viewModel.contractAmount = 0
                                 }
                             }
                             .background(
@@ -594,9 +594,9 @@ struct EditTaskView: View {
                             .keyboardType(.numberPad)
                             .onChange(of: viewModel.costText) { newValue in
                                 if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
-                                    cost = value
+                                    viewModel.cost = value
                                 } else {
-                                   cost = 0
+                                    viewModel.cost = 0
                                 }
                             }
                             .background(
@@ -614,7 +614,7 @@ struct EditTaskView: View {
                         Text("Итого")
                             .font(.custom(SFPro.bold.rawValue, size: 24))
                         
-                        Text(totalAmount.formattedCurrency())
+                        Text(viewModel.totalAmount.formattedCurrency())
                             .font(.custom(SFPro.bold.rawValue, size: 24))
                     }
                     

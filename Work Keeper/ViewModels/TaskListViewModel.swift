@@ -173,7 +173,7 @@ final class EditTaskViewModel: ObservableObject {
     @Published var contractAmountText: String
     @Published var costText: String
     @Published var extraPaymentText: String
-    @Published var paymentType: PaymentType
+    @Published var paymentType: PaymentType?
     // Client and address fields
     @Published var firstName: String
     @Published var lastName: String
@@ -187,22 +187,17 @@ final class EditTaskViewModel: ObservableObject {
   
     @Published var shouldBlockEditing = false
 
-    private var floor: Int16? {
-        Int16(floorText)
-    }
+    @Published var floor: Int16?
+    @Published var contractAmount: Double
+    @Published var cost: Double?
+    @Published var extraPayment: Double?
     
     // MARK: - Computed Numeric Values
-    private var contractAmount: Double {
-        Double(contractAmountText) ?? 0
-    }
-    private var cost: Double? {
-        Double(costText)
-    }
-    private var extraPayment: Double? {
-        Double(extraPaymentText)
-    }
+  
     
-    private var totalAmount: Double {
+    
+    
+     var totalAmount: Double {
         contractAmount + (extraPayment ?? 0) - (cost ?? 0)
     }
 
@@ -220,6 +215,7 @@ final class EditTaskViewModel: ObservableObject {
         self.isRemote = task.isRemote
         self.status = Status(rawValue: task.statusString ?? "") ?? .scheduled
         self.contractAmountText = String(format: "%.0f", task.contractAmount)
+        self.contractAmount = task.contractAmount
         if task.cost > 0 {
             self.costText = String(format: "%.0f", task.cost)
         } else {
@@ -230,7 +226,7 @@ final class EditTaskViewModel: ObservableObject {
         } else {
             self.extraPaymentText = ""
         }
-        self.paymentType = PaymentType(rawValue: task.paymentType ?? "") ?? .cash
+       
 
         // Populate client info
         self.firstName = task.client?.firstName ?? ""
@@ -285,7 +281,7 @@ final class EditTaskViewModel: ObservableObject {
             status: status,
             contractAmount: contractAmount,
             extraPayment: extraPayment,
-            paymentType: paymentType,
+            paymentType: paymentType ?? .none,
             cost: cost
         )
     }
