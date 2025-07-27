@@ -3,27 +3,11 @@
 import SwiftUI
 
 struct NewTaskView: View {
-    enum Field {
-        case firstName
-    }
+   
     
     @StateObject private var viewModel = CreateTaskViewModel()
     @StateObject private var clientsListViewModel = ClientsListViewModel()
-    
-    @State private var firstName = ""
-    @State private var roomType = "кв"
-    @State private var entranceType = "под"
-    @State private var street = ""
-    @State private var description = ""
-    @State private var building = ""
-    @State private var apartment = ""
-    @State private var entrance = ""
-    @State private var floor = ""
-    @State private var countryCode = ""
-    @State private var phoneNumber = ""
-    @State private var costText: String = ""
-    @State private var contractAmountText: String = ""
-    
+  
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 8
     private let maxStreetCharactersCount: Int = 44
@@ -35,32 +19,20 @@ struct NewTaskView: View {
     private let maxPhoneNumberCharactersCount: Int = 14
     private let maxContractAmountCharacters: Int = 6
     private let maxCostCharacters: Int = 6
-    
-    
-    @State var contractAmount: Double = 0
-    @State var cost: Double = 0
+
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var DescriptionCharactersTextOpacity: Double = 0
     @State private var streetChevronOpacity: Double = 1
-    @State private var isPrivateHouse = false
-    @State private var isRemote = false
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
     @State private var hideScrollContentBackground = false
-    @State private var selectedDate = Date()
     @State private var textFieldColor: CustomColor = .pureWhite
-    @FocusState private var focusedField: Field?
+    
     
     @Environment(\.dismiss)
     private var dismiss
-    
-    
+
     var body: some View {
-        
-        
-            let roomTypes = ["кв", "оф", "каб"]
-            let entranceTypes = ["под", "вход"]
-        
         
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)

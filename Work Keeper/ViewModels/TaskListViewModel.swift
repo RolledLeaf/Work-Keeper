@@ -286,15 +286,18 @@ final class EditTaskViewModel: ObservableObject {
     // MARK: - Public methods
     /// Apply changes and save to Core Data
     func update() {
-        // Update client properties
-        if let client = task.client {
-            client.firstName = firstName
-            client.lastName = lastName
-            client.phone = phoneNumber
+        // Update client
+        guard let client = task.client else {
+            print("❌ Ошибка: у задачи отсутствует клиент")
+            return
         }
 
-        // Update primary address
-        if let address = (task.client?.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
+        // Обновляем клиента и адрес, как и раньше
+        client.firstName = firstName
+        client.lastName = lastName
+        client.phone = phoneNumber
+
+        if let address = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
             address.street?.name = streetName
             address.house = house
             address.apartment = apartment
@@ -305,10 +308,11 @@ final class EditTaskViewModel: ObservableObject {
             address.roomType = roomType
         }
 
+        // безопасный вызов updateTask
         store.updateTask(
             task,
             scheduledAt: scheduledAt,
-            client: task.client!, // force operation!
+            client: client,
             taskDescription: descriptionText.isEmpty ? nil : descriptionText,
             comment: comment.isEmpty ? nil : comment,
             isRemote: isRemote,

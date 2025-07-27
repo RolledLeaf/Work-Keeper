@@ -2,32 +2,9 @@ import SwiftUI
 
 struct EditTaskView: View {
     
-    enum Field {
-        case firstName
-    }
-    
     @ObservedObject var viewModel: EditTaskViewModel
     @StateObject private var clientsListViewModel = ClientsListViewModel()
-    
-    @State private var firstName = ""
-    @State private var comment = ""
-    @State private var roomType = "кв"
-    @State private var entranceType = "под"
-    @State private var street = ""
-    @State private var description = ""
-    @State private var building = ""
-    @State private var apartment = ""
-    @State private var entrance = ""
-    @State private var floor = 0
-    @State private var countryCode = ""
-    @State private var phoneNumber = ""
-    @State private var costText: String = ""
-    @State private var contractAmountText: String = ""
-    @State var houseString: String = ""
-    @State var floorText: String = ""
-    
-    @State private var date: Date = Date()
-    
+   
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 8
     private let maxStreetCharactersCount: Int = 44
@@ -40,28 +17,16 @@ struct EditTaskView: View {
     private let maxPhoneNumberCharactersCount: Int = 14
     private let maxContractAmountCharacters: Int = 6
     private let maxCostCharacters: Int = 6
-    
-    private var totalAmount: Double {
-        contractAmount + (extraPayment) - (cost)
-    }
-    
-    
-    @State var contractAmount: Double = 0
-    @State var cost: Double = 0
-    @State var extraPayment: Double = 0
+
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var maxCharachtersWarningTextOpacity: Double = 0
     @State private var maxCharachtersWarningCommentTextOpacity: Double = 0
     @State private var streetChevronOpacity: Double = 1
-    @State private var isPrivateHouse = false
-    @State private var isRemote = false
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
     @State private var hideScrollContentBackground = false
-    @State private var selectedDate = Date()
     @State private var textFieldColor: CustomColor = .pureWhite
-    @FocusState private var focusedField: Field?
-    
+ 
     @Environment(\.dismiss)
     private var dismiss
     
@@ -70,10 +35,7 @@ struct EditTaskView: View {
            self._viewModel = ObservedObject(wrappedValue: viewModel)
        }
     var body: some View {
-      
-        let roomTypes = ["кв", "оф", "каб"]
-        let entranceTypes = ["под", "вход"]
-        
+   
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             
