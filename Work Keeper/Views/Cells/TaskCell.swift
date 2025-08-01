@@ -151,7 +151,7 @@ struct TaskRow: View {
                                 Text("\(task.client?.primaryAddress?.entranceType ?? "под.") \(task.client?.primaryAddress?.entrance ?? defaultNumber)")
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
-                                Text("эт. \(task.client?.primaryAddress?.floor ?? 0)")
+                                Text("эт. \(task.client?.primaryAddress?.floor ?? "")")
                                     .foregroundColor(.custom(.taskTextGray))
                             }
                             .padding(.trailing, 90)

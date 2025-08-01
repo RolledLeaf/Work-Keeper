@@ -38,8 +38,7 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var house: String = ""
     @Published var apartment: String = ""
     @Published var entrance: String = ""
-    @Published var floor: Int16 = 0
-    @Published var floorText: String = ""
+    @Published var floor: String = ""
     @Published var isPrivateHouse: Bool = false
     @Published var firstName: String = ""
     @Published var lastName: String = ""
@@ -206,12 +205,12 @@ final class EditTaskViewModel: ObservableObject {
     @Published var house: String
     @Published var apartment: String
     @Published var entrance: String
-    @Published var floorText: String
+    @Published var floor: String
     @Published var isPrivateHouse: Bool
   
     @Published var shouldBlockEditing = false
 
-    @Published var floor: Int16?
+  
     @Published var contractAmount: Double
     @Published var cost: Double?
     @Published var extraPayment: Double?
@@ -267,7 +266,7 @@ final class EditTaskViewModel: ObservableObject {
             self.house = address.house ?? ""
             self.apartment = address.apartment ?? ""
             self.entrance = address.entrance ?? ""
-            self.floorText = "\(address.floor)"
+            self.floor = address.floor ?? ""
             self.isPrivateHouse = address.isPrivateHouse
             self.roomType = address.roomType ?? "кв."
             self.entranceType = address.entranceType ?? "под."
@@ -276,7 +275,7 @@ final class EditTaskViewModel: ObservableObject {
             self.house = ""
             self.apartment = ""
             self.entrance = ""
-            self.floorText = ""
+            self.floor = ""
             self.isPrivateHouse = false
             self.roomType =  ""
             self.entranceType = ""
@@ -302,7 +301,7 @@ final class EditTaskViewModel: ObservableObject {
             address.house = house
             address.apartment = apartment
             address.entrance = entrance
-            address.floor = Int16(floorText) ?? 0
+            address.floor = floor
             address.isPrivateHouse = isPrivateHouse
             address.entranceType = entranceType
             address.roomType = roomType

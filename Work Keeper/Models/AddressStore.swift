@@ -12,7 +12,7 @@ final class AddressStore: NSObject {
     func createAddress(house: String,
                        apartment: String?,
                        entrance: String?,
-                       floor: Int16,
+                       floor: String,
                        isPrivateHouse: Bool,
                        street: Street,
                        roomType: String,
@@ -22,7 +22,7 @@ final class AddressStore: NSObject {
         address.house = house
         address.apartment = apartment
         address.entrance = entrance
-        address.floor = Int16(floor)
+        address.floor = floor
         address.isPrivateHouse = isPrivateHouse
         address.street = street
         address.roomType = roomType
@@ -37,7 +37,7 @@ final class AddressStore: NSObject {
     func createOrFetchAddress(house: String,
                               apartment: String?,
                               entrance: String?,
-                              floor: Int16,
+                              floor: String,
                               isPrivateHouse: Bool,
                               street: Street,
                               client: Client,
@@ -94,7 +94,7 @@ final class AddressStore: NSObject {
                      house: String,
                      apartment: String?,
                      entrance: String?,
-                     floor: Int,
+                     floor: String,
                      isPrivateHouse: Bool,
                        roomType: String,
                            entranceType: String
@@ -102,7 +102,7 @@ final class AddressStore: NSObject {
         address.house = house
         address.apartment = apartment
         address.entrance = entrance
-        address.floor = Int16(floor)
+        address.floor = floor
         address.isPrivateHouse = isPrivateHouse
         address.entranceType = entranceType
         address.roomType = roomType

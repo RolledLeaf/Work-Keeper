@@ -4,7 +4,7 @@
         <attribute name="apartment" optional="YES" attributeType="String"/>
         <attribute name="entrance" optional="YES" attributeType="String"/>
         <attribute name="entranceType" optional="YES" attributeType="String" defaultValueString="под."/>
-        <attribute name="floor" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="floor" optional="YES" attributeType="String"/>
         <attribute name="house" attributeType="String"/>
         <attribute name="isPrimary" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isPrivateHouse" attributeType="Boolean" usesScalarValueType="YES"/>

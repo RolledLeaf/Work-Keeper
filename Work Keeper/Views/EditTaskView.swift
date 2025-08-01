@@ -17,6 +17,7 @@ struct EditTaskView: View {
     private let maxPhoneNumberCharactersCount: Int = 14
     private let maxContractAmountCharacters: Int = 6
     private let maxCostCharacters: Int = 6
+    private var msxFloorCharactersCount: Int = 3
 
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var maxCharachtersWarningTextOpacity: Double = 0
@@ -461,15 +462,13 @@ struct EditTaskView: View {
                         
                         ZStack {
                             Color.custom(textFieldColor)
-                            TextField("", text: $viewModel.floorText)
+                            TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.shouldBlockEditing)
                                 .font(.system(size: 19, weight: .regular, design: .default))
-                                .onChange(of: viewModel.floorText) { newValue in
-                                    if let value = Int16(newValue) {
-                                        viewModel.floor = value
-                                    } else {
-                                        viewModel.floor = 0
+                                .onChange(of: viewModel.floor) { newValue in
+                                    if newValue.count > maxFloorCharactersCount {
+                                        viewModel.floor = String(newValue.prefix(maxFloorCharactersCount))
                                     }
                                 }
                         }
@@ -690,7 +689,7 @@ struct EditTaskView: View {
                     viewModel.apartment = primaryAddress.apartment ?? ""
                     viewModel.entrance = primaryAddress.entrance ?? ""
                   
-                    viewModel.floorText = "\(primaryAddress.floor)"
+                    viewModel.floor = "\(primaryAddress.floor)"
                 }
             }
         }) {

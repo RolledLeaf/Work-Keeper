@@ -19,6 +19,7 @@ struct NewTaskView: View {
     private let maxPhoneNumberCharactersCount: Int = 14
     private let maxContractAmountCharacters: Int = 6
     private let maxCostCharacters: Int = 6
+    private let maxFloorCharacters: Int = 3
 
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var DescriptionCharactersTextOpacity: Double = 0
@@ -413,15 +414,13 @@ struct NewTaskView: View {
                         
                         ZStack {
                             Color.custom(textFieldColor)
-                            TextField("", text: $viewModel.floorText)
+                            TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.shouldBlockEditing)
                                 .font(.system(size: 19, weight: .regular, design: .default))
-                                .onChange(of: viewModel.floorText) { newValue in
-                                    if let value = Int16(newValue) {
-                                        viewModel.floor = value
-                                    } else {
-                                        viewModel.floor = 0
+                                .onChange(of: viewModel.floor) { newValue in
+                                    if newValue.count > maxFloorCharacters {
+                                        viewModel.floor = String(newValue.prefix(maxFloorCharacters))
                                     }
                                 }
                         }
@@ -600,8 +599,8 @@ struct NewTaskView: View {
                     viewModel.house = primaryAddress.house ?? ""
                     viewModel.apartment = primaryAddress.apartment ?? ""
                     viewModel.entrance = primaryAddress.entrance ?? ""
-                    viewModel.floor = primaryAddress.floor
-                    viewModel.floorText = "\(primaryAddress.floor)"
+                    viewModel.floor = primaryAddress.floor ?? ""
+                   
                 }
             }
         }) {
