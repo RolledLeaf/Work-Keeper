@@ -215,7 +215,11 @@ final class EditTaskViewModel: ObservableObject {
     @Published var floor: String
     @Published var isPrivateHouse: Bool
   
-    @Published var shouldBlockEditing = false
+    @Published var remoteEdditingBlock = false
+    @Published var privateHouseBlock = false
+    
+    @Published var shouldBlockRemote = false
+    @Published var shouldBlockPrivate = false
 
   
     @Published var contractAmount: Double
