@@ -17,7 +17,8 @@ struct EditTaskView: View {
     private let maxPhoneNumberCharactersCount: Int = 14
     private let maxContractAmountCharacters: Int = 6
     private let maxCostCharacters: Int = 6
-    private var msxFloorCharactersCount: Int = 3
+    private let maxExtraPaymentCharacters: Int = 6
+    
 
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var maxCharachtersWarningTextOpacity: Double = 0
@@ -594,8 +595,9 @@ struct EditTaskView: View {
                             .onChange(of: viewModel.extraPaymentText) { newValue in
                                 if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
                                     viewModel.extraPayment = value
-                                } else {
-                                    viewModel.extraPayment = 0
+                                }
+                                if newValue.count > maxExtraPaymentCharacters {
+                                    viewModel.extraPaymentText = String(newValue.prefix(maxExtraPaymentCharacters))
                                 }
                             }
                             .background(

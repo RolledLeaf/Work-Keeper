@@ -479,6 +479,10 @@ struct NewTaskView: View {
                                 } else {
                                     viewModel.contractAmount = 0
                                 }
+                                
+                                if newValue.count > maxContractAmountCharacters {
+                                    viewModel.contractAmountText = String(newValue.prefix( maxContractAmountCharacters))
+                                }
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
@@ -510,6 +514,9 @@ struct NewTaskView: View {
                                     viewModel.cost = value
                                 } else {
                                     viewModel.cost = 0
+                                }
+                                if newValue.count > maxCostCharacters {
+                                    viewModel.costText = String(newValue.prefix(maxCostCharacters))
                                 }
                             }
                             .background(
