@@ -52,7 +52,14 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var cost: Double? = nil
     @Published var costText: String = ""
     @Published var selectedPayment: PaymentType = .cash
-    @Published var shouldBlockEditing = false
+    
+    @Published var remoteEdditingBlock = false
+    @Published var privateHouseBlock = false
+    
+    @Published var shouldBlockRemote = false
+    @Published var shouldBlockPrivate = false
+    
+    
     @Published  var roomType: String?
     @Published  var entranceType: String?
     

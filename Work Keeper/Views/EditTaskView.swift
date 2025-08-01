@@ -27,6 +27,8 @@ struct EditTaskView: View {
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
     @State private var hideScrollContentBackground = false
+    @State private var streetTextFieldColor: CustomColor = .pureWhite
+    @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
  
     @Environment(\.dismiss)
@@ -489,6 +491,7 @@ struct EditTaskView: View {
                         
                         Toggle("", isOn: $viewModel.isPrivateHouse)
                             .padding(.horizontal)
+                        
                         
                     }
                     // Стек Этаж - Частный дом, конец

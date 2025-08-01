@@ -27,6 +27,8 @@ struct NewTaskView: View {
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
     @State private var hideScrollContentBackground = false
+    @State private var streetTextFieldColor: CustomColor = .pureWhite
+    @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
     
     
@@ -227,23 +229,32 @@ struct NewTaskView: View {
                         Toggle("", isOn: $viewModel.isRemote)
                             .padding(.horizontal)
                             .padding(.trailing, 40)
+                            .disabled(viewModel.shouldBlockRemote)
                             .onChange(of: viewModel.isRemote) { _, newValue in
                                 if newValue == true {
-                                    viewModel.shouldBlockEditing = true
+                                    viewModel.remoteEdditingBlock = true
+                                    viewModel.privateHouseBlock = true
+                                    viewModel.shouldBlockPrivate = true
                                     hideScrollContentBackground = true
                                     streetChevronOpacity = 0
+                                    houseTextFieldColor = CustomColor.inactiveFiledGray
+                                    streetTextFieldColor = CustomColor.inactiveFiledGray
                                     textFieldColor = CustomColor.inactiveFiledGray
                                 } else {
                                     streetChevronOpacity = 1
-                                    viewModel.shouldBlockEditing = false
+                                    viewModel.remoteEdditingBlock = false
+                                    viewModel.privateHouseBlock = false
+                                    viewModel.shouldBlockPrivate = false
                                     hideScrollContentBackground = false
                                     textFieldColor = .pureWhite
+                                    houseTextFieldColor = .pureWhite
+                                    streetTextFieldColor = .pureWhite
                                 }
                             }
                     }
                     
                     ZStack {
-                        Color.custom(textFieldColor)
+                        Color.custom(streetTextFieldColor)
                         HStack {
                             Spacer()
                             TextEditor(text: $viewModel.streetName)
@@ -253,8 +264,8 @@ struct NewTaskView: View {
                                 .lineLimit(1, reservesSpace: false)
                                 .minimumScaleFactor(0.5)
                                 .multilineTextAlignment(.leading)
-                                .disabled(viewModel.shouldBlockEditing)
-                                .background(Color.custom(textFieldColor))
+                                .disabled(viewModel.remoteEdditingBlock)
+                                .background(Color.custom(streetTextFieldColor))
                                 .scrollContentBackground(hideScrollContentBackground ? .hidden : .visible)
                             //.onChange(of: street) { oldValue, newValue in
                                 .onChange(of: viewModel.streetName) { _, newValue in
@@ -308,11 +319,11 @@ struct NewTaskView: View {
                         
                         
                         ZStack {
-                            Color.custom(textFieldColor)
+                            Color.custom(houseTextFieldColor)
                             TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.remoteEdditingBlock)
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -350,7 +361,7 @@ struct NewTaskView: View {
                             TextField("", text: $viewModel.apartment)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.privateHouseBlock)
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharactersCount {
                                         viewModel.apartment = String(newValue.prefix(maxApartmentCharactersCount))
@@ -386,7 +397,7 @@ struct NewTaskView: View {
                             TextField("", text: $viewModel.entrance)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.privateHouseBlock)
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharactersCount {
                                         viewModel.entrance = String(newValue.prefix(maxEntranceCharactersCount))
@@ -416,7 +427,7 @@ struct NewTaskView: View {
                             Color.custom(textFieldColor)
                             TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.privateHouseBlock)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .onChange(of: viewModel.floor) { newValue in
                                     if newValue.count > maxFloorCharacters {
@@ -440,7 +451,18 @@ struct NewTaskView: View {
                         
                         Toggle("", isOn: $viewModel.isPrivateHouse)
                             .padding(.horizontal)
-                        
+                            .disabled(viewModel.shouldBlockPrivate)
+                            .onChange(of: viewModel.isPrivateHouse) { newValue in
+                                if newValue == true {
+                                    viewModel.shouldBlockRemote = true
+                                    viewModel.privateHouseBlock = true
+                                    textFieldColor = CustomColor.inactiveFiledGray
+                                } else {
+                                    viewModel.privateHouseBlock = false
+                                    viewModel.shouldBlockRemote = false
+                                    textFieldColor = .pureWhite
+                                }
+                            }
                     }
                     // Стек Этаж - Частный дом, конец
                     .padding(.horizontal, 35)
@@ -620,4 +642,3 @@ struct NewTaskView: View {
 #Preview {
     NewTaskView()
 }
-
