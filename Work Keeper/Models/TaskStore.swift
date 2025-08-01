@@ -130,12 +130,16 @@ final class TaskStore: NSObject, ObservableObject {
         
         // Update financials
         task.contractAmount = contractAmount
-        task.cost = cost ?? 0
-        task.extraPayment = extraPayment ?? 0
+        if let cost = cost {
+            task.cost = cost
+        }
+        if let extra = extraPayment {
+            task.extraPayment = extra
+        }
         task.paymentType = paymentType.rawValue
         
         // Recalculate total
-        task.totalAmount = contractAmount + (extraPayment ?? 0) - (cost ?? 0)
+        task.totalAmount = task.contractAmount + task.extraPayment - task.cost
         
         // Save changes
         do {

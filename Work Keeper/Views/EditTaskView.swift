@@ -522,11 +522,16 @@ struct EditTaskView: View {
                             .multilineTextAlignment(.center)
                             .keyboardType(.decimalPad)
                             .onChange(of: viewModel.contractAmountText) { newValue in
+                                if newValue.count > maxContractAmountCharacters {
+                                    viewModel.contractAmountText = String(newValue.prefix( maxContractAmountCharacters))
+                                }
+                                
                                 if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
                                     viewModel.contractAmount = value
                                 } else {
                                     viewModel.contractAmount = 0
                                 }
+                               
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
@@ -554,10 +559,12 @@ struct EditTaskView: View {
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
                             .onChange(of: viewModel.costText) { newValue in
+                                if newValue.count > maxCostCharacters {
+                                    viewModel.costText = String(newValue.prefix(maxCostCharacters))
+                                }
                                 if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
                                     viewModel.cost = value
-                                } else {
-                                    viewModel.cost = 0
+                               
                                 }
                             }
                             .background(
