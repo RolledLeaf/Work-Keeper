@@ -32,7 +32,7 @@ extension Color {
 }
 
 extension Color {
-    static func random() -> Color {
+    static func randomColor() -> Color {
         return Color(.sRGB, red: .random(in: 0...1), green: .random(in: 0...1), blue: .random(in: 0...1))
     }
 }

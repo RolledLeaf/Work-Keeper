@@ -114,7 +114,7 @@ final class AddressStore: NSObject {
         }
     }
     
-    // redundunt methods
+ 
     func deleteAddress(_ address: Address) {
         context.delete(address)
         do {

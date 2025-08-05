@@ -114,4 +114,23 @@ extension Client {
     var primaryAddress: Address? {
         addressesArray.first(where: { $0.isPrimary })
     }
+    
+    var scheduledTasksCount: Int {
+          (tasks as? Set<Task>)?
+              .filter { $0.status == .scheduled }
+              .count ?? 0
+      }
+
+      var completedTasksCount: Int {
+          (tasks as? Set<Task>)?
+              .filter { $0.status == .completed }
+              .count ?? 0
+      }
+
+      var canceledTasksCount: Int {
+          (tasks as? Set<Task>)?
+              .filter { $0.status == .canceled }
+              .count ?? 0
+      }
+    
 }

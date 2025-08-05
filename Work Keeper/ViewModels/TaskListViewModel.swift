@@ -51,7 +51,7 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var contractAmount: Double = 0
     @Published var cost: Double? = nil
     @Published var costText: String = ""
-    @Published var selectedPayment: PaymentType = .cash
+    @Published var selectedPayment: PaymentType = .none
     
     @Published var remoteEdditingBlock = false
     @Published var privateHouseBlock = false
@@ -276,8 +276,8 @@ final class EditTaskViewModel: ObservableObject {
             self.streetName = address.street?.name ?? ""
             self.house = address.house ?? ""
             self.apartment = address.apartment ?? ""
-            self.entrance = address.entrance ?? ""
-            self.floor = address.floor ?? ""
+            self.entrance = address.entrance ?? "?"
+            self.floor = address.floor ?? "?"
             self.isPrivateHouse = address.isPrivateHouse
             self.roomType = address.roomType ?? "кв."
             self.entranceType = address.entranceType ?? "под."

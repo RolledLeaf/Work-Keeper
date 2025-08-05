@@ -17,7 +17,7 @@ struct TaskRow: View {
     
  
     var clientTasksCount: Int {
-        guard let tasks = task.client?.task as? Set<Task> else { return 0 }
+        guard let tasks = task.client?.tasks as? Set<Task> else { return 0 }
         return tasks.count
     }
     
