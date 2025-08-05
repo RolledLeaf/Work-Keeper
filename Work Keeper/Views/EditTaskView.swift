@@ -705,7 +705,7 @@ struct EditTaskView: View {
                 hideKeyboard()
             }
         }
-        
+       
         .sheet(isPresented: $showStreetsView) {
             StreetsListView()
         }
@@ -726,6 +726,36 @@ struct EditTaskView: View {
             }
         }) {
             ClientListToPickView(viewModel: clientsListViewModel)
+        }
+        .onAppear {
+            if viewModel.isPrivateHouse {
+                viewModel.shouldBlockRemote = true
+                viewModel.privateHouseBlock = true
+                textFieldColor = CustomColor.inactiveFiledGray
+            } else {
+                viewModel.privateHouseBlock = false
+                viewModel.shouldBlockRemote = false
+                textFieldColor = .pureWhite
+            }
+        }
+        .onAppear {
+            if viewModel.isRemote {
+                viewModel.remoteEdditingBlock = true
+                viewModel.privateHouseBlock = true
+                viewModel.shouldBlockPrivate = true
+                hideScrollContentBackground = true
+                streetChevronOpacity = 0
+                houseTextFieldColor = CustomColor.inactiveFiledGray
+                streetTextFieldColor = CustomColor.inactiveFiledGray
+                textFieldColor = CustomColor.inactiveFiledGray
+            } else {
+                streetChevronOpacity = 1
+                viewModel.remoteEdditingBlock = false
+                viewModel.privateHouseBlock = false
+                viewModel.shouldBlockPrivate = false
+                hideScrollContentBackground = false
+                
+            }
         }
     }
 }
