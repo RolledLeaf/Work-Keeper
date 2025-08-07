@@ -27,7 +27,7 @@ struct TaskListView: View {
     var groupedTasks: [String: [Task]] {
         Dictionary(grouping: viewModel.tasks) { task in
             let formatter = customDateFormatter
-            return formatter.string(from: task.scheduledAt ?? date1) //Force operation
+            return formatter.string(from: task.scheduledAt ?? date1)
         }
     }
     

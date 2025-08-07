@@ -6,6 +6,10 @@ import Combine
 final class ClientsListViewModel: ObservableObject {
     @Published var clients: [Client] = []
     @Published var selectedClient: Client?
+    @Published var firstName: String = ""
+    @Published var lastName: String = ""
+    @Published var phone: String = ""
+  
 
     private let store = ClientStore()
 

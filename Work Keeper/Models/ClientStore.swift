@@ -133,4 +133,40 @@ extension Client {
               .count ?? 0
       }
     
+    var formattedAddress: String {
+        guard let address = address?.allObjects.first as? Address else { return "Адрес не указан" }
+        return "\(address.street?.name ?? "") \(address.house ?? "")"
+    }
+    
+  
+    
+    
+    var apartmentNumber: String {
+        guard let address = address?.allObjects.first as? Address else { return "?" }
+        return address.apartment ?? "?"
+    }
+    
+    var entranceNumber: String {
+        guard let address = address?.allObjects.first as? Address else { return "?" }
+        return address.entrance ?? "?"
+    }
+    
+    var floorNumber: String {
+        guard let address = address?.allObjects.first as? Address else { return "?" }
+        return address.floor ?? "?"
+    }
+    
+    var totalIncome: Double {
+           (tasks as? Set<Task>)?
+               .compactMap { $0.totalAmount }
+               .reduce(0, +) ?? 0
+       }
+
+      
+
+       var totalTasksCount: Int {
+           (tasks as? Set<Task>)?.count ?? 0
+       }
+    
+   
 }
