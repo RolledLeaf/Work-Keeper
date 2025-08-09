@@ -13,8 +13,8 @@ final class ClientStore: NSObject, ObservableObject {
 func createClient(firstName: String,
                   lastName: String?,
                   addresses: [Address],
-                  phone: String,
-                  comment: String?) -> Client {
+                  phone: String
+                  ) -> Client {
         
         let client = Client(context: context)
         client.id = UUID()
@@ -22,7 +22,7 @@ func createClient(firstName: String,
         client.lastName = lastName
     client.address = NSSet(array: addresses)
         client.phone = phone
-        client.comment = comment
+       
         
         do {
             try context.save()
@@ -50,16 +50,15 @@ func createOrFetchClient(firstName: String,
             return createClient(firstName: firstName,
                                 lastName: lastName,
                                 addresses: addresses,
-                                phone: phone,
-                                comment: comment)
+                                phone: phone
+                                )
         }
     } catch {
         print("Error in createOrFetchClient: \(error)")
         return createClient(firstName: firstName,
                             lastName: lastName,
                             addresses: addresses,
-                            phone: phone,
-                            comment: comment)
+                            phone: phone)
     }
 }
     
@@ -79,14 +78,14 @@ func createOrFetchClient(firstName: String,
                       firstName: String,
                       lastName: String?,
                       addresses: [Address],
-                      phone: String,
-                      comment: String?) {
+                      phone: String
+                      ) {
       
         client.firstName = firstName
         client.lastName = lastName
         client.address = NSSet(array: addresses)
         client.phone = phone
-        client.comment = comment
+        
         
         do {
             try context.save()
@@ -95,14 +94,31 @@ func createOrFetchClient(firstName: String,
         }
     }
     
-    func deleteClient(_ client: Client) {
-        context.delete(client)
-        do {
-            try context.save()
-        } catch {
-            print("❌ Error deleting client: \(error)")
+func deleteClient(_ client: Client) {
+    // 1) Удаляем адреса клиента (Address -> client является обязательной связью)
+    if let addresses = client.address as? Set<Address> {
+        for address in addresses {
+            context.delete(address)
         }
     }
+
+    // 2) Удаляем задачи клиента, если в модели Task.client стоит required
+    if let tasks = client.tasks as? Set<Task> {
+        for task in tasks {
+            context.delete(task)
+        }
+    }
+
+    // 3) Удаляем самого клиента
+    context.delete(client)
+
+    // 4) Сохраняем изменения
+    do {
+        try context.save()
+    } catch {
+        print("❌ Error deleting client: \(error)")
+    }
+}
     
 }
 

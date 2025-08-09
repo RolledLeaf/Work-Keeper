@@ -78,6 +78,23 @@ struct ClientsListView: View {
                                 .onTapGesture {
                                     selectedClient = client
                                 }
+                                .swipeActions(edge: .trailing) {
+                                    Button(action: {
+                                        viewModel.delete(client)
+                                    }) {
+                                        Image("delete")
+                                        Text("Удалить")
+                                    }
+                                    .tint(Color.custom(.deleteButtonRed))
+
+                                    Button(action: {
+                                        
+                                    }) {
+                                        Image("edit")
+                                        Text("Редактировать")
+                                    }
+                                    .tint(Color.custom(.editButtonGray))
+                                }
                             
                         }
                         .listRowSeparator(.hidden)
@@ -96,12 +113,16 @@ struct ClientsListView: View {
             .padding(.trailing, 15)
             .padding(.leading, 20)
         }
-        .sheet(isPresented: $showNewClientView) {
+        .sheet(isPresented: $showNewClientView, onDismiss: {
+            viewModel.loadClients()
+            print("clients list reloaded (onDismiss)")
+        }) {
             NewClientView()
         }
         
         .onAppear {
             viewModel.loadClients()
+            print("clients list reloaded")
         }
         
     }

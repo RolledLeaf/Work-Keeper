@@ -36,21 +36,62 @@ final class ClientsListViewModel: ObservableObject {
 }
 
 final class CreateClientViewModel: ObservableObject {
-    @Published var fistName: String = ""
+    @Published var firstName: String = ""
     @Published var lastName: String = ""
-    @Published var phone: String = ""
+    
+    @Published var phoneNumber: String = ""
     @Published var addresses: [Address] = []
+    @Published var apartment: String = ""
     @Published var comment: String = ""
+    @Published var entrance = ""
+    @Published var floor = ""
+    @Published var street = ""
+    @Published var building = ""
+    @Published var streetName = ""
+    @Published var countryCode: String = ""
+    @Published var isPrivateHouse: Bool = false
+    
+    
+    @Published var roomType = "кв"
+    @Published var entranceType = "под"
     
     private let store = ClientStore()
+    private let streetStore = StreetStore()
+    private let addressStore = AddressStore()
     
     func createClient() {
-        store.createClient(
-            firstName: fistName,
-            lastName: lastName,
-            addresses: addresses,
-            phone: phone,
-            comment: comment
+        // 1) Улица
+        let street = streetStore.createOrFetchStreet(name: streetName.trimmingCharacters(in: .whitespacesAndNewlines))
+
+        // 2) Клиент (пока без адресов)
+        let client = store.createClient(
+            firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
+            lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
+            addresses: [],
+            phone: phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
+
+        // 3) Адрес, привязанный к клиенту
+        let address = addressStore.createOrFetchAddress(
+            house: building.trimmingCharacters(in: .whitespacesAndNewlines),
+            apartment: apartment.trimmingCharacters(in: .whitespacesAndNewlines),
+            entrance: entrance.trimmingCharacters(in: .whitespacesAndNewlines),
+            floor: floor,
+            isPrivateHouse: isPrivateHouse,
+            street: street,
+            client: client,
+            isPrimary: true,
+            roomType: roomType,
+            entranceType: entranceType
+        )
+
+        // 4) Обновляем клиента, чтобы адрес точно оказался в его наборе адресов и сохранился комментарий
+        store.updateClient(
+            client,
+            firstName: client.firstName ?? "",
+            lastName: client.lastName,
+            addresses: [address],
+            phone: client.phone ?? ""
         )
     }
 }
