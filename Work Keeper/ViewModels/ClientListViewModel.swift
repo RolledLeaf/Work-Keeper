@@ -9,6 +9,10 @@ final class ClientsListViewModel: ObservableObject {
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var phone: String = ""
+    
+    @Published var client: Client?
+    
+    
   
 
     private let store = ClientStore()

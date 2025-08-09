@@ -23,16 +23,26 @@ enum CustomColor: String {
     case inactiveFiledGray = "inactiveFiledGray"
     case pureWhite = "pureWhite"
     case taskViewGreen = "taskViewGreen"
+    case greenStartPoint = "greenStartPoint"
+    case greenEndPoint = "greenEndPoint"
+    case yellowStartPoint = "yellowStartPoint"
+    case yellowEndPoint = "yellowEndPoint"
+    case orangeStartPoint = "orangeStartPoint"
+    case orangeEndPoint = "orangeEndPoint"
 }
 
-extension Color {
-    static func custom(_ color: CustomColor) -> Color? {
-        return Color(color.rawValue)
-    }
-}
+
+
+
 
 extension Color {
     static func randomColor() -> Color {
         return Color(.sRGB, red: .random(in: 0...1), green: .random(in: 0...1), blue: .random(in: 0...1))
+    }
+}
+
+extension Color {
+    static func custom(_ color: CustomColor) -> Color {
+        Color(color.rawValue)        
     }
 }

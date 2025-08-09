@@ -12,7 +12,7 @@ struct ClientRow: View {
        
         
         ZStack {
-            Color.custom(.newTaskBackgroundGray)?.ignoresSafeArea()
+            Color.custom(.newTaskBackgroundGray).ignoresSafeArea()
             
             HStack {
                 ZStack {

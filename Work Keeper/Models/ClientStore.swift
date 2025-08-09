@@ -107,6 +107,14 @@ func createOrFetchClient(firstName: String,
 }
 
 extension Client {
+    var hasAddress: Bool {
+            guard let streetName = primaryAddress?.street?.name?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !streetName.isEmpty else {
+                return false
+            }
+            return true
+        }
+    
     var addressesArray: [Address] {
         (address as? Set<Address>)?.sorted { $0.house ?? "" < $1.house ?? "" } ?? []
     }

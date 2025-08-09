@@ -1,7 +1,5 @@
 import SwiftUI
 
-
-
 struct StreetRow: View {
     let street: String
        let isFirst: Bool
@@ -10,7 +8,7 @@ struct StreetRow: View {
     var body: some View {
         
         ZStack {
-            Color.custom(.addressListGray)?.ignoresSafeArea()
+            Color.custom(.addressListGray).ignoresSafeArea()
             VStack {
                 Spacer()
                 HStack {
