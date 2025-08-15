@@ -12,6 +12,7 @@ private func dayKey(_ date: Date) -> Date {
 struct TaskListView: View {
     @StateObject private var viewModel = TaskListViewModel()
     
+  
     @State private var selectedDate = Date()
     @State private var showNewTaskView = false
     @State private var showCompleteTaskView = false
@@ -37,7 +38,7 @@ struct TaskListView: View {
             VStack {
                 HStack {
                     Button(action: {
-                        //действие
+                        selectedDate = Date() 
                     }) {
                         Image("today")
                             .resizable()
