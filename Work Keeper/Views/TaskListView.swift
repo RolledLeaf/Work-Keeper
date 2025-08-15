@@ -4,7 +4,7 @@ import SwiftUI
 
 
 let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
-let date1 = Date()
+
 
 
 struct TaskListView: View {
@@ -24,12 +24,7 @@ struct TaskListView: View {
     @State private var selectedTaskForEdit: Task?
    
     
-    var groupedTasks: [String: [Task]] {
-        Dictionary(grouping: viewModel.tasks) { task in
-            let formatter = customDateFormatter
-            return formatter.string(from: task.scheduledAt ?? date1)
-        }
-    }
+ 
     
     @ViewBuilder
     private var mainContent: some View {
@@ -103,10 +98,10 @@ struct TaskListView: View {
                     )
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
+                            .fill(Color.custom(.searchFieldGray))
                     )
 
-                if groupedTasks.isEmpty {
+                if viewModel.groupedTasksByDate.isEmpty {
                     Spacer()
                         .frame(height: 117)
 
@@ -127,9 +122,12 @@ struct TaskListView: View {
                         .frame(height: 38)
                     NavigationStack {
                         List {
-                            ForEach(groupedTasks.keys.sorted { $0 > $1 }, id: \.self) { dateKey in
-                                Section(header: Text(dateKey).font(.headline)) {
-                                    ForEach(groupedTasks[dateKey] ?? []) { task in
+                           ForEach(viewModel.groupedTasksByDate.keys.sorted(by: >), id: \.self) { dateKey in
+                                Section(header: Text(customDateFormatter.string(from: dateKey)).font(.headline)) {
+                                    ForEach(
+                                        (viewModel.groupedTasksByDate[dateKey] ?? [])
+                                            .sorted { $0.scheduledAt ?? Date.distantPast < $1.scheduledAt ?? Date.distantPast }
+                                    ) { task in
                                         TaskRow(task: task)
                                             .contentShape(Rectangle())
                                             .onTapGesture {

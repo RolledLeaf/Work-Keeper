@@ -8,6 +8,13 @@ final class TaskListViewModel: ObservableObject {
     @Published var lastName: String = ""
     @Published var phone: String = ""
     
+    var groupedTasksByDate: [Date: [Task]] {
+        Dictionary(grouping: tasks) { task in
+            let date = task.scheduledAt ?? Date.distantPast
+            return Calendar.current.startOfDay(for: date) // normalize to day
+        }
+    }
+    
     private let store = TaskStore()
     
     init() {

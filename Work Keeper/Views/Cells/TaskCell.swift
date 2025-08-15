@@ -48,7 +48,7 @@ struct TaskRow: View {
                 if task.isRemote == false {
                     VStack {
                         HStack {
-                            Text(task.scheduledAt?.formattedAsTime() ?? "\(date1)") //Некрасиво развёрнут опционал даты
+                            Text(task.scheduledAt?.formattedAsTime() ?? "\(Date())") //Некрасиво развёрнут опционал даты
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
@@ -196,7 +196,7 @@ struct TaskRow: View {
                 } else {
                     VStack {
                         HStack {
-                            Text(task.scheduledAt?.formattedAsTime() ?? "\(date1)") //Некрасиво развёрнут опционал даты
+                            Text(task.scheduledAt?.formattedAsTime() ?? "\(Date())") //Некрасиво развёрнут опционал даты
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
