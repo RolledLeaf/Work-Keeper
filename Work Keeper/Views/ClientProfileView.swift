@@ -19,7 +19,7 @@ struct ClientProfileView: View {
                         Text(client.firstName ?? "имя не указано")
                             .font(.custom(SFPro.bold.rawValue, size: 32))
                         
-                        Text(client.phone ?? "Телефон не указан")
+                        Text(client.phone?.formattedAsPhone() ?? "Телефон не указан")
                             .font(.custom(SFPro.regular.rawValue, size: 16))
                             .foregroundColor(.custom(.taskTextGray))
                     }

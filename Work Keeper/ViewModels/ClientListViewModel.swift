@@ -39,7 +39,7 @@ final class CreateClientViewModel: ObservableObject {
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     
-    @Published var phoneNumber: String = ""
+    @Published var phoneDigits: String = ""  // храним только 10 цифр РФ
     @Published var addresses: [Address] = []
     @Published var apartment: String = ""
     @Published var comment: String = ""
@@ -68,7 +68,7 @@ final class CreateClientViewModel: ObservableObject {
             firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
             lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
             addresses: [],
-            phone: phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+            phone: phoneDigits.isEmpty ? "" : "+7" + phoneDigits
         )
 
         // 3) Адрес, привязанный к клиенту

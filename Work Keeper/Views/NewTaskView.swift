@@ -182,7 +182,7 @@ struct NewTaskView: View {
                             
                             ZStack {
                                 Color.white
-                                TextField("", text: $phoneMasked)
+                                TextField("+7", text: $phoneMasked)
                                     .font(.system(size: 19, weight: .regular, design: .default))
                                     .foregroundColor(.black)
                                     .offset(x: 8)

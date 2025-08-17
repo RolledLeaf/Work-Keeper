@@ -45,7 +45,7 @@ struct ClientRow: View {
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 25, alignment: .center)
                     Spacer()
-                    Text("\(client.phone ?? "")")
+                    Text(client.phone?.formattedAsPhone() ?? "")
                         .font(.custom(SFPro.regular.rawValue, size: 16))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 20, alignment: .center)
