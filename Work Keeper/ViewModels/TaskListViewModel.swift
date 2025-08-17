@@ -245,6 +245,7 @@ final class EditTaskViewModel: ObservableObject {
     // Client and address fields
     @Published var firstName: String
     @Published var lastName: String
+    @Published var phoneDigits: String = ""
     @Published var phoneNumber: String
     @Published var streetName: String
     @Published var house: String
@@ -283,6 +284,13 @@ final class EditTaskViewModel: ObservableObject {
 
     // MARK: - Initialization
     init(task: Task) {
+        let rawPhone = task.client?.phone ?? ""
+        let digitsAll = rawPhone.filter { $0.isNumber }
+        var nsn = digitsAll
+        if nsn.hasPrefix("7") { nsn.removeFirst() }     // убираем +7
+        if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
+        self.phoneDigits = nsn
+        self.phoneNumber = rawPhone // можно не использовать во View
         self.task = task
         // Populate from existing Task
         self.scheduledAt = task.scheduledAt ?? Date()
@@ -343,7 +351,7 @@ final class EditTaskViewModel: ObservableObject {
         // Обновляем клиента и адрес, как и раньше
         client.firstName = firstName
         client.lastName = lastName
-        client.phone = phoneNumber
+        client.phone = phoneDigits.isEmpty ? "" : "+7" + phoneDigits
 
         if let address = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
             address.street?.name = streetName
@@ -374,17 +382,44 @@ final class EditTaskViewModel: ObservableObject {
         print("""
          ✅ Задание успешно изменено:
          📆 Дата: \(scheduledAt)
-         👤 Клиент: \(firstName) \(lastName), телефон: \(phoneNumber)
-         🏠 Адрес: \(streetName), дом: \(house), \(roomType) \(apartment), \(entranceType) \(entrance), этаж \(floor)
+         👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
+                🏠 Адрес: \(streetName), дом: \(house), \(roomType ?? "") \(apartment), \(entranceType ?? "") \(entrance), этаж \(floor)
          📝 Описание: \(descriptionText)
          💬 Комментарий: \(comment)
          🌍 Удалённо: \(isRemote ? "Да" : "Нет")
          💵 Сумма по договору: \(contractAmount)
          💸 Издержки: \(cost ?? 0)
-         Тип помещения: \(roomType)
-         Тип Входа: \(entranceType)
+         Тип помещения: \(roomType ?? "")
+                 Тип Входа: \(entranceType ?? "")
          🧾 Статус: \(status)
          """)
+    }
+    
+    private func maskRU(fromDigits s: String) -> String {
+        if s.isEmpty { return "" }
+        var result = "+7"
+        let chars = Array(s)
+
+        result += "("
+        let a = min(3, chars.count)
+        result += String(chars[0..<a])
+        if chars.count < 3 { return result }
+
+        result += ")"
+        let b = min(3, chars.count - 3)
+        if b > 0 { result += String(chars[3..<(3 + b)]) }
+        if chars.count < 6 { return result }
+
+        result += "-"
+        let c = min(2, chars.count - 6)
+        if c > 0 { result += String(chars[6..<(6 + c)]) }
+        if chars.count < 8 { return result }
+
+        result += "-"
+        let d = min(2, chars.count - 8)
+        if d > 0 { result += String(chars[8..<(8 + d)]) }
+
+        return result
     }
 }
 

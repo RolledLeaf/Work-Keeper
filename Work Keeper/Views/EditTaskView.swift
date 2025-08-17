@@ -19,7 +19,8 @@ struct EditTaskView: View {
     private let maxCostCharacters: Int = 6
     private let maxExtraPaymentCharacters: Int = 6
     
-
+    @State private var phoneMasked: String = ""
+    @State private var previousPhoneMasked: String = ""
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var maxCharachtersWarningTextOpacity: Double = 0
     @State private var maxCharachtersWarningCommentTextOpacity: Double = 0
@@ -227,19 +228,35 @@ struct EditTaskView: View {
                             
                             ZStack {
                                 Color.white
-                                TextField("", text: $viewModel.phoneNumber)
-                                    .font(.system(size: 19, weight: .regular, design: .default))
-                                    .foregroundColor(.black)
-                                    .offset(x: 8)
-                                    .keyboardType(.phonePad)
-                                    .onChange(of: viewModel.phoneNumber) { newValue in
-                                        if newValue.count > maxPhoneNumberCharactersCount {
-                                            viewModel.phoneNumber = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                                TextField("", text: $phoneMasked)
+                                        .font(.system(size: 19, weight: .regular))
+                                        .foregroundColor(.black)
+                                        .offset(x: 8)
+                                        .keyboardType(.phonePad)
+                                        .textContentType(.telephoneNumber)
+                                        .onChange(of: phoneMasked) { newValue in
+                                            let prevDigits = digitsOnly(previousPhoneMasked)
+                                            var newDigits  = digitsOnly(newValue)
+
+                                            // Backspace по масочному символу — удаляем ещё одну цифру
+                                            if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
+                                                if !newDigits.isEmpty { newDigits.removeLast() }
+                                            }
+
+                                            // Нормализация РФ: убираем ведущие 8/7, ограничиваем до 10
+                                            if newDigits.hasPrefix("8") { newDigits.removeFirst() }
+                                            if newDigits.hasPrefix("7") { newDigits.removeFirst() }
+                                            if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
+
+                                            phoneMasked = maskRU(fromDigits: newDigits)
+                                            previousPhoneMasked = phoneMasked
+
+                                            // В VM храним только цифры
+                                            viewModel.phoneDigits = newDigits
                                         }
-                                    }
                             }
                             .cornerRadius(10)
-                            .frame(width: 170, height: 40)
+                            .frame(width: 180, height: 40)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
                                     .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
@@ -712,7 +729,13 @@ struct EditTaskView: View {
         .sheet(isPresented: $showClientListToPickView, onDismiss: {
             if let selectedClient = clientsListViewModel.selectedClient {
                 viewModel.firstName = selectedClient.firstName ?? ""
-                viewModel.phoneNumber = selectedClient.phone ?? ""
+                let digitsAll = (selectedClient.phone ?? "").filter { $0.isNumber }
+                var nsn = digitsAll
+                if nsn.hasPrefix("7") { nsn.removeFirst() }
+                if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
+                viewModel.phoneDigits = nsn
+                phoneMasked = maskRU(fromDigits: nsn)
+                previousPhoneMasked = phoneMasked
                 if let primaryAddress = selectedClient.address?.first(where: {
                     ($0 as? Address)?.isPrimary == true
                 }) as? Address {
@@ -721,12 +744,17 @@ struct EditTaskView: View {
                     viewModel.apartment = primaryAddress.apartment ?? ""
                     viewModel.entrance = primaryAddress.entrance ?? ""
                   
-                    viewModel.floor = "\(primaryAddress.floor)"
+                    viewModel.floor = "\(primaryAddress.floor ?? "")"
                 }
             }
         }) {
             ClientListToPickView(viewModel: clientsListViewModel)
         }
+        .onAppear {
+            phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
+            previousPhoneMasked = phoneMasked
+        }
+        
         .onAppear {
             if viewModel.isPrivateHouse {
                 viewModel.shouldBlockRemote = true
@@ -757,6 +785,40 @@ struct EditTaskView: View {
                 
             }
         }
+        
+        
+    }
+    
+    // MARK: - Phone helpers
+    private func digitsOnly(_ s: String) -> String {
+        String(s.filter { $0.isNumber })
+    }
+
+    private func maskRU(fromDigits s: String) -> String {
+        if s.isEmpty { return "" }
+        var result = "+7"
+        let chars = Array(s)
+
+        result += "("
+        let a = min(3, chars.count)
+        result += String(chars[0..<a])
+        if chars.count < 3 { return result }
+
+        result += ")"
+        let b = min(3, chars.count - 3)
+        if b > 0 { result += String(chars[3..<(3 + b)]) }
+        if chars.count < 6 { return result }
+
+        result += "-"
+        let c = min(2, chars.count - 6)
+        if c > 0 { result += String(chars[6..<(6 + c)]) }
+        if chars.count < 8 { return result }
+
+        result += "-"
+        let d = min(2, chars.count - 8)
+        if d > 0 { result += String(chars[8..<(8 + d)]) }
+
+        return result
     }
 }
 
