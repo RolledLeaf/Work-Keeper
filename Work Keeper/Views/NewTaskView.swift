@@ -16,10 +16,13 @@ struct NewTaskView: View {
     private let maxEntranceCharactersCount: Int = 3
     private let maxFloorCharactersCount: Int = 3
     private let maxCountryCodeCharactersCount: Int = 3
-    private let maxPhoneNumberCharactersCount: Int = 14
+    private let maxPhoneNumberCharactersCount: Int = 16
     private let maxContractAmountCharacters: Int = 6
     private let maxCostCharacters: Int = 6
     private let maxFloorCharacters: Int = 3
+    
+    @State private var phoneMasked: String = ""
+    @State private var previousPhoneMasked: String = "" // у тебя уже есть — оставь
 
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var DescriptionCharactersTextOpacity: Double = 0
@@ -30,6 +33,7 @@ struct NewTaskView: View {
     @State private var streetTextFieldColor: CustomColor = .pureWhite
     @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
+   
     
     
     @Environment(\.dismiss)
@@ -178,22 +182,43 @@ struct NewTaskView: View {
                             
                             ZStack {
                                 Color.white
-                                TextField("", text: $viewModel.phone)
+                                TextField("", text: $phoneMasked)
                                     .font(.system(size: 19, weight: .regular, design: .default))
                                     .foregroundColor(.black)
                                     .offset(x: 8)
                                     .keyboardType(.phonePad)
-                                    .onChange(of: viewModel.phone) { newValue in
-                                        if newValue.count > maxPhoneNumberCharactersCount {
-                                            viewModel.phone = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                                    .textContentType(.telephoneNumber)
+                                    .onChange(of: phoneMasked) { newValue in
+                                        let prevDigits = digitsOnly(previousPhoneMasked)
+                                        var newDigits  = digitsOnly(newValue)
+
+                                        // Если удалили масочный символ — удалим ещё одну цифру вручную
+                                        if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
+                                            if !newDigits.isEmpty { newDigits.removeLast() }
                                         }
+
+                                        // Нормализация под РФ: убираем ведущие 8/7, ограничиваем до 10
+                                        if newDigits.hasPrefix("8") { newDigits.removeFirst() }
+                                        if newDigits.hasPrefix("7") { newDigits.removeFirst() }
+                                        if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
+
+                                        let masked = maskRU(fromDigits: newDigits) // \"+7(XXX)XXX-XX-XX\"
+
+                                        if masked.count > maxPhoneNumberCharactersCount {
+                                            phoneMasked = String(masked.prefix(maxPhoneNumberCharactersCount))
+                                        } else {
+                                            phoneMasked = masked
+                                        }
+
+                                        previousPhoneMasked = phoneMasked
+                                        viewModel.phoneDigits = newDigits // ← главное: в VM кладём только цифры
                                     }
                             }
                             .cornerRadius(10)
-                            .frame(width: 170, height: 40)
+                            .frame(width: 180, height: 40)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                             )
                             
                         }
@@ -614,13 +639,27 @@ struct NewTaskView: View {
             }
         }
         
+        .onAppear {
+            phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
+            previousPhoneMasked = phoneMasked
+        }
+        
         .sheet(isPresented: $showStreetsView) {
             StreetsListView()
         }
         .sheet(isPresented: $showClientListToPickView, onDismiss: {
             if let selectedClient = clientsListViewModel.selectedClient {
                 viewModel.firstName = selectedClient.firstName ?? ""
-                viewModel.phone = selectedClient.phone ?? ""
+                // Достанем только цифры
+                let digitsAll = digitsOnly(selectedClient.phone ?? "")
+                // Срежем ведущую 7 (если храним \"+7...\") и ограничим до 10 цифр NSN
+                var nsn = digitsAll
+                if nsn.hasPrefix("7") { nsn.removeFirst() }
+                if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
+
+                viewModel.phoneDigits = nsn
+                phoneMasked = maskRU(fromDigits: nsn)
+                previousPhoneMasked = phoneMasked
                 if let primaryAddress = selectedClient.address?.first(where: {
                     ($0 as? Address)?.isPrimary == true
                 }) as? Address {
@@ -635,6 +674,48 @@ struct NewTaskView: View {
         }) {
             ClientListToPickView(viewModel: clientsListViewModel)
         }
+    }
+    
+    // Приводит телефон к маске "+7(XXX)XXX-XX-XX" (Россия) из любого ввода
+    private func formatPhoneMaskedRU(_ raw: String) -> String {
+        var s = digitsOnly(raw)
+        if s.hasPrefix("8") { s.removeFirst() }
+        if s.hasPrefix("7") { s.removeFirst() }
+        if s.count > 10 { s = String(s.prefix(10)) }
+        return maskRU(fromDigits: s)
+    }
+
+    // Оставляет только цифры из строки
+    private func digitsOnly(_ s: String) -> String {
+        return String(s.filter { $0.isNumber })
+    }
+
+    // Формирует маску "+7(XXX)XXX-XX-XX" из 0...10 цифр (только цифры)
+    private func maskRU(fromDigits s: String) -> String {
+        if s.isEmpty { return "" }
+        var result = "+7"
+        let chars = Array(s)
+
+        result += "("
+        let a = min(3, chars.count)
+        result += String(chars[0..<a])
+        if chars.count < 3 { return result }
+
+        result += ")"
+        let b = min(3, chars.count - 3)
+        if b > 0 { result += String(chars[3..<(3 + b)]) }
+        if chars.count < 6 { return result }
+
+        result += "-"
+        let c = min(2, chars.count - 6)
+        if c > 0 { result += String(chars[6..<(6 + c)]) }
+        if chars.count < 8 { return result }
+
+        result += "-"
+        let d = min(2, chars.count - 8)
+        if d > 0 { result += String(chars[8..<(8 + d)]) }
+
+        return result
     }
 }
 

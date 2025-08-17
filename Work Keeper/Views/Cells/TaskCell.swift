@@ -48,7 +48,7 @@ struct TaskRow: View {
                 if task.isRemote == false {
                     VStack {
                         HStack {
-                            Text(task.scheduledAt?.formattedAsTime() ?? "\(Date())") //Некрасиво развёрнут опционал даты
+                            Text(task.scheduledAt?.formattedAsTime() ?? "\(Date())")
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
@@ -96,8 +96,10 @@ struct TaskRow: View {
                             
                             ZStack {
                                 Image("phoneNumberCloud")
+                                    .resizable()
+                                    .frame(width: 150, height: 30)
                                 Text("\(task.client?.phone ?? "")")
-                                    .font(.custom(SFPro.regular.rawValue, size: 12))
+                                    .font(.custom(SFPro.regular.rawValue, size: 15))
                                     .offset(x: -3)
                                     .onTapGesture {
                                         if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
@@ -106,7 +108,6 @@ struct TaskRow: View {
                                            }
                                        }
                             }
-                          
                             .padding(.leading, -70)
                             .offset(x: 11)
                             .opacity(showPhoneNumberCloudLocal ? 1 : 0)

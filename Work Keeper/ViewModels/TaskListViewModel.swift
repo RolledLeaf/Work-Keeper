@@ -52,7 +52,8 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var isPrivateHouse: Bool = false
     @Published var firstName: String = ""
     @Published var lastName: String = ""
-    @Published var phone: String = ""
+    // Храним только цифры (10-значный российский NSN)
+    @Published var phoneDigits: String = ""
     @Published var comment: String = ""
     @Published var description: String = ""
     @Published var isRemote: Bool = false
@@ -96,12 +97,12 @@ final class CreateTaskViewModel: ObservableObject {
     func saveTask() {
         let street = streetStore.createOrFetchStreet(name: streetName)
 
-        // Сначала создаём или подтягиваем клиента без адреса
+        let normalizedPhone = phoneDigits.isEmpty ? nil : "+7" + phoneDigits
         let client = clientStore.createOrFetchClient(
             firstName: firstName,
             lastName: lastName,
             addresses: [],
-            phone: phone,
+            phone: normalizedPhone ?? "",
             comment: comment.isEmpty ? nil : comment
         )
 
@@ -135,17 +136,44 @@ final class CreateTaskViewModel: ObservableObject {
         print("""
          ✅ Задание успешно создано:
          📆 Дата: \(scheduledAt)
-         👤 Клиент: \(firstName) \(lastName), телефон: \(phone)
-         🏠 Адрес: \(streetName), дом: \(house), \(roomType) \(apartment), \(entranceType) \(entrance), этаж \(floor)
+         👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
+         🏠 Адрес: \(streetName), дом: \(house), \(roomType ?? "") \(apartment), \(entranceType ?? "") \(entrance), этаж \(floor)
          📝 Описание: \(description)
          💬 Комментарий: \(comment)
          🌍 Удалённо: \(isRemote ? "Да" : "Нет")
          💵 Сумма по договору: \(contractAmount)
          💸 Издержки: \(cost ?? 0)
-         Тип помещения: \(roomType)
-         Тип Входа: \(entranceType)
+         Тип помещения: \(roomType ?? "")
+         Тип Входа: \(entranceType ?? "")
          🧾 Статус: \(status.rawValue)
          """)
+    }
+    
+    private func maskRU(fromDigits s: String) -> String {
+        if s.isEmpty { return "" }
+        var result = "+7"
+        let chars = Array(s)
+
+        result += "("
+        let a = min(3, chars.count)
+        result += String(chars[0..<a])
+        if chars.count < 3 { return result }
+
+        result += ")"
+        let b = min(3, chars.count - 3)
+        if b > 0 { result += String(chars[3..<(3 + b)]) }
+        if chars.count < 6 { return result }
+
+        result += "-"
+        let c = min(2, chars.count - 6)
+        if c > 0 { result += String(chars[6..<(6 + c)]) }
+        if chars.count < 8 { return result }
+
+        result += "-"
+        let d = min(2, chars.count - 8)
+        if d > 0 { result += String(chars[8..<(8 + d)]) }
+
+        return result
     }
 }
 

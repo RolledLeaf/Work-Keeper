@@ -242,7 +242,7 @@ struct EditTaskView: View {
                             .frame(width: 170, height: 40)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                             )
                             
                         }

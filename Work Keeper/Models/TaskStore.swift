@@ -19,6 +19,8 @@ final class TaskStore: NSObject, ObservableObject {
                     contractAmount: Double,
                     cost: Double?) -> Task {
         
+        
+        
         let task = Task(context: context)
         task.id = UUID()
         task.scheduledAt = scheduledAt
@@ -38,6 +40,8 @@ final class TaskStore: NSObject, ObservableObject {
         
         return task
     }
+    
+   
     
     func makeCompleted(_ task: Task,
                        comment: String?,
