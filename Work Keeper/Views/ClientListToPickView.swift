@@ -30,14 +30,7 @@ struct ClientListToPickView: View {
                     
                     Spacer()
                     
-                    Button(action: {
-                        showNewClientView = true
-                    }) {
-                        Image("addClientButton")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                    }
-                    .padding(.trailing, 5)
+                    
                 }
                 
                 TextField("Поиск клиента", text: .constant(""))

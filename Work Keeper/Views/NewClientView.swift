@@ -3,7 +3,7 @@ import SwiftUI
 struct NewClientView: View {
     
     @StateObject private var viewModel = CreateClientViewModel()
-    
+    @StateObject private var streetListViewModel = StreetListViewModel()
    
     @State private var roomType = "кв"
     @State private var entranceType = "под"
@@ -152,6 +152,9 @@ struct NewClientView: View {
                             Spacer()
                             
                             Button(action: {
+                                streetListViewModel.selectedStreet = nil
+                                focusedField = nil
+                                hideKeyboard()
                                 showStreetsView = true
                             }) {
                                 Image(systemName: "chevron.right")
@@ -423,9 +426,14 @@ struct NewClientView: View {
             hideKeyboard()
         }
         
-        .sheet(isPresented: $showStreetsView) {
-            StreetsListView()
-        }
+     .sheet(isPresented: $showStreetsView, onDismiss: {
+         if let selected = streetListViewModel.selectedStreet {
+             viewModel.streetName = selected.name ?? ""
+         }
+     }) {
+         StreetsListView(viewModel: streetListViewModel)
+     }
+
         .onAppear {
             phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
             previousPhoneMasked = phoneMasked

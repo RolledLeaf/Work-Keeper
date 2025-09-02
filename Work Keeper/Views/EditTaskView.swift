@@ -4,6 +4,7 @@ struct EditTaskView: View {
     
     @ObservedObject var viewModel: EditTaskViewModel
     @StateObject private var clientsListViewModel = ClientsListViewModel()
+    @StateObject private var streetListViewModel = StreetListViewModel()
    
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 8
@@ -723,9 +724,14 @@ struct EditTaskView: View {
             }
         }
        
-        .sheet(isPresented: $showStreetsView) {
-            StreetsListView()
+        .sheet(isPresented: $showStreetsView, onDismiss: {
+            if let selected = streetListViewModel.selectedStreet {
+                viewModel.streetName = selected.name ?? ""
+            }
+        }) {
+            StreetsListView(viewModel: streetListViewModel)
         }
+        
         .sheet(isPresented: $showClientListToPickView, onDismiss: {
             if let selectedClient = clientsListViewModel.selectedClient {
                 viewModel.firstName = selectedClient.firstName ?? ""

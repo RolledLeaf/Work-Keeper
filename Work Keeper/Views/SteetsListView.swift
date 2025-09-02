@@ -1,12 +1,10 @@
 import SwiftUI
 
-
-private let streets: [String] = ["Академика Пилюгина", "Академика Янгеля", "Березина", "Высоцкого", "Герцина" , "Железнодорожный проезд"]
-
-
 struct StreetsListView: View {
     @State private var showAddStreetView = false
-    @State private var selectedStreet: String = ""
+    @ObservedObject var viewModel: StreetListViewModel
+    @Environment(\.dismiss)
+    private var dismiss
     
     var body: some View {
         Spacer()
@@ -35,7 +33,7 @@ struct StreetsListView: View {
             Spacer()
                 .frame(height: 15)
             
-            TextField("Начните вводить адрес", text: $selectedStreet)
+            TextField("Начните вводить адрес", text: .constant(""))
                 .padding(9)
                 .padding(.leading, 25)
                 .onTapGesture {
@@ -54,7 +52,7 @@ struct StreetsListView: View {
                 )
                 .padding(.horizontal, 13)
             
-            if streets.isEmpty {
+            if viewModel.streets.isEmpty {
                 
                 VStack {
                     Spacer()
@@ -69,17 +67,21 @@ struct StreetsListView: View {
             } else {
                 Spacer()
                     .frame(height: 40)
-                List(streets.indices, id: \.self) { index in
-                    let street = streets[index]
-                    let isFirst = index == streets.startIndex
-                    let isLast = index == streets.endIndex - 1
+                List(viewModel.streets.indices, id: \.self) { index in
+                    let street = viewModel.streets[index]
+                
 
                     StreetRow(
-                        street: street,
-                        isFirst: isFirst,
-                        isLast: isLast
+                        street: street
+      
                     )
+                   
                     .listRowSeparator(.hidden)
+                    .onTapGesture {
+                        viewModel.pickStreet(street)
+                        dismiss()
+                        print("selected street: \(street)")
+                    }
                 }
                 .listStyle(PlainListStyle())
                 .padding(.horizontal, 10)
@@ -87,6 +89,10 @@ struct StreetsListView: View {
             }
             Spacer()
         }
+        .onAppear {
+            viewModel.loadStreets()
+        }
+        
         .onTapGesture {
             hideKeyboard()
         }
@@ -98,5 +104,5 @@ struct StreetsListView: View {
 }
 
 #Preview {
-    StreetsListView()
+    StreetsListView(viewModel: StreetListViewModel())
 }

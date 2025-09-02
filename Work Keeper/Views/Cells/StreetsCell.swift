@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct StreetRow: View {
-    let street: String
-       let isFirst: Bool
-       let isLast: Bool
+    
+    let street: Street
+     
     
     var body: some View {
         
@@ -12,13 +12,13 @@ struct StreetRow: View {
             VStack {
                 Spacer()
                 HStack {
-                    Text(street)
+                    Text(street.name ?? "без названия")
                         .padding(.leading, 15)
                     Spacer()
                 }
                 Spacer()
                 Rectangle()
-                    .opacity(isLast ? 0 : 1)
+                    
                     .frame(height: 1)
                     .padding(.leading, 15)
                     .foregroundColor(.custom(.separatorLineGray))
@@ -27,14 +27,11 @@ struct StreetRow: View {
         }
         
         .listRowInsets(EdgeInsets())
-        .cornerRadius(7,corners: isFirst && isLast ? [.allCorners] :
-                        isFirst ? [.topLeft, .topRight] :
-                        isLast ? [.bottomLeft, .bottomRight] :
-                        [])
+        .cornerRadius(7)
         .listRowSeparator(.hidden)
     }
 }
 
 #Preview {
-    StreetsListView()
+    StreetsListView(viewModel: StreetListViewModel())
 }

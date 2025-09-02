@@ -91,15 +91,16 @@ struct TaskRow: View {
                             
                                 Text(task.client?.firstName ?? "")
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
+                                   
                             
                             Spacer()
                             
                             ZStack {
                                 Image("phoneNumberCloud")
-                                    .resizable()
-                                    .frame(width: 150, height: 30)
+                                    
+                                    
                                 Text("\(task.client?.phone ?? "")")
-                                    .font(.custom(SFPro.regular.rawValue, size: 15))
+                                    .font(.custom(SFPro.regular.rawValue, size: 13))
                                     .offset(x: -3)
                                     .onTapGesture {
                                         if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
@@ -197,7 +198,7 @@ struct TaskRow: View {
                 } else {
                     VStack {
                         HStack {
-                            Text(task.scheduledAt?.formattedAsTime() ?? "\(Date())") //Некрасиво развёрнут опционал даты
+                            Text(task.scheduledAt?.formattedAsTime() ?? "\(Date())")
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
                             
@@ -246,7 +247,7 @@ struct TaskRow: View {
                             ZStack {
                                 Image("phoneNumberCloud")
                                 Text("\(task.client?.phone ?? "")")
-                                    .font(.custom(SFPro.regular.rawValue, size: 12))
+                                    .font(.custom(SFPro.regular.rawValue, size: 13))
                                     .offset(x: -3)
                                     .onTapGesture {
                                         if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
