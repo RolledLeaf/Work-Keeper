@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct TaskView: View {
  
@@ -6,6 +7,8 @@ struct TaskView: View {
   
     let task: Task
   
+    @State private var didCopyTaskDescription = false
+    @State private var didCopyTaskComment = false
     
     var body: some View {
         
@@ -161,12 +164,26 @@ struct TaskView: View {
                 
                 HStack {
                     Text("Задание")
-                        .font(.custom(SFPro.regular.rawValue, size: 16))
+                        .font(.custom(SFPro.regular.rawValue, size: 19))
                         .foregroundColor(.custom(.taskTextGray))
                     
                      Spacer()
                     
-                    Image("pen")
+                    Button(action: {
+                        let text = (task.taskDescription ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !text.isBlank else { return }
+                        UIPasteboard.general.string = text
+                        // Show a quick HUD
+                        withAnimation { didCopyTaskDescription = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                            withAnimation { didCopyTaskDescription = false }
+                        }
+                    }) {
+                        Image(systemName: "list.clipboard")
+                            .resizable()
+                            .foregroundColor(.black)
+                            .frame(width: 18, height: 25)
+                    }
                     
                 }
                 .padding(.leading, 30)
@@ -194,12 +211,28 @@ struct TaskView: View {
                 
                 HStack {
                     Text("Комментарий")
-                        .font(.custom(SFPro.regular.rawValue, size: 16))
+                        .font(.custom(SFPro.regular.rawValue, size: 19))
                         .foregroundColor(.custom(.taskTextGray))
                     
                      Spacer()
                     
-                    Image("pen")
+                    Button(action: {
+                        let text = (task.comment ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !text.isBlank else { return }
+                        UIPasteboard.general.string = text
+                        withAnimation { didCopyTaskComment = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                            withAnimation { didCopyTaskComment = false
+                            }
+                        }
+                    }) {
+                        Image(systemName: "list.clipboard")
+                            .resizable()
+                            .foregroundColor(.black)
+                            .frame(width: 18, height: 25)
+                    }
+                   
                     
                 }
                 .padding(.leading, 30)
@@ -231,7 +264,7 @@ struct TaskView: View {
                 
                 HStack {
                     Text("Оплата")
-                        .font(.custom(SFPro.regular.rawValue, size: 16))
+                        .font(.custom(SFPro.regular.rawValue, size: 19))
                         .foregroundColor(.custom(.taskTextGray))
                     
                     Spacer()
@@ -322,7 +355,33 @@ struct TaskView: View {
             .toolbar(.hidden, for: .tabBar)
             .navigationBarBackButtonHidden(false)
         }
+        .overlay(alignment: .center) {
+            if didCopyTaskDescription {
+                
+                Text("Текст задания скопирован")
+                    .font(.custom(SFPro.regular.rawValue, size: 16))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .padding(.top, 20)
+            }
+        }
+        .overlay(alignment: .center) {
+            if didCopyTaskComment {
+                Text("Комментарий скопирован")
+                    .font(.custom(SFPro.regular.rawValue, size: 16))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .padding(.top, 20)
+            
+            }
+        }
     }
+    
 }
+
 
 
