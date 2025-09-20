@@ -1,16 +1,10 @@
 import SwiftUI
 
-struct AddStreetView: View {
-    
+struct EditStreetView: View {
     private let maxStreetCharactersCount: Int = 44
     @State private var streetName: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State var saveColor: Color = .gray
-    
-    @ObservedObject  var viewModel: StreetListViewModel
-    
-    @Environment(\.dismiss)
-    private var dismiss
     
     var body: some View {
        
@@ -18,16 +12,13 @@ struct AddStreetView: View {
         VStack {
             HStack {
                 Spacer()
-            Text("Новая улица")
+            Text("Изменение названия")
                 .font(.custom(SFPro.bold.rawValue, size: 20))
                 .padding(.trailing, 30)
                 .offset(y: 30)
               
                 Button(action: {
-                    if !streetName.isBlank {
-                        viewModel.addStreet(streetName)
-                        dismiss()
-                    }
+                    //Action
                 }) {
                    
                         Text("Сохранить")
@@ -38,8 +29,7 @@ struct AddStreetView: View {
                             .tint(saveColor)
                             .onChange(of: streetName) {
                                 if streetName.isBlank {
-                                    saveColor = .gray
-                                } else {
+                                    saveColor = .gray } else {
                                         saveColor = .black
                                     }
                             }
@@ -90,10 +80,9 @@ struct AddStreetView: View {
         }
         
     }
-    
-       
+
 }
 
-
-
-
+#Preview {
+    EditStreetView()
+}

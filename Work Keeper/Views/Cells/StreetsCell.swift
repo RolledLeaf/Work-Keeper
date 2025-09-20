@@ -29,6 +29,30 @@ struct StreetRow: View {
         .listRowInsets(EdgeInsets())
         .cornerRadius(7)
         .listRowSeparator(.hidden)
+        .contentShape(Rectangle())
+        .contextMenu {
+            Button(action: {
+                //action
+            }) {
+                Label {
+                    Text("Редактировать")
+                        .font(.custom(SFPro.regular.rawValue, size: 17))
+                } icon: {
+                    Image("pen")
+                }
+            }
+            
+            Button(role: .destructive) {
+                    // действие удаления
+                } label: {
+                Label {
+                    Text("Удалить")
+                } icon: {
+                    Image(systemName: "trash")
+                        
+                }
+            }
+        }
     }
 }
 

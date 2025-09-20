@@ -96,8 +96,10 @@ struct StreetsListView: View {
         .onTapGesture {
             hideKeyboard()
         }
-        .sheet(isPresented: $showAddStreetView) {
-            AddStreetView()
+        .sheet(isPresented: $showAddStreetView, onDismiss: {
+            viewModel.loadStreets()
+        }) {
+            AddStreetView(viewModel: StreetListViewModel())
         }
     }
      
