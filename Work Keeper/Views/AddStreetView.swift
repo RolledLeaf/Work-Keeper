@@ -6,6 +6,7 @@ struct AddStreetView: View {
     @State private var streetName: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State var saveColor: Color = .gray
+    @State var saveButtomOpacity: Double = 0
     
     @ObservedObject  var viewModel: StreetListViewModel
     
@@ -33,14 +34,17 @@ struct AddStreetView: View {
                         Text("Сохранить")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
                             .frame(height: 60)
-              
+                            .opacity(saveButtomOpacity)
                             .frame(width: 100, height: 40)
                             .tint(saveColor)
                             .onChange(of: streetName) {
-                                if streetName.isBlank {
-                                    saveColor = .gray
+                                if !streetName.isBlank {
+                                    saveButtomOpacity = 1
+                                    saveColor = .black
+                                    
                                 } else {
-                                        saveColor = .black
+                                        
+                                    saveButtomOpacity = 0
                                     }
                             }
                             

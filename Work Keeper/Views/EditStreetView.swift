@@ -5,6 +5,14 @@ struct EditStreetView: View {
     @State private var streetName: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State var saveColor: Color = .gray
+    @State var saveButtomOpacity: Double = 0
+    
+    @ObservedObject var viewModel: StreetListViewModel
+    
+    @Environment(\.dismiss)
+    private var dismiss
+    
+    let street: Street
     
     var body: some View {
        
@@ -18,21 +26,25 @@ struct EditStreetView: View {
                 .offset(y: 30)
               
                 Button(action: {
-                    //Action
+                    viewModel.update(street, name: streetName)
+                    dismiss()
                 }) {
-                   
-                        Text("Сохранить")
-                        .font(.custom(SFPro.regular.rawValue, size: 15))
-                            .frame(height: 60)
-              
-                            .frame(width: 100, height: 40)
-                            .tint(saveColor)
-                            .onChange(of: streetName) {
-                                if streetName.isBlank {
-                                    saveColor = .gray } else {
-                                        saveColor = .black
-                                    }
-                            }
+                    Text("Сохранить")
+                    .font(.custom(SFPro.regular.rawValue, size: 15))
+                        .frame(height: 60)
+                        .opacity(saveButtomOpacity)
+                        .frame(width: 100, height: 40)
+                        .tint(saveColor)
+                        .onChange(of: streetName) {
+                            if !streetName.isBlank {
+                                saveButtomOpacity = 1
+                                saveColor = .black
+                                
+                            } else {
+                                    
+                                saveButtomOpacity = 0
+                                }
+                        }
                             
                     
                 }
@@ -83,6 +95,3 @@ struct EditStreetView: View {
 
 }
 
-#Preview {
-    EditStreetView()
-}

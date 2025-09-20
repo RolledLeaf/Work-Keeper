@@ -48,7 +48,7 @@ struct StreetsListView: View {
                     })
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
+                        .fill(Color.custom(.searchFieldGray))
                 )
                 .padding(.horizontal, 13)
             
@@ -72,7 +72,7 @@ struct StreetsListView: View {
                 
 
                     StreetRow(
-                        street: street
+                        viewModel: StreetListViewModel(), street: street
       
                     )
                    

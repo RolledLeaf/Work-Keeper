@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct StreetRow: View {
+    @State private var showEditStreetView = false
+    @ObservedObject var viewModel: StreetListViewModel
     
     let street: Street
      
@@ -32,7 +34,7 @@ struct StreetRow: View {
         .contentShape(Rectangle())
         .contextMenu {
             Button(action: {
-                //action
+                showEditStreetView = true
             }) {
                 Label {
                     Text("Редактировать")
@@ -52,6 +54,12 @@ struct StreetRow: View {
                         
                 }
             }
+        }
+        
+        .sheet(isPresented: $showEditStreetView, onDismiss: {
+            viewModel.loadStreets()
+        }) {
+            EditStreetView(viewModel: StreetListViewModel(), street: street)
         }
     }
 }
