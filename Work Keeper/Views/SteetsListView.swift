@@ -67,22 +67,18 @@ struct StreetsListView: View {
             } else {
                 Spacer()
                     .frame(height: 40)
-                List(viewModel.streets.indices, id: \.self) { index in
-                    let street = viewModel.streets[index]
-                
-
+                List(viewModel.streets) { street in
                     StreetRow(
-                        viewModel: StreetListViewModel(), street: street
-      
+                        viewModel: viewModel, street: street
                     )
-                   
-                    .listRowSeparator(.hidden)
+
                     .onTapGesture {
                         viewModel.pickStreet(street)
                         dismiss()
                         print("selected street: \(street)")
                     }
                 }
+                
                 .listStyle(PlainListStyle())
                 .padding(.horizontal, 10)
                 // убирает отступы List'а
@@ -99,7 +95,7 @@ struct StreetsListView: View {
         .sheet(isPresented: $showAddStreetView, onDismiss: {
             viewModel.loadStreets()
         }) {
-            AddStreetView(viewModel: StreetListViewModel())
+            AddStreetView(viewModel: viewModel)
         }
     }
      

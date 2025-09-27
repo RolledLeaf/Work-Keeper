@@ -2,6 +2,10 @@ import SwiftUI
 
 struct StreetRow: View {
     @State private var showEditStreetView = false
+    @State private var showDeleteStreetAlert = false
+    @State private var streetForEdit: Street?
+    
+    
     @ObservedObject var viewModel: StreetListViewModel
     
     let street: Street
@@ -34,6 +38,7 @@ struct StreetRow: View {
         .contentShape(Rectangle())
         .contextMenu {
             Button(action: {
+                streetForEdit = street
                 showEditStreetView = true
             }) {
                 Label {
@@ -45,7 +50,7 @@ struct StreetRow: View {
             }
             
             Button(role: .destructive) {
-                    // действие удаления
+                showDeleteStreetAlert = true
                 } label: {
                 Label {
                     Text("Удалить")
@@ -55,11 +60,23 @@ struct StreetRow: View {
                 }
             }
         }
+        .confirmationDialog("Удалить эту улицу?", isPresented: $showDeleteStreetAlert, titleVisibility: .visible) {
+            Button("Удалить", role: .destructive) {
+                viewModel.delete(street)
+                viewModel.loadStreets()
+                
+                UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            }
+            Button("Отмена", role: .cancel) { }
+        } message: {
+            Text("Улица будет удалена безвозвратно")
+        }
         
-        .sheet(isPresented: $showEditStreetView, onDismiss: {
+        
+        .sheet(item: $streetForEdit, onDismiss: {
             viewModel.loadStreets()
-        }) {
-            EditStreetView(viewModel: StreetListViewModel(), street: street)
+        }) { street in
+            EditStreetView(viewModel: viewModel, street: street)
         }
     }
 }

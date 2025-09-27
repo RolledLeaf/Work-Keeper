@@ -15,22 +15,22 @@ struct EditStreetView: View {
     let street: Street
     
     var body: some View {
-       
+        
         
         VStack {
             HStack {
                 Spacer()
-            Text("Изменение названия")
-                .font(.custom(SFPro.bold.rawValue, size: 20))
-                .padding(.trailing, 30)
-                .offset(y: 30)
-              
+                Text("Изменение названия")
+                    .font(.custom(SFPro.bold.rawValue, size: 20))
+                    .padding(.trailing, 30)
+                    .offset(y: 30)
+                
                 Button(action: {
                     viewModel.update(street, name: streetName)
                     dismiss()
                 }) {
                     Text("Сохранить")
-                    .font(.custom(SFPro.regular.rawValue, size: 15))
+                        .font(.custom(SFPro.regular.rawValue, size: 15))
                         .frame(height: 60)
                         .opacity(saveButtomOpacity)
                         .frame(width: 100, height: 40)
@@ -41,15 +41,15 @@ struct EditStreetView: View {
                                 saveColor = .black
                                 
                             } else {
-                                    
+                                
                                 saveButtomOpacity = 0
-                                }
+                            }
                         }
-                            
+                    
                     
                 }
                 .padding(.top, 20)
-        }
+            }
             Spacer()
                 .frame(height: 38)
             
@@ -70,11 +70,11 @@ struct EditStreetView: View {
                         maxStreetCharactersTextOpacity = 1 } else {
                             maxStreetCharactersTextOpacity = 0
                         }
-                
+                    
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
+                        .fill(Color.custom(.searchFieldGray))
                         .padding(.horizontal, 15)
                 )
             
@@ -84,14 +84,15 @@ struct EditStreetView: View {
                 .opacity(maxStreetCharactersTextOpacity)
             Spacer()
             
-          
-          
+                .onAppear {
+                    streetName = street.name ?? ""
+                }
+            
         }
         .onTapGesture {
             hideKeyboard()
         }
         
     }
-
+    
 }
-

@@ -577,7 +577,7 @@ struct EditTaskView: View {
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                     .fill(Color.white)
                             )
                     }

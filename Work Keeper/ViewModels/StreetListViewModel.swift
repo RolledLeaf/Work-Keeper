@@ -5,9 +5,10 @@ import Combine
 final class StreetListViewModel: ObservableObject {
     @Published var streets: [Street] = []
     @Published var selectedStreet: Street?
+    
 
     private let store = StreetStore()
-    
+  
 
     init() {
         loadStreets()
@@ -38,3 +39,4 @@ final class StreetListViewModel: ObservableObject {
         loadStreets()
     }
 }
+
