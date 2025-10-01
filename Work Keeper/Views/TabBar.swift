@@ -3,6 +3,7 @@ import SwiftUI
 
 struct TabBar: View {
     @State private var selectedTab = 0
+    @Environment(\.managedObjectContext) private var context
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -25,6 +26,16 @@ struct TabBar: View {
                     }
                 }
                 .tag(1)
+            
+            StatisticsView(context: context)
+                .tabItem {
+                    Image(selectedTab == 2 ? "statsActive" : "statsInactive")
+                        .resizable()
+                        .frame(width: 25, height: 31)
+                    Text("Статистика")
+                    
+                }
+                .tag(2)
         }
         .accentColor(.black)
     }
