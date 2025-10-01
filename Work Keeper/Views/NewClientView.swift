@@ -2,14 +2,12 @@ import SwiftUI
 
 struct NewClientView: View {
     
-    
-    @State private var firstName: String = ""
-    @State private var lastName: String = ""
+    @StateObject private var viewModel = CreateClientViewModel()
+    @StateObject private var streetListViewModel = StreetListViewModel()
+   
     @State private var roomType = "кв"
     @State private var entranceType = "под"
-    @State private var street = ""
-    @State private var comment = ""
-    @State private var building = ""
+
     private var maxFirstNameCharachtersCount: Int = 12
     private var maxLastNameCharachtersCount: Int = 12
     private let maxBuildingCharachtersCount: Int = 8
@@ -19,16 +17,17 @@ struct NewClientView: View {
     private let maxEntranceCharachtersCount: Int = 3
     private let maxFloorCharachtersCount: Int = 3
     private let maxCountryCodeCharactersCount: Int = 3
-    private let maxPhoneNumberCharactersCount: Int = 10
+    private let maxPhoneNumberCharactersCount: Int = 16
+    @State private var phoneMasked: String = ""
+    @State private var previousPhoneMasked: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
-    @State private var apartment = ""
-    @State private var entrance = ""
-    @State private var floor = ""
-    @State private var countryCode = ""
-    @State private var phoneNumber = ""
-    @State private var isPrivateHouse = false
+ 
+    
     @State private var showStreetsView = false
     @FocusState private var focusedField: Field?
+    
+    @Environment(\.dismiss)
+    private var dismiss
     
     enum Field {
         case firstName
@@ -45,7 +44,7 @@ struct NewClientView: View {
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             
-            ScrollView {
+           
                 VStack {
                     
                     Text("Новый клиент")
@@ -61,7 +60,7 @@ struct NewClientView: View {
                         
                         VStack {
                             
-                            TextField("Имя", text: $firstName)
+                            TextField("Имя", text: $viewModel.firstName)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .padding(.leading, 11)
                                 .background(Color.clear)
@@ -70,8 +69,8 @@ struct NewClientView: View {
                                 .onSubmit {
                                     focusedField = .lastName
                                 }
-                                .onChange(of: firstName) { newValue in
-                                    if newValue.count > maxFirstNameCharachtersCount { firstName = String(newValue.prefix(maxFirstNameCharachtersCount))
+                                .onChange(of: viewModel.firstName) { newValue in
+                                    if newValue.count > maxFirstNameCharachtersCount { viewModel.firstName = String(newValue.prefix(maxFirstNameCharachtersCount))
                                         
                                     }
                                 }
@@ -83,14 +82,14 @@ struct NewClientView: View {
                                 .padding(.leading, 11)
                                 .padding(.trailing, 10)
                             
-                            TextField("Фамилия (не обязательно)", text: $lastName)
+                            TextField("Фамилия (не обязательно)", text: $viewModel.lastName)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .padding(.leading, 11)
                                 .padding(.top, 5)
                                 .background(Color.clear)
-                                .onChange(of: lastName) { newValue in
+                                .onChange(of: viewModel.lastName) { newValue in
                                     if newValue.count > maxLastNameCharachtersCount {
-                                        lastName = String(newValue.prefix(maxLastNameCharachtersCount))
+                                        viewModel.lastName = String(newValue.prefix(maxLastNameCharachtersCount))
                                     }
                                 }
                                 .focused($focusedField, equals: .lastName)
@@ -104,7 +103,7 @@ struct NewClientView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                         
-                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     .padding(.vertical, 8)
                     .cornerRadius(12)
@@ -129,7 +128,7 @@ struct NewClientView: View {
                         HStack {
                             
                             Spacer()
-                            TextEditor(text: $street)
+                            TextEditor(text: $viewModel.streetName)
                                 .font(.system(size: 20, weight: .regular, design: .default))
                                 .frame(width: 320)
                                 .frame(minHeight: 20, maxHeight: 45)
@@ -137,11 +136,11 @@ struct NewClientView: View {
                                 .minimumScaleFactor(0.6)
                                 .multilineTextAlignment(.center)
                             //.onChange(of: street) { oldValue, newValue in
-                                .onChange(of: street) { newValue in
+                                .onChange(of: viewModel.streetName) { newValue in
                                     if newValue.count > maxStreetCharachtersCount {
-                                        street = String(newValue.prefix(maxStreetCharachtersCount))
+                                        viewModel.streetName = String(newValue.prefix(maxStreetCharachtersCount))
                                     }
-                                    if street.count >= maxStreetCharachtersCount  {
+                                    if viewModel.streetName.count >= maxStreetCharachtersCount  {
                                         maxStreetCharactersTextOpacity = 1
                                     } else {
                                         maxStreetCharactersTextOpacity = 0
@@ -153,6 +152,9 @@ struct NewClientView: View {
                             Spacer()
                             
                             Button(action: {
+                                streetListViewModel.selectedStreet = nil
+                                focusedField = nil
+                                hideKeyboard()
                                 showStreetsView = true
                             }) {
                                 Image(systemName: "chevron.right")
@@ -168,7 +170,7 @@ struct NewClientView: View {
                     .cornerRadius(12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     .padding(.horizontal, 20)
                     
@@ -189,12 +191,12 @@ struct NewClientView: View {
                         
                         ZStack {
                             Color.white
-                            TextField("", text: $building)
+                            TextField("", text: $viewModel.building)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .onChange(of: building) { newValue in
+                                .onChange(of: viewModel.building) { newValue in
                                     if newValue.count > maxBuildingCharachtersCount {
-                                        building = String(newValue.prefix(maxBuildingCharachtersCount))
+                                        viewModel.building = String(newValue.prefix(maxBuildingCharachtersCount))
                                     }
                                 }
                         }
@@ -202,7 +204,7 @@ struct NewClientView: View {
                         .frame(width: 75, height: 30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         Spacer()
                         
@@ -225,12 +227,12 @@ struct NewClientView: View {
                         }
                         ZStack {
                             Color.white
-                            TextField("", text: $apartment)
+                            TextField("", text: $viewModel.apartment)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .onChange(of: apartment) { newValue in
+                                .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharachtersCount {
-                                        apartment = String(newValue.prefix(maxApartmentCharachtersCount))
+                                        viewModel.apartment = String(newValue.prefix(maxApartmentCharachtersCount))
                                     }
                                 }
                         }
@@ -238,7 +240,7 @@ struct NewClientView: View {
                         .frame(width: 66, height: 30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         Spacer()
                         
@@ -260,12 +262,12 @@ struct NewClientView: View {
                         }
                         ZStack {
                             Color.white
-                            TextField("", text: $entrance)
+                            TextField("", text: $viewModel.entrance)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .onChange(of: entrance) { newValue in
+                                .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharachtersCount {
-                                        entrance = String(newValue.prefix(maxEntranceCharachtersCount))
+                                        viewModel.entrance = String(newValue.prefix(maxEntranceCharachtersCount))
                                     }
                                 }
                         }
@@ -273,7 +275,7 @@ struct NewClientView: View {
                         .frame(width: 37, height: 30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                     }
                     .padding(.horizontal, 20)
@@ -290,7 +292,7 @@ struct NewClientView: View {
                         
                         ZStack {
                             Color.white
-                            TextField("", text: $floor)
+                            TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                         }
@@ -299,7 +301,7 @@ struct NewClientView: View {
                         
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         
                         Text("Частный дом")
@@ -308,7 +310,7 @@ struct NewClientView: View {
                             .frame(width: 150)
                             .offset(x: 35)
                         
-                        Toggle("", isOn: $isPrivateHouse)
+                        Toggle("", isOn: $viewModel.isPrivateHouse)
                             .padding(.horizontal)
                         
                     }
@@ -330,91 +332,56 @@ struct NewClientView: View {
                         .frame(height: 15)
                     
                     HStack {
-                        Text("+")
-                            .font(.system(size: 30, weight: .regular, design: .default))
                         ZStack {
                             Color.white
-                            TextField("7", text: $countryCode)
-                                .font(.system(size: 23, weight: .regular, design: .default))
-                                .multilineTextAlignment(.center)
-                                .onChange(of: countryCode) { newValue in
-                                    if newValue.count > maxCountryCodeCharactersCount {
-                                        countryCode = String(newValue.prefix(maxCountryCodeCharactersCount))
-                                    }
-                                }
-                        }
-                        .cornerRadius(10)
-                        .frame(width: 58, height: 40)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-                        )
-                        
-                        ZStack {
-                            Color.white
-                            TextField("", text: $phoneNumber)
-                                .font(.system(size: 23, weight: .regular, design: .default))
+                            TextField("+7", text: $phoneMasked)
+                                .font(.system(size: 21, weight: .regular, design: .default))
                                 .foregroundColor(.black)
-                                .offset(x: 8)
-                                .keyboardType(.numberPad)
-                                .onChange(of: phoneNumber) { newValue in
-                                    if newValue.count > maxPhoneNumberCharactersCount {
-                                        phoneNumber = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                                .padding(.leading, 5)
+                                .keyboardType(.phonePad)
+                                .textContentType(.telephoneNumber)
+                                .onChange(of: phoneMasked) { newValue in
+                                    let prevDigits = digitsOnly(previousPhoneMasked)
+                                    var newDigits  = digitsOnly(newValue)
+
+                                    // Если удалили масочный символ, удалим ещё одну цифру вручную
+                                    if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
+                                        if !newDigits.isEmpty { newDigits.removeLast() }
                                     }
+
+                                    // РФ нормализация: убрать ведущие 8/7 и ограничить до 10 цифр
+                                    if newDigits.hasPrefix("8") { newDigits.removeFirst() }
+                                    if newDigits.hasPrefix("7") { newDigits.removeFirst() }
+                                    if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
+
+                                    let masked = maskRU(fromDigits: newDigits) // +7(XXX)XXX-XX-XX
+                                    if masked.count > maxPhoneNumberCharactersCount {
+                                        phoneMasked = String(masked.prefix(maxPhoneNumberCharactersCount))
+                                    } else {
+                                        phoneMasked = masked
+                                    }
+                                    previousPhoneMasked = phoneMasked
+                                    viewModel.phoneDigits = newDigits // в VM храним только цифры
                                 }
                         }
                         .cornerRadius(10)
-                        .frame(width: 154, height: 40)
+                        .frame(width: 190, height: 40)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         Spacer()
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 25)
                     
                     Spacer()
                         .frame(height: 30)
                     
-                    HStack {
-                        Text("Коментарий")
-                            .padding(.leading, 21)
-                            .foregroundColor(Color.custom(.textTitleGray))
-                            .font(.system(size: 19, weight: .regular, design: .default))
-                            .background(Color.clear)
-                        Spacer()
-                    }
-                    
-                    ZStack {
-                        Color.white
-                            TextEditor(text: $comment)
-                                .font(.system(size: 20, weight: .regular, design: .default))
-                                .padding(.horizontal, 16)
-                                .frame(minHeight: 80, maxHeight: 100)
-                                .lineLimit(2, reservesSpace: false)
-                                .minimumScaleFactor(0.6)
-                                .multilineTextAlignment(.leading)
-                                .onChange(of: comment) { newValue in
-                                    if newValue.count > maxCommentCharachtersCount {
-                                        comment = String(newValue.prefix(maxCommentCharachtersCount))
-                                    }
-                                }
-                    }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-                    )
-                    .padding(.horizontal, 16)
-                    
-                    
                     Spacer()
-                        .frame(height: 30)
-                    
-                   
-                    
+            
                     HStack {
                         Button(action: {
-                            //action
+                            dismiss()
                         }) {
                             ZStack {
                                 Rectangle()
@@ -431,7 +398,8 @@ struct NewClientView: View {
                         )
                         
                         Button(action: {
-                            //action
+                            viewModel.createClient()
+                            dismiss()
                         }) {
                             ZStack {
                                 Rectangle()
@@ -447,18 +415,28 @@ struct NewClientView: View {
                                 .stroke(Color(.black), lineWidth: 0.5)
                         )
                     }
-                   
-                    Spacer()
+                    .padding(.bottom, 10)
+                
                 } // end of main VStack
                
+           
+           
             }
-            .onTapGesture {
-                hideKeyboard()
-            }
+        .onTapGesture {
+            hideKeyboard()
         }
         
-        .sheet(isPresented: $showStreetsView) {
-            StreetsListView()
+     .sheet(isPresented: $showStreetsView, onDismiss: {
+         if let selected = streetListViewModel.selectedStreet {
+             viewModel.streetName = selected.name ?? ""
+         }
+     }) {
+         StreetsListView(viewModel: streetListViewModel)
+     }
+
+        .onAppear {
+            phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
+            previousPhoneMasked = phoneMasked
         }
     }
 }
@@ -470,3 +448,35 @@ struct NewClientView: View {
 
 
 
+
+//# MARK: - Phone helpers
+private func digitsOnly(_ s: String) -> String {
+    String(s.filter { $0.isNumber })
+}
+
+private func maskRU(fromDigits s: String) -> String {
+    if s.isEmpty { return "" }
+    var result = "+7"
+    let chars = Array(s)
+
+    result += "("
+    let a = min(3, chars.count)
+    result += String(chars[0..<a])
+    if chars.count < 3 { return result }
+
+    result += ")"
+    let b = min(3, chars.count - 3)
+    if b > 0 { result += String(chars[3..<(3 + b)]) }
+    if chars.count < 6 { return result }
+
+    result += "-"
+    let c = min(2, chars.count - 6)
+    if c > 0 { result += String(chars[6..<(6 + c)]) }
+    if chars.count < 8 { return result }
+
+    result += "-"
+    let d = min(2, chars.count - 8)
+    if d > 0 { result += String(chars[8..<(8 + d)]) }
+
+    return result
+}

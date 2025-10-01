@@ -4,10 +4,11 @@ struct EditTaskView: View {
     
     @ObservedObject var viewModel: EditTaskViewModel
     @StateObject private var clientsListViewModel = ClientsListViewModel()
+    @StateObject private var streetListViewModel = StreetListViewModel()
    
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 8
-    private let maxStreetCharactersCount: Int = 44
+    private let maxStreetCharactersCount: Int = 48
     private let maxDescriptionCharactersCount: Int = 85
     private let maxCommentCharactersCount: Int = 85
     private let maxApartmentCharactersCount: Int = 6
@@ -17,8 +18,10 @@ struct EditTaskView: View {
     private let maxPhoneNumberCharactersCount: Int = 14
     private let maxContractAmountCharacters: Int = 6
     private let maxCostCharacters: Int = 6
-    private var msxFloorCharactersCount: Int = 3
-
+    private let maxExtraPaymentCharacters: Int = 6
+    
+    @State private var phoneMasked: String = ""
+    @State private var previousPhoneMasked: String = ""
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var maxCharachtersWarningTextOpacity: Double = 0
     @State private var maxCharachtersWarningCommentTextOpacity: Double = 0
@@ -26,6 +29,8 @@ struct EditTaskView: View {
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
     @State private var hideScrollContentBackground = false
+    @State private var streetTextFieldColor: CustomColor = .pureWhite
+    @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
  
     @Environment(\.dismiss)
@@ -224,22 +229,38 @@ struct EditTaskView: View {
                             
                             ZStack {
                                 Color.white
-                                TextField("", text: $viewModel.phoneNumber)
-                                    .font(.system(size: 19, weight: .regular, design: .default))
-                                    .foregroundColor(.black)
-                                    .offset(x: 8)
-                                    .keyboardType(.phonePad)
-                                    .onChange(of: viewModel.phoneNumber) { newValue in
-                                        if newValue.count > maxPhoneNumberCharactersCount {
-                                            viewModel.phoneNumber = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                                TextField("+7", text: $phoneMasked)
+                                        .font(.system(size: 19, weight: .regular))
+                                        .foregroundColor(.black)
+                                        .offset(x: 8)
+                                        .keyboardType(.phonePad)
+                                        .textContentType(.telephoneNumber)
+                                        .onChange(of: phoneMasked) { newValue in
+                                            let prevDigits = digitsOnly(previousPhoneMasked)
+                                            var newDigits  = digitsOnly(newValue)
+
+                                            // Backspace по масочному символу — удаляем ещё одну цифру
+                                            if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
+                                                if !newDigits.isEmpty { newDigits.removeLast() }
+                                            }
+
+                                            // Нормализация РФ: убираем ведущие 8/7, ограничиваем до 10
+                                            if newDigits.hasPrefix("8") { newDigits.removeFirst() }
+                                            if newDigits.hasPrefix("7") { newDigits.removeFirst() }
+                                            if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
+
+                                            phoneMasked = maskRU(fromDigits: newDigits)
+                                            previousPhoneMasked = phoneMasked
+
+                                            // В VM храним только цифры
+                                            viewModel.phoneDigits = newDigits
                                         }
-                                    }
                             }
                             .cornerRadius(10)
-                            .frame(width: 170, height: 40)
+                            .frame(width: 180, height: 40)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                             )
                             
                         }
@@ -276,23 +297,32 @@ struct EditTaskView: View {
                         Toggle("", isOn: $viewModel.isRemote)
                             .padding(.horizontal)
                             .padding(.trailing, 40)
+                            .disabled(viewModel.shouldBlockRemote)
                             .onChange(of: viewModel.isRemote) { _, newValue in
                                 if newValue == true {
-                                    viewModel.shouldBlockEditing = true
+                                    viewModel.remoteEdditingBlock = true
+                                    viewModel.privateHouseBlock = true
+                                    viewModel.shouldBlockPrivate = true
                                     hideScrollContentBackground = true
                                     streetChevronOpacity = 0
+                                    houseTextFieldColor = CustomColor.inactiveFiledGray
+                                    streetTextFieldColor = CustomColor.inactiveFiledGray
                                     textFieldColor = CustomColor.inactiveFiledGray
                                 } else {
                                     streetChevronOpacity = 1
-                                    viewModel.shouldBlockEditing = false
+                                    viewModel.remoteEdditingBlock = false
+                                    viewModel.privateHouseBlock = false
+                                    viewModel.shouldBlockPrivate = false
                                     hideScrollContentBackground = false
                                     textFieldColor = .pureWhite
+                                    houseTextFieldColor = .pureWhite
+                                    streetTextFieldColor = .pureWhite
                                 }
                             }
                     }
                     
                     ZStack {
-                        Color.custom(textFieldColor)
+                        Color.custom(streetTextFieldColor)
                         HStack {
                             Spacer()
                             TextEditor(text: $viewModel.streetName)
@@ -302,8 +332,8 @@ struct EditTaskView: View {
                                 .lineLimit(1, reservesSpace: false)
                                 .minimumScaleFactor(0.5)
                                 .multilineTextAlignment(.leading)
-                                .disabled(viewModel.shouldBlockEditing)
-                                .background(Color.custom(textFieldColor))
+                                .disabled(viewModel.remoteEdditingBlock)
+                                .background(Color.custom(streetTextFieldColor))
                                 .scrollContentBackground(hideScrollContentBackground ? .hidden : .visible)
                             //.onChange(of: street) { oldValue, newValue in
                                 .onChange(of: viewModel.streetName) { _, newValue in
@@ -357,11 +387,11 @@ struct EditTaskView: View {
                         
                         
                         ZStack {
-                            Color.custom(textFieldColor)
+                            Color.custom(houseTextFieldColor)
                             TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.remoteEdditingBlock)
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -398,7 +428,7 @@ struct EditTaskView: View {
                             TextField("", text: $viewModel.apartment)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.privateHouseBlock)
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharactersCount {
                                         viewModel.apartment = String(newValue.prefix(maxApartmentCharactersCount))
@@ -434,7 +464,7 @@ struct EditTaskView: View {
                             TextField("", text: $viewModel.entrance)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.privateHouseBlock)
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharactersCount {
                                         viewModel.entrance = String(newValue.prefix(maxEntranceCharactersCount))
@@ -464,7 +494,7 @@ struct EditTaskView: View {
                             Color.custom(textFieldColor)
                             TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.privateHouseBlock)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .onChange(of: viewModel.floor) { newValue in
                                     if newValue.count > maxFloorCharactersCount {
@@ -488,6 +518,18 @@ struct EditTaskView: View {
                         
                         Toggle("", isOn: $viewModel.isPrivateHouse)
                             .padding(.horizontal)
+                            .disabled(viewModel.shouldBlockPrivate)
+                            .onChange(of: viewModel.isPrivateHouse) { newValue in
+                                if newValue == true {
+                                    viewModel.shouldBlockRemote = true
+                                    viewModel.privateHouseBlock = true
+                                    textFieldColor = CustomColor.inactiveFiledGray
+                                } else {
+                                    viewModel.privateHouseBlock = false
+                                    viewModel.shouldBlockRemote = false
+                                    textFieldColor = .pureWhite
+                                }
+                            }
                         
                     }
                     // Стек Этаж - Частный дом, конец
@@ -522,15 +564,20 @@ struct EditTaskView: View {
                             .multilineTextAlignment(.center)
                             .keyboardType(.decimalPad)
                             .onChange(of: viewModel.contractAmountText) { newValue in
+                                if newValue.count > maxContractAmountCharacters {
+                                    viewModel.contractAmountText = String(newValue.prefix( maxContractAmountCharacters))
+                                }
+                                
                                 if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
                                     viewModel.contractAmount = value
                                 } else {
                                     viewModel.contractAmount = 0
                                 }
+                               
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                     .fill(Color.white)
                             )
                     }
@@ -554,10 +601,12 @@ struct EditTaskView: View {
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
                             .onChange(of: viewModel.costText) { newValue in
+                                if newValue.count > maxCostCharacters {
+                                    viewModel.costText = String(newValue.prefix(maxCostCharacters))
+                                }
                                 if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
                                     viewModel.cost = value
-                                } else {
-                                    viewModel.cost = 0
+                               
                                 }
                             }
                             .background(
@@ -587,8 +636,9 @@ struct EditTaskView: View {
                             .onChange(of: viewModel.extraPaymentText) { newValue in
                                 if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
                                     viewModel.extraPayment = value
-                                } else {
-                                    viewModel.extraPayment = 0
+                                }
+                                if newValue.count > maxExtraPaymentCharacters {
+                                    viewModel.extraPaymentText = String(newValue.prefix(maxExtraPaymentCharacters))
                                 }
                             }
                             .background(
@@ -673,14 +723,25 @@ struct EditTaskView: View {
                 hideKeyboard()
             }
         }
-        
-        .sheet(isPresented: $showStreetsView) {
-            StreetsListView()
+       
+        .sheet(isPresented: $showStreetsView, onDismiss: {
+            if let selected = streetListViewModel.selectedStreet {
+                viewModel.streetName = selected.name ?? ""
+            }
+        }) {
+            StreetsListView(viewModel: streetListViewModel)
         }
+        
         .sheet(isPresented: $showClientListToPickView, onDismiss: {
             if let selectedClient = clientsListViewModel.selectedClient {
                 viewModel.firstName = selectedClient.firstName ?? ""
-                viewModel.phoneNumber = selectedClient.phone ?? ""
+                let digitsAll = (selectedClient.phone ?? "").filter { $0.isNumber }
+                var nsn = digitsAll
+                if nsn.hasPrefix("7") { nsn.removeFirst() }
+                if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
+                viewModel.phoneDigits = nsn
+                phoneMasked = maskRU(fromDigits: nsn)
+                previousPhoneMasked = phoneMasked
                 if let primaryAddress = selectedClient.address?.first(where: {
                     ($0 as? Address)?.isPrimary == true
                 }) as? Address {
@@ -689,12 +750,81 @@ struct EditTaskView: View {
                     viewModel.apartment = primaryAddress.apartment ?? ""
                     viewModel.entrance = primaryAddress.entrance ?? ""
                   
-                    viewModel.floor = "\(primaryAddress.floor)"
+                    viewModel.floor = "\(primaryAddress.floor ?? "")"
                 }
             }
         }) {
             ClientListToPickView(viewModel: clientsListViewModel)
         }
+        .onAppear {
+            phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
+            previousPhoneMasked = phoneMasked
+        }
+        
+        .onAppear {
+            if viewModel.isPrivateHouse {
+                viewModel.shouldBlockRemote = true
+                viewModel.privateHouseBlock = true
+                textFieldColor = CustomColor.inactiveFiledGray
+            } else {
+                viewModel.privateHouseBlock = false
+                viewModel.shouldBlockRemote = false
+                textFieldColor = .pureWhite
+            }
+        }
+        .onAppear {
+            if viewModel.isRemote {
+                viewModel.remoteEdditingBlock = true
+                viewModel.privateHouseBlock = true
+                viewModel.shouldBlockPrivate = true
+                hideScrollContentBackground = true
+                streetChevronOpacity = 0
+                houseTextFieldColor = CustomColor.inactiveFiledGray
+                streetTextFieldColor = CustomColor.inactiveFiledGray
+                textFieldColor = CustomColor.inactiveFiledGray
+            } else {
+                streetChevronOpacity = 1
+                viewModel.remoteEdditingBlock = false
+                viewModel.privateHouseBlock = false
+                viewModel.shouldBlockPrivate = false
+                hideScrollContentBackground = false
+                
+            }
+        }
+        
+        
+    }
+    
+    // MARK: - Phone helpers
+    private func digitsOnly(_ s: String) -> String {
+        String(s.filter { $0.isNumber })
+    }
+
+    private func maskRU(fromDigits s: String) -> String {
+        if s.isEmpty { return "" }
+        var result = "+7"
+        let chars = Array(s)
+
+        result += "("
+        let a = min(3, chars.count)
+        result += String(chars[0..<a])
+        if chars.count < 3 { return result }
+
+        result += ")"
+        let b = min(3, chars.count - 3)
+        if b > 0 { result += String(chars[3..<(3 + b)]) }
+        if chars.count < 6 { return result }
+
+        result += "-"
+        let c = min(2, chars.count - 6)
+        if c > 0 { result += String(chars[6..<(6 + c)]) }
+        if chars.count < 8 { return result }
+
+        result += "-"
+        let d = min(2, chars.count - 8)
+        if d > 0 { result += String(chars[8..<(8 + d)]) }
+
+        return result
     }
 }
 

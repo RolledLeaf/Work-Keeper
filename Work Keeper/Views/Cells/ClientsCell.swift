@@ -2,20 +2,22 @@ import SwiftUI
 
 struct ClientRow: View {
     let client: Client
-   
-   
+    
+    
     
     var body: some View {
         
         let initials = ((client.firstName?.prefix(1) ?? "") + (client.lastName?.prefix(1) ?? ""))
         
+       
+        
         ZStack {
-            Color.custom(.newTaskBackgroundGray)?.ignoresSafeArea()
+            Color.custom(.newTaskBackgroundGray).ignoresSafeArea()
             
             HStack {
                 ZStack {
                     Circle()
-                        .fill(Color.random()) // свой метод
+                        .fill(Color.randomColor()) // свой метод
                         .frame(width: 57, height: 57)
                     Text("\(initials.uppercased())")
                         .font(.custom(SFPro.bold.rawValue, size: 24))
@@ -26,9 +28,12 @@ struct ClientRow: View {
                             .foregroundColor(Color.custom(.taskViewYellow))
                             .cornerRadius(12)
                             .frame(width: 23, height: 23)
-                        Text("\(1)")
+                            .opacity(client.scheduledTasksCount > 0 ? 1 : 0)
+                        Text("\(client.scheduledTasksCount)")
+                        .opacity(client.scheduledTasksCount > 0 ? 1 : 0)
                             .font(.custom(SFPro.regular.rawValue, size: 17))
                             .foregroundColor(.white)
+                            
                     }
                     .offset(x: 22, y: -25)
                 }
@@ -40,7 +45,7 @@ struct ClientRow: View {
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 25, alignment: .center)
                     Spacer()
-                    Text("\(client.phone ?? "")")
+                    Text(client.phone?.formattedAsPhone() ?? "")
                         .font(.custom(SFPro.regular.rawValue, size: 16))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 20, alignment: .center)
@@ -55,7 +60,7 @@ struct ClientRow: View {
                         .lineLimit(2, reservesSpace: false)
                         .minimumScaleFactor(0.8)
                         .multilineTextAlignment(.leading)
-
+                    
                 }
                 .padding(.leading, 17)
                 Spacer()
@@ -66,9 +71,11 @@ struct ClientRow: View {
                             .foregroundColor(Color.custom(.completedTaskGreen))
                             .cornerRadius(12)
                             .frame(width: 23, height: 23)
-                        Text("\(2)")
+                            .opacity(client.completedTasksCount > 0 ? 1 : 0)
+                        Text("\(client.completedTasksCount)")
                             .font(.custom(SFPro.regular.rawValue, size: 17))
                             .foregroundColor(.white)
+                            .opacity(client.completedTasksCount > 0 ? 1 : 0)
                     }
                     
                     ZStack {
@@ -76,9 +83,11 @@ struct ClientRow: View {
                             .foregroundColor(Color.custom(.taskCanceledOrange))
                             .cornerRadius(12)
                             .frame(width: 23, height: 23)
-                        Text("\(1)")
+                            .opacity(client.canceledTasksCount > 0 ? 1 : 0)
+                        Text("\(client.canceledTasksCount)")
                             .font(.custom(SFPro.regular.rawValue, size: 17))
                             .foregroundColor(.white)
+                            .opacity(client.canceledTasksCount > 0 ? 1 : 0)
                     }
                     Spacer()
                 }
@@ -91,10 +100,10 @@ struct ClientRow: View {
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
-            )
+        )
         .padding(.vertical, 8)
         .cornerRadius(12)
-    
+        
     }
 }
 

@@ -4,11 +4,14 @@ import SwiftUI
 struct ClientsListView: View {
     @State private var showNewClientView = false
     @StateObject private var viewModel = ClientsListViewModel()
+    @State private var selectedClient: Client?
+    @State private var client: Client?
     
     var body: some View {
-       
         
+        NavigationStack {
         ZStack {
+        
             Color(.white).ignoresSafeArea()
                 .onTapGesture {
                     hideKeyboard()
@@ -45,12 +48,12 @@ struct ClientsListView: View {
                         hideKeyboard()
                     }
                     .background(
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                            .padding(.leading, 10)
-                        Spacer()
-                    })
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.gray)
+                                .padding(.leading, 10)
+                            Spacer()
+                        })
                     .background(
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
@@ -68,27 +71,58 @@ struct ClientsListView: View {
                     
                     Text("Клиентов пока нет")
                 } else {
-                    List(viewModel.clients) { client in
-                        ClientRow(client: client)
-                           
+                   
+                        List(viewModel.clients) { client in
+                            ClientRow(client: client)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedClient = client
+                                }
+                                .swipeActions(edge: .trailing) {
+                                    Button(action: {
+                                        viewModel.delete(client)
+                                    }) {
+                                        Image("delete")
+                                        Text("Удалить")
+                                    }
+                                    .tint(Color.custom(.deleteButtonRed))
+
+                                    Button(action: {
+                                        
+                                    }) {
+                                        Image("edit")
+                                        Text("Редактировать")
+                                    }
+                                    .tint(Color.custom(.editButtonGray))
+                                }
+                            
+                        }
+                        .listRowSeparator(.hidden)
+                        .listStyle(PlainListStyle())
+                        .padding(.leading, -20)
+                        .padding(.trailing, -20)
+                        
+                        .navigationDestination(item: $selectedClient) { client in
+                            ClientProfileView(client: client)
+                        }
                     }
-                    .listRowSeparator(.hidden)
-                    .listStyle(PlainListStyle())
-                    .padding(.leading, -20)
-                    .padding(.trailing, -20)
                 }
-                    
+                
             }
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.trailing, 15)
             .padding(.leading, 20)
         }
-        .sheet(isPresented: $showNewClientView) {
+        .sheet(isPresented: $showNewClientView, onDismiss: {
+            viewModel.loadClients()
+            print("clients list reloaded (onDismiss)")
+        }) {
             NewClientView()
         }
         
         .onAppear {
             viewModel.loadClients()
+            print("clients list reloaded")
         }
         
     }

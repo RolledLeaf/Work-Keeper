@@ -1,12 +1,14 @@
-
-
 import Foundation
 import Combine
 
+@MainActor
 final class StreetListViewModel: ObservableObject {
     @Published var streets: [Street] = []
+    @Published var selectedStreet: Street?
+    
 
     private let store = StreetStore()
+  
 
     init() {
         loadStreets()
@@ -16,9 +18,14 @@ final class StreetListViewModel: ObservableObject {
         streets = store.fetchStreets()
     }
     
+    func pickStreet(_ street: Street) {
+        selectedStreet = street
+    }
+    
     func addStreet(_ name: String) {
         guard !name.isBlank else { return }
         store.createStreet(name: name)
+        loadStreets()
     }
     
     func update(_ street: Street, name: String) {
@@ -32,3 +39,4 @@ final class StreetListViewModel: ObservableObject {
         loadStreets()
     }
 }
+

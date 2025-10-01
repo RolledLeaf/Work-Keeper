@@ -9,6 +9,12 @@ extension DateFormatter {
         return formatter
     }()
     
+    static let shortDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.setLocalizedDateFormatFromTemplate("dd.MM.YY")
+        return formatter
+    }()
     
     static let timeOnlyFormatter: DateFormatter = {
          let formatter = DateFormatter()
@@ -24,7 +30,13 @@ extension Date {
         DateFormatter.taskDateFormatter.string(from: self)
     }
     
+    func formattedAsShortDate() -> String {
+        DateFormatter.shortDateFormatter.string(from: self)
+    }
+    
     func formattedAsTime() -> String {
         DateFormatter.timeOnlyFormatter.string(from: self)
     }
 }
+
+

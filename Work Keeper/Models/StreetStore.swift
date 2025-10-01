@@ -33,6 +33,7 @@ final class StreetStore: NSObject, ObservableObject {
     
     func fetchStreets() -> [Street] {
         let request: NSFetchRequest<Street> = Street.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         do {
             return try context.fetch(request)
         } catch {

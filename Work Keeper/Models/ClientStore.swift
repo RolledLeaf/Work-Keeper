@@ -13,8 +13,8 @@ final class ClientStore: NSObject, ObservableObject {
 func createClient(firstName: String,
                   lastName: String?,
                   addresses: [Address],
-                  phone: String,
-                  comment: String?) -> Client {
+                  phone: String
+                  ) -> Client {
         
         let client = Client(context: context)
         client.id = UUID()
@@ -22,7 +22,7 @@ func createClient(firstName: String,
         client.lastName = lastName
     client.address = NSSet(array: addresses)
         client.phone = phone
-        client.comment = comment
+       
         
         do {
             try context.save()
@@ -50,16 +50,15 @@ func createOrFetchClient(firstName: String,
             return createClient(firstName: firstName,
                                 lastName: lastName,
                                 addresses: addresses,
-                                phone: phone,
-                                comment: comment)
+                                phone: phone
+                                )
         }
     } catch {
         print("Error in createOrFetchClient: \(error)")
         return createClient(firstName: firstName,
                             lastName: lastName,
                             addresses: addresses,
-                            phone: phone,
-                            comment: comment)
+                            phone: phone)
     }
 }
     
@@ -79,14 +78,14 @@ func createOrFetchClient(firstName: String,
                       firstName: String,
                       lastName: String?,
                       addresses: [Address],
-                      phone: String,
-                      comment: String?) {
+                      phone: String
+                      ) {
       
         client.firstName = firstName
         client.lastName = lastName
         client.address = NSSet(array: addresses)
         client.phone = phone
-        client.comment = comment
+        
         
         do {
             try context.save()
@@ -95,18 +94,43 @@ func createOrFetchClient(firstName: String,
         }
     }
     
-    func deleteClient(_ client: Client) {
-        context.delete(client)
-        do {
-            try context.save()
-        } catch {
-            print("❌ Error deleting client: \(error)")
+func deleteClient(_ client: Client) {
+    // 1) Удаляем адреса клиента (Address -> client является обязательной связью)
+    if let addresses = client.address as? Set<Address> {
+        for address in addresses {
+            context.delete(address)
         }
     }
+
+    // 2) Удаляем задачи клиента, если в модели Task.client стоит required
+    if let tasks = client.tasks as? Set<Task> {
+        for task in tasks {
+            context.delete(task)
+        }
+    }
+
+    // 3) Удаляем самого клиента
+    context.delete(client)
+
+    // 4) Сохраняем изменения
+    do {
+        try context.save()
+    } catch {
+        print("❌ Error deleting client: \(error)")
+    }
+}
     
 }
 
 extension Client {
+    var hasAddress: Bool {
+            guard let streetName = primaryAddress?.street?.name?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !streetName.isEmpty else {
+                return false
+            }
+            return true
+        }
+    
     var addressesArray: [Address] {
         (address as? Set<Address>)?.sorted { $0.house ?? "" < $1.house ?? "" } ?? []
     }
@@ -114,4 +138,59 @@ extension Client {
     var primaryAddress: Address? {
         addressesArray.first(where: { $0.isPrimary })
     }
+    
+    var scheduledTasksCount: Int {
+          (tasks as? Set<Task>)?
+              .filter { $0.status == .scheduled }
+              .count ?? 0
+      }
+
+      var completedTasksCount: Int {
+          (tasks as? Set<Task>)?
+              .filter { $0.status == .completed }
+              .count ?? 0
+      }
+
+      var canceledTasksCount: Int {
+          (tasks as? Set<Task>)?
+              .filter { $0.status == .canceled }
+              .count ?? 0
+      }
+    
+    var formattedAddress: String {
+        guard let address = address?.allObjects.first as? Address else { return "Адрес не указан" }
+        return "\(address.street?.name ?? "") \(address.house ?? "")"
+    }
+    
+  
+    
+    
+    var apartmentNumber: String {
+        guard let address = address?.allObjects.first as? Address else { return "?" }
+        return address.apartment ?? "?"
+    }
+    
+    var entranceNumber: String {
+        guard let address = address?.allObjects.first as? Address else { return "?" }
+        return address.entrance ?? "?"
+    }
+    
+    var floorNumber: String {
+        guard let address = address?.allObjects.first as? Address else { return "?" }
+        return address.floor ?? "?"
+    }
+    
+    var totalIncome: Double {
+           (tasks as? Set<Task>)?
+               .compactMap { $0.totalAmount }
+               .reduce(0, +) ?? 0
+       }
+
+      
+
+       var totalTasksCount: Int {
+           (tasks as? Set<Task>)?.count ?? 0
+       }
+    
+   
 }

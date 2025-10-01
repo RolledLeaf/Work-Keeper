@@ -1,26 +1,30 @@
 import SwiftUI
 
-
-
 struct StreetRow: View {
-    let street: String
-       let isFirst: Bool
-       let isLast: Bool
+    @State private var showEditStreetView = false
+    @State private var showDeleteStreetAlert = false
+    @State private var streetForEdit: Street?
+    
+    
+    @ObservedObject var viewModel: StreetListViewModel
+    
+    let street: Street
+     
     
     var body: some View {
         
         ZStack {
-            Color.custom(.addressListGray)?.ignoresSafeArea()
+            Color.custom(.addressListGray).ignoresSafeArea()
             VStack {
                 Spacer()
                 HStack {
-                    Text(street)
+                    Text(street.name ?? "без названия")
                         .padding(.leading, 15)
                     Spacer()
                 }
                 Spacer()
                 Rectangle()
-                    .opacity(isLast ? 0 : 1)
+                    
                     .frame(height: 1)
                     .padding(.leading, 15)
                     .foregroundColor(.custom(.separatorLineGray))
@@ -29,14 +33,54 @@ struct StreetRow: View {
         }
         
         .listRowInsets(EdgeInsets())
-        .cornerRadius(7,corners: isFirst && isLast ? [.allCorners] :
-                        isFirst ? [.topLeft, .topRight] :
-                        isLast ? [.bottomLeft, .bottomRight] :
-                        [])
+        .cornerRadius(7)
         .listRowSeparator(.hidden)
+        .contentShape(Rectangle())
+        .contextMenu {
+            Button(action: {
+                streetForEdit = street
+                showEditStreetView = true
+            }) {
+                Label {
+                    Text("Редактировать")
+                        .font(.custom(SFPro.regular.rawValue, size: 17))
+                } icon: {
+                    Image("pen")
+                }
+            }
+            
+            Button(role: .destructive) {
+                showDeleteStreetAlert = true
+                } label: {
+                Label {
+                    Text("Удалить")
+                } icon: {
+                    Image(systemName: "trash")
+                        
+                }
+            }
+        }
+        .confirmationDialog("Удалить эту улицу?", isPresented: $showDeleteStreetAlert, titleVisibility: .visible) {
+            Button("Удалить", role: .destructive) {
+                viewModel.delete(street)
+                viewModel.loadStreets()
+                
+                UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            }
+            Button("Отмена", role: .cancel) { }
+        } message: {
+            Text("Улица будет удалена безвозвратно")
+        }
+        
+        
+        .sheet(item: $streetForEdit, onDismiss: {
+            viewModel.loadStreets()
+        }) { street in
+            EditStreetView(viewModel: viewModel, street: street)
+        }
     }
 }
 
 #Preview {
-    StreetsListView()
+    StreetsListView(viewModel: StreetListViewModel())
 }

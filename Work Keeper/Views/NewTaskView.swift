@@ -3,11 +3,12 @@
 import SwiftUI
 
 struct NewTaskView: View {
-   
+    
     
     @StateObject private var viewModel = CreateTaskViewModel()
     @StateObject private var clientsListViewModel = ClientsListViewModel()
-  
+    @StateObject private var streetListViewModel = StreetListViewModel()
+    
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 8
     private let maxStreetCharactersCount: Int = 44
@@ -16,23 +17,29 @@ struct NewTaskView: View {
     private let maxEntranceCharactersCount: Int = 3
     private let maxFloorCharactersCount: Int = 3
     private let maxCountryCodeCharactersCount: Int = 3
-    private let maxPhoneNumberCharactersCount: Int = 14
+    private let maxPhoneNumberCharactersCount: Int = 16
     private let maxContractAmountCharacters: Int = 6
     private let maxCostCharacters: Int = 6
     private let maxFloorCharacters: Int = 3
-
+    
+    @State private var phoneMasked: String = ""
+    @State private var previousPhoneMasked: String = "" // у тебя уже есть — оставь
+    
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var DescriptionCharactersTextOpacity: Double = 0
     @State private var streetChevronOpacity: Double = 1
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
     @State private var hideScrollContentBackground = false
+    @State private var streetTextFieldColor: CustomColor = .pureWhite
+    @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
+    
     
     
     @Environment(\.dismiss)
     private var dismiss
-
+    
     var body: some View {
         
         ZStack {
@@ -56,10 +63,14 @@ struct NewTaskView: View {
                             .background(Color.clear)
                         Spacer()
                         
+                        
                         DatePicker("time", selection: $viewModel.scheduledAt, displayedComponents: .hourAndMinute
                         )
                         .labelsHidden()
                         .datePickerStyle(.compact)
+                        .onAppear {
+                            UIDatePicker.appearance().minuteInterval = 5
+                        } // такой подход применяет шаг в 5 минут ко всем пикерам
                         .frame(maxWidth: 70, maxHeight: 35)
                         .contentShape(Rectangle())
                         
@@ -176,22 +187,43 @@ struct NewTaskView: View {
                             
                             ZStack {
                                 Color.white
-                                TextField("", text: $viewModel.phone)
+                                TextField("+7", text: $phoneMasked)
                                     .font(.system(size: 19, weight: .regular, design: .default))
                                     .foregroundColor(.black)
                                     .offset(x: 8)
                                     .keyboardType(.phonePad)
-                                    .onChange(of: viewModel.phone) { newValue in
-                                        if newValue.count > maxPhoneNumberCharactersCount {
-                                            viewModel.phone = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                                    .textContentType(.telephoneNumber)
+                                    .onChange(of: phoneMasked) { newValue in
+                                        let prevDigits = digitsOnly(previousPhoneMasked)
+                                        var newDigits  = digitsOnly(newValue)
+                                        
+                                        // Если удалили масочный символ — удалим ещё одну цифру вручную
+                                        if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
+                                            if !newDigits.isEmpty { newDigits.removeLast() }
                                         }
+                                        
+                                        // Нормализация под РФ: убираем ведущие 8/7, ограничиваем до 10
+                                        if newDigits.hasPrefix("8") { newDigits.removeFirst() }
+                                        if newDigits.hasPrefix("7") { newDigits.removeFirst() }
+                                        if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
+                                        
+                                        let masked = maskRU(fromDigits: newDigits) // \"+7(XXX)XXX-XX-XX\"
+                                        
+                                        if masked.count > maxPhoneNumberCharactersCount {
+                                            phoneMasked = String(masked.prefix(maxPhoneNumberCharactersCount))
+                                        } else {
+                                            phoneMasked = masked
+                                        }
+                                        
+                                        previousPhoneMasked = phoneMasked
+                                        viewModel.phoneDigits = newDigits // ← главное: в VM кладём только цифры
                                     }
                             }
                             .cornerRadius(10)
-                            .frame(width: 170, height: 40)
+                            .frame(width: 180, height: 40)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                             )
                             
                         }
@@ -227,23 +259,32 @@ struct NewTaskView: View {
                         Toggle("", isOn: $viewModel.isRemote)
                             .padding(.horizontal)
                             .padding(.trailing, 40)
+                            .disabled(viewModel.shouldBlockRemote)
                             .onChange(of: viewModel.isRemote) { _, newValue in
                                 if newValue == true {
-                                    viewModel.shouldBlockEditing = true
+                                    viewModel.remoteEdditingBlock = true
+                                    viewModel.privateHouseBlock = true
+                                    viewModel.shouldBlockPrivate = true
                                     hideScrollContentBackground = true
                                     streetChevronOpacity = 0
+                                    houseTextFieldColor = CustomColor.inactiveFiledGray
+                                    streetTextFieldColor = CustomColor.inactiveFiledGray
                                     textFieldColor = CustomColor.inactiveFiledGray
                                 } else {
                                     streetChevronOpacity = 1
-                                    viewModel.shouldBlockEditing = false
+                                    viewModel.remoteEdditingBlock = false
+                                    viewModel.privateHouseBlock = false
+                                    viewModel.shouldBlockPrivate = false
                                     hideScrollContentBackground = false
                                     textFieldColor = .pureWhite
+                                    houseTextFieldColor = .pureWhite
+                                    streetTextFieldColor = .pureWhite
                                 }
                             }
                     }
                     
                     ZStack {
-                        Color.custom(textFieldColor)
+                        Color.custom(streetTextFieldColor)
                         HStack {
                             Spacer()
                             TextEditor(text: $viewModel.streetName)
@@ -253,8 +294,8 @@ struct NewTaskView: View {
                                 .lineLimit(1, reservesSpace: false)
                                 .minimumScaleFactor(0.5)
                                 .multilineTextAlignment(.leading)
-                                .disabled(viewModel.shouldBlockEditing)
-                                .background(Color.custom(textFieldColor))
+                                .disabled(viewModel.remoteEdditingBlock)
+                                .background(Color.custom(streetTextFieldColor))
                                 .scrollContentBackground(hideScrollContentBackground ? .hidden : .visible)
                             //.onChange(of: street) { oldValue, newValue in
                                 .onChange(of: viewModel.streetName) { _, newValue in
@@ -308,11 +349,11 @@ struct NewTaskView: View {
                         
                         
                         ZStack {
-                            Color.custom(textFieldColor)
+                            Color.custom(houseTextFieldColor)
                             TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.remoteEdditingBlock)
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -350,7 +391,7 @@ struct NewTaskView: View {
                             TextField("", text: $viewModel.apartment)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.privateHouseBlock)
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharactersCount {
                                         viewModel.apartment = String(newValue.prefix(maxApartmentCharactersCount))
@@ -386,7 +427,7 @@ struct NewTaskView: View {
                             TextField("", text: $viewModel.entrance)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.privateHouseBlock)
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharactersCount {
                                         viewModel.entrance = String(newValue.prefix(maxEntranceCharactersCount))
@@ -416,7 +457,7 @@ struct NewTaskView: View {
                             Color.custom(textFieldColor)
                             TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.shouldBlockEditing)
+                                .disabled(viewModel.privateHouseBlock)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .onChange(of: viewModel.floor) { newValue in
                                     if newValue.count > maxFloorCharacters {
@@ -440,7 +481,18 @@ struct NewTaskView: View {
                         
                         Toggle("", isOn: $viewModel.isPrivateHouse)
                             .padding(.horizontal)
-                        
+                            .disabled(viewModel.shouldBlockPrivate)
+                            .onChange(of: viewModel.isPrivateHouse) { newValue in
+                                if newValue == true {
+                                    viewModel.shouldBlockRemote = true
+                                    viewModel.privateHouseBlock = true
+                                    textFieldColor = CustomColor.inactiveFiledGray
+                                } else {
+                                    viewModel.privateHouseBlock = false
+                                    viewModel.shouldBlockRemote = false
+                                    textFieldColor = .pureWhite
+                                }
+                            }
                     }
                     // Стек Этаж - Частный дом, конец
                     .padding(.horizontal, 35)
@@ -479,6 +531,10 @@ struct NewTaskView: View {
                                 } else {
                                     viewModel.contractAmount = 0
                                 }
+                                
+                                if newValue.count > maxContractAmountCharacters {
+                                    viewModel.contractAmountText = String(newValue.prefix( maxContractAmountCharacters))
+                                }
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
@@ -510,6 +566,9 @@ struct NewTaskView: View {
                                     viewModel.cost = value
                                 } else {
                                     viewModel.cost = 0
+                                }
+                                if newValue.count > maxCostCharacters {
+                                    viewModel.costText = String(newValue.prefix(maxCostCharacters))
                                 }
                             }
                             .background(
@@ -585,13 +644,32 @@ struct NewTaskView: View {
             }
         }
         
-        .sheet(isPresented: $showStreetsView) {
-            StreetsListView()
+        .onAppear {
+            phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
+            previousPhoneMasked = phoneMasked
         }
+        
+        .sheet(isPresented: $showStreetsView, onDismiss: {
+            if let selected = streetListViewModel.selectedStreet {
+                viewModel.streetName = selected.name ?? ""
+            }
+        }) {
+            StreetsListView(viewModel: streetListViewModel)
+        }
+        
         .sheet(isPresented: $showClientListToPickView, onDismiss: {
             if let selectedClient = clientsListViewModel.selectedClient {
                 viewModel.firstName = selectedClient.firstName ?? ""
-                viewModel.phone = selectedClient.phone ?? ""
+                // Достанем только цифры
+                let digitsAll = digitsOnly(selectedClient.phone ?? "")
+                // Срежем ведущую 7 (если храним \"+7...\") и ограничим до 10 цифр NSN
+                var nsn = digitsAll
+                if nsn.hasPrefix("7") { nsn.removeFirst() }
+                if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
+                
+                viewModel.phoneDigits = nsn
+                phoneMasked = maskRU(fromDigits: nsn)
+                previousPhoneMasked = phoneMasked
                 if let primaryAddress = selectedClient.address?.first(where: {
                     ($0 as? Address)?.isPrimary == true
                 }) as? Address {
@@ -600,12 +678,54 @@ struct NewTaskView: View {
                     viewModel.apartment = primaryAddress.apartment ?? ""
                     viewModel.entrance = primaryAddress.entrance ?? ""
                     viewModel.floor = primaryAddress.floor ?? ""
-                   
+                    
                 }
             }
         }) {
             ClientListToPickView(viewModel: clientsListViewModel)
         }
+    }
+    
+    // Приводит телефон к маске "+7(XXX)XXX-XX-XX" (Россия) из любого ввода
+    private func formatPhoneMaskedRU(_ raw: String) -> String {
+        var s = digitsOnly(raw)
+        if s.hasPrefix("8") { s.removeFirst() }
+        if s.hasPrefix("7") { s.removeFirst() }
+        if s.count > 10 { s = String(s.prefix(10)) }
+        return maskRU(fromDigits: s)
+    }
+    
+    // Оставляет только цифры из строки
+    private func digitsOnly(_ s: String) -> String {
+        return String(s.filter { $0.isNumber })
+    }
+    
+    // Формирует маску "+7(XXX)XXX-XX-XX" из 0...10 цифр (только цифры)
+    private func maskRU(fromDigits s: String) -> String {
+        if s.isEmpty { return "" }
+        var result = "+7"
+        let chars = Array(s)
+        
+        result += "("
+        let a = min(3, chars.count)
+        result += String(chars[0..<a])
+        if chars.count < 3 { return result }
+        
+        result += ")"
+        let b = min(3, chars.count - 3)
+        if b > 0 { result += String(chars[3..<(3 + b)]) }
+        if chars.count < 6 { return result }
+        
+        result += "-"
+        let c = min(2, chars.count - 6)
+        if c > 0 { result += String(chars[6..<(6 + c)]) }
+        if chars.count < 8 { return result }
+        
+        result += "-"
+        let d = min(2, chars.count - 8)
+        if d > 0 { result += String(chars[8..<(8 + d)]) }
+        
+        return result
     }
 }
 
@@ -613,4 +733,3 @@ struct NewTaskView: View {
 #Preview {
     NewTaskView()
 }
-

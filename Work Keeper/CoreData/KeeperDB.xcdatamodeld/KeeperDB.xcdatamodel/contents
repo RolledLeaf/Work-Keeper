@@ -19,7 +19,7 @@
         <attribute name="lastName" optional="YES" attributeType="String"/>
         <attribute name="phone" attributeType="String"/>
         <relationship name="address" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Address" inverseName="client" inverseEntity="Address"/>
-        <relationship name="task" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Task" inverseName="client" inverseEntity="Task"/>
+        <relationship name="tasks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Task" inverseName="client" inverseEntity="Task"/>
     </entity>
     <entity name="Street" representedClassName="Street" syncable="YES" codeGenerationType="class">
         <attribute name="name" attributeType="String"/>
@@ -38,6 +38,6 @@
         <attribute name="taskDescription" optional="YES" attributeType="String"/>
         <attribute name="totalAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="address" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Address"/>
-        <relationship name="client" maxCount="1" deletionRule="Nullify" destinationEntity="Client" inverseName="task" inverseEntity="Client"/>
+        <relationship name="client" maxCount="1" deletionRule="Nullify" destinationEntity="Client" inverseName="tasks" inverseEntity="Client"/>
     </entity>
 </model>

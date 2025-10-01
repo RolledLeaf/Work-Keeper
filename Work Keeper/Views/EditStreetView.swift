@@ -1,57 +1,55 @@
 import SwiftUI
 
-struct AddStreetView: View {
-    
+struct EditStreetView: View {
     private let maxStreetCharactersCount: Int = 44
     @State private var streetName: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State var saveColor: Color = .gray
     @State var saveButtomOpacity: Double = 0
     
-    @ObservedObject  var viewModel: StreetListViewModel
+    @ObservedObject var viewModel: StreetListViewModel
     
     @Environment(\.dismiss)
     private var dismiss
     
+    let street: Street
+    
     var body: some View {
-       
+        
         
         VStack {
             HStack {
                 Spacer()
-            Text("Новая улица")
-                .font(.custom(SFPro.bold.rawValue, size: 20))
-                .padding(.trailing, 30)
-                .offset(y: 30)
-              
+                Text("Изменение названия")
+                    .font(.custom(SFPro.bold.rawValue, size: 20))
+                    .padding(.trailing, 30)
+                    .offset(y: 30)
+                
                 Button(action: {
-                    if !streetName.isBlank {
-                        viewModel.addStreet(streetName)
-                        dismiss()
-                    }
+                    viewModel.update(street, name: streetName)
+                    dismiss()
                 }) {
-                   
-                        Text("Сохранить")
+                    Text("Сохранить")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
-                            .frame(height: 60)
-                            .opacity(saveButtomOpacity)
-                            .frame(width: 100, height: 40)
-                            .tint(saveColor)
-                            .onChange(of: streetName) {
-                                if !streetName.isBlank {
-                                    saveButtomOpacity = 1
-                                    saveColor = .black
-                                    
-                                } else {
-                                        
-                                    saveButtomOpacity = 0
-                                    }
+                        .frame(height: 60)
+                        .opacity(saveButtomOpacity)
+                        .frame(width: 100, height: 40)
+                        .tint(saveColor)
+                        .onChange(of: streetName) {
+                            if !streetName.isBlank {
+                                saveButtomOpacity = 1
+                                saveColor = .black
+                                
+                            } else {
+                                
+                                saveButtomOpacity = 0
                             }
-                            
+                        }
+                    
                     
                 }
                 .padding(.top, 20)
-        }
+            }
             Spacer()
                 .frame(height: 38)
             
@@ -72,11 +70,11 @@ struct AddStreetView: View {
                         maxStreetCharactersTextOpacity = 1 } else {
                             maxStreetCharactersTextOpacity = 0
                         }
-                
+                    
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
+                        .fill(Color.custom(.searchFieldGray))
                         .padding(.horizontal, 15)
                 )
             
@@ -86,8 +84,10 @@ struct AddStreetView: View {
                 .opacity(maxStreetCharactersTextOpacity)
             Spacer()
             
-          
-          
+                .onAppear {
+                    streetName = street.name ?? ""
+                }
+            
         }
         .onTapGesture {
             hideKeyboard()
@@ -95,9 +95,4 @@ struct AddStreetView: View {
         
     }
     
-       
 }
-
-
-
-

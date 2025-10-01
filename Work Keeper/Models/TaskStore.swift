@@ -19,6 +19,8 @@ final class TaskStore: NSObject, ObservableObject {
                     contractAmount: Double,
                     cost: Double?) -> Task {
         
+        
+        
         let task = Task(context: context)
         task.id = UUID()
         task.scheduledAt = scheduledAt
@@ -38,6 +40,8 @@ final class TaskStore: NSObject, ObservableObject {
         
         return task
     }
+    
+   
     
     func makeCompleted(_ task: Task,
                        comment: String?,
@@ -130,12 +134,16 @@ final class TaskStore: NSObject, ObservableObject {
         
         // Update financials
         task.contractAmount = contractAmount
-        task.cost = cost ?? 0
-        task.extraPayment = extraPayment ?? 0
+        if let cost = cost {
+            task.cost = cost
+        }
+        if let extra = extraPayment {
+            task.extraPayment = extra
+        }
         task.paymentType = paymentType.rawValue
         
         // Recalculate total
-        task.totalAmount = contractAmount + (extraPayment ?? 0) - (cost ?? 0)
+        task.totalAmount = task.contractAmount + task.extraPayment - task.cost
         
         // Save changes
         do {
@@ -146,4 +154,23 @@ final class TaskStore: NSObject, ObservableObject {
     }
 }
 
+
+extension Task {
+    var status: Status {
+        get {
+            Status(rawValue: statusString ?? "") ?? .scheduled
+        }
+        set {
+            statusString = newValue.rawValue
+        }
+    }
+}
+
+
+extension Task {
+    var payment: PaymentType {
+        get { PaymentType(rawValue: paymentType ?? "" ) ?? .none }
+        set { paymentType = newValue.rawValue }
+    }
+}
 
