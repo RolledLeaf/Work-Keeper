@@ -3,15 +3,11 @@ import SwiftUI
 struct IncomeView: View {
     @ObservedObject var viewModel: IncomeViewModel
     
-    
+    static let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
     
     var body: some View {
         
-        var months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
-        
-        
-        
-        
+
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             
@@ -38,7 +34,9 @@ struct IncomeView: View {
           
             
         }
-        
+        .onAppear {
+            viewModel.loadTotal()
+        }
         
         
     }

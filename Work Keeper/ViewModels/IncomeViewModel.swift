@@ -10,6 +10,8 @@ final class IncomeViewModel: ObservableObject {
     init(context: NSManagedObjectContext) { self.context = context }
 
     func loadTotal() {
+        print("[IncomeViewModel] loadTotal() called")
         total = totalIncomeAllTime(context: context, onlyCompleted: true)
+        print("[IncomeViewModel] loadTotal() called")
     }
 }
