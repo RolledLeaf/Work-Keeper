@@ -118,7 +118,7 @@ struct StatisticsView: View {
     private var content: some View {
         switch tab {
             case .income:
-            IncomeView(viewModel: incomeVM)
+            IncomeView(viewModel: incomeVM, year: selectedYear)
         case .clients:
             Text("Клиенты")
         case .tasks:

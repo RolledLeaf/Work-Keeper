@@ -2,8 +2,8 @@ import SwiftUI
 
 struct IncomeView: View {
     @ObservedObject var viewModel: IncomeViewModel
-    
-    static let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
+    let year: Int
+   
     
     var body: some View {
         
@@ -28,6 +28,15 @@ struct IncomeView: View {
                             .padding(.horizontal, 10)
                     )
                    
+                List {
+                    ForEach(0..<IncomeRow.months.count, id: \.self) { idx in
+                        IncomeRow(viewModel: viewModel, year: year, monthIndex: idx)
+                    }
+                }
+                .listRowSeparator(.hidden)
+                .listStyle(PlainListStyle())
+                .padding(.leading, 20)
+                .padding(.trailing, 20)
                 
                 Spacer()
             }
