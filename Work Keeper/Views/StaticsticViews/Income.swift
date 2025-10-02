@@ -1,7 +1,23 @@
 import SwiftUI
+import Charts
 
+struct Income: Identifiable {
+    let id = UUID()
+    let month: String
+    let amount: Decimal
+}
 struct IncomeView: View {
+    @Environment(\.managedObjectContext) private var context
+
     @ObservedObject var viewModel: IncomeViewModel
+   
+    @State private var monthly: [Income] = []
+
+   
+    @State private var amount: Decimal = 0
+   
+    static let months: [String] = ["Я", "Ф", "М", "А", "М", "И", "И", "А", "С", "О", "Н", "Д"] // Jan-Dec one-letter
+    
     let year: Int
    
     
@@ -22,11 +38,28 @@ struct IncomeView: View {
                 }
                 .frame(height: 50)
                 .padding(.horizontal, 10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 5)
-                            .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                            .padding(.horizontal, 10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                        .padding(.horizontal, 10)
+                )
+                
+                
+                
+                
+                Chart(monthly) { item in
+                    BarMark(
+                        x: .value("Месяц", item.month),
+                        y: .value("Доход", item.amount)
                     )
+                }
+                .frame(height: 220)
+                .padding(.horizontal)
+                
+          
+            
+            
+                
                    
                 List {
                     ForEach(0..<IncomeRow.months.count, id: \.self) { idx in
@@ -46,6 +79,12 @@ struct IncomeView: View {
         }
         .onAppear {
             viewModel.loadTotal()
+        }
+        .task(id: year) {
+            monthly = (1...12).map { m in
+                let amount = totalIncome(context: context, year: year, month: m, onlyCompleted: true, debug: false)
+                return Income(month: Self.months[m-1], amount: amount)
+            }
         }
         
         
