@@ -37,6 +37,7 @@ struct IncomeView: View {
                 .listStyle(PlainListStyle())
                 .padding(.leading, 20)
                 .padding(.trailing, 20)
+                .id(year)
                 
                 Spacer()
             }

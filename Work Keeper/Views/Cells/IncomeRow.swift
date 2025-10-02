@@ -57,6 +57,9 @@ struct IncomeRow: View {
         .onAppear(perform: compute)
         .onChange(of: year) { _ in compute() }
         .onChange(of: monthIndex) { _ in compute() }
+        .task(id: year * 100 + monthIndex) {
+            compute()
+        }
     }
 
     private func compute() {
