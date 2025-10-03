@@ -120,7 +120,7 @@ struct StatisticsView: View {
             case .income:
             IncomeView(viewModel: incomeVM, year: selectedYear)
         case .clients:
-            Text("Клиенты")
+            ClientsView(year: selectedYear)
         case .tasks:
             Text("Задачи")
         }

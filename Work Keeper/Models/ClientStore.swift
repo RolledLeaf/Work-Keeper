@@ -74,6 +74,76 @@ func createOrFetchClient(firstName: String,
         }
     }
     
+    func totalClientsCount(debug: Bool = false) -> Int {
+        let request: NSFetchRequest<Client> = Client.fetchRequest()
+        do {
+            let count = try context.count(for: request)
+            if debug { print("[ClientStore] totalClientsCount =", count) }
+            return count
+        } catch {
+            print("❌ Error counting clients:", error)
+            return 0
+        }
+    }
+    
+    
+    func distinctClientsCount(
+        year: Int,
+        month: Int? = nil,
+        onlyCompleted: Bool = true,
+        dateKey: String = "scheduledAt",
+        debug: Bool = false
+    ) -> Int {
+        // Построим диапазон дат
+        var cal = Calendar.current
+        cal.timeZone = .current
+
+        var start = DateComponents()
+        start.year = year
+        start.month = month ?? 1
+        start.day = 1
+
+        var end = DateComponents()
+        end.year = (month == nil) ? (year + 1) : year
+        end.month = (month == nil) ? 1 : (month! + 1)
+        end.day = 1
+
+        guard let startDate = cal.date(from: start),
+              let endDate = cal.date(from: end) else {
+            if debug { print("[ClientStore] ERROR: failed to build date range for year=\(year) month=\(String(describing: month))") }
+            return 0
+        }
+
+        // Агрегатный запрос по Task: достаём только поле client и считаем DISTINCT
+        let request = NSFetchRequest<NSDictionary>(entityName: "Task")
+        request.resultType = .dictionaryResultType
+        request.propertiesToFetch = ["client"]
+        request.returnsDistinctResults = true
+
+        var predicates: [NSPredicate] = [
+            NSPredicate(format: "%K != nil", "client"),
+            NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
+        ]
+        if onlyCompleted {
+            predicates.append(NSPredicate(format: "statusString == %@", "completed"))
+        }
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+
+        if debug {
+            print("[ClientStore] distinctClientsCount year=\(year) month=\(String(describing: month)) onlyCompleted=\(onlyCompleted)")
+            print("[ClientStore] Predicate:", request.predicate?.predicateFormat ?? "<none>")
+        }
+
+        do {
+            let rows = try context.fetch(request)
+            if debug { print("[ClientStore] distinct clients rows:", rows.count) }
+            return rows.count // каждое словарик-значение — уникальный client
+        } catch {
+            print("❌ Error counting distinct clients:", error)
+            return 0
+        }
+    }
+    
     func updateClient(_ client: Client,
                       firstName: String,
                       lastName: String?,

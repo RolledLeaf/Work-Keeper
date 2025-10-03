@@ -1,40 +1,51 @@
 import SwiftUI
-import Charts
 
-struct Income1: Identifiable {
-    let id = UUID()
-    let month: String
-    let amount: Double
-}
-
-
-struct IncomeChartView: View {
-    static let months: [String] = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
+struct ClientsView: View {
     
-    let data: [Income1] = [
-        .init(month: "Янв", amount: 1200),
-        .init(month: "Фев", amount: 1800),
-        .init(month: "Мар", amount: 900),
-        .init(month: "Апр", amount: 1500)
-    ]
+    @StateObject var viewModel = ClientsStatViewModel()
+    
+    let year: Int
+    
+    
+
     
     var body: some View {
-        Chart(data) { item in
-            BarMark(
-                x: .value("Месяц", item.month),
-                y: .value("Доход", item.amount)
-            )
-            .foregroundStyle(by: .value("Месяц", item.month)) // разный цвет по месяцам
-        }
-        .frame(height: 250)
-        .padding()
         
-        Text("Это круто")
+       
+       
+        
+        ZStack {
+            Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
+            
+            VStack {
+                ZStack {
+                    Color.white
+                    
+                    Text("За всё время — \(format(viewModel.allClientsCount))")
+                        .font(Font.custom(SFPro.bold.rawValue, size: 24))
+                    
+                        .padding(10)
+                }
+                .frame(height: 50)
+                .padding(.horizontal, 10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 5)
+                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                        .padding(.horizontal, 10)
+                )
+
+                Spacer()
+            }
+        }
+        .onAppear {
+            viewModel.loadAllClientsCount()
+        }
     }
-}
-
-#Preview {
-    IncomeChartView()
-}
 
 
+private func format(_ value: Int) -> String {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.groupingSeparator = " "
+    return f.string(from: (value as Int) as NSNumber) ?? "0"
+    }}

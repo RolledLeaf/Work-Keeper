@@ -23,7 +23,7 @@ struct IncomeRow: View {
         return f.string(from: value as NSDecimalNumber) ?? "0 ₽"
     }
     
-    static let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
+   static let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
     
     
     var body: some View {
