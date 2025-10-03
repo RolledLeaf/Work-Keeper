@@ -6,17 +6,16 @@ struct Income: Identifiable {
     let month: String
     let amount: Decimal
 }
+
 struct IncomeView: View {
     @Environment(\.managedObjectContext) private var context
 
     @ObservedObject var viewModel: IncomeViewModel
    
     @State private var monthly: [Income] = []
-
-   
     @State private var amount: Decimal = 0
    
-    static let months: [String] = ["Я", "Ф", "М", "А", "М", "И", "И", "А", "С", "О", "Н", "Д"] // Jan-Dec one-letter
+    static let months: [String] = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
     
     let year: Int
    
@@ -43,15 +42,14 @@ struct IncomeView: View {
                         .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                         .padding(.horizontal, 10)
                 )
-                
-                
-                
+
                 
                 Chart(monthly) { item in
                     BarMark(
                         x: .value("Месяц", item.month),
                         y: .value("Доход", item.amount)
                     )
+                    .foregroundStyle(by: .value("Месяц", item.month))
                 }
                 .frame(height: 220)
                 .padding(.horizontal)
