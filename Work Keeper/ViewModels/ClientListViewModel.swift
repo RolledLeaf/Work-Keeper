@@ -22,6 +22,7 @@ final class ClientsStatViewModel: ObservableObject {
                                   onlyCompleted: Bool = true,
                                   dateKey: String = "scheduledAt",
                                   debug: Bool = false) {
+        print("Loading Year Client stats")
            yearActiveClientsCount = store.distinctClientsCount(year: year,
                                                                month: nil,
                                                                onlyCompleted: onlyCompleted,
@@ -34,6 +35,7 @@ final class ClientsStatViewModel: ObservableObject {
                                 onlyCompleted: Bool = true,
                                 dateKey: String = "scheduledAt",
                                 debug: Bool = false) {
+        print("Loading Month Client stats")
         monthActiveClientsCount = store.distinctClientsCount(year: year,
                                                              month: month,
                                                              onlyCompleted: onlyCompleted,
@@ -42,7 +44,7 @@ final class ClientsStatViewModel: ObservableObject {
     }
     
     func loadMonthlyActive(year: Int,
-                           onlyCompleted: Bool = true,
+                           onlyCompleted: Bool = false,
                            dateKey: String = "scheduledAt",
                            debug: Bool = false) {
         monthlyActiveCounts = (1...12).map { m in

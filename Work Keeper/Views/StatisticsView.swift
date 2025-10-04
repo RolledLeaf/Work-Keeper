@@ -77,6 +77,9 @@ struct StatisticsView: View {
     @State private var tab: TopBar = .income
     @Environment(\.managedObjectContext) private var context
     @StateObject private var incomeVM: IncomeViewModel
+    @StateObject private var clientsVM = ClientsStatViewModel()
+    @StateObject private var tasksVM = TaskListViewModel()
+   
 
     init(context: NSManagedObjectContext) {
         _incomeVM = StateObject(wrappedValue: IncomeViewModel(context: context))
@@ -109,9 +112,8 @@ struct StatisticsView: View {
             
            content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            
         }
+            
     }
     
     @ViewBuilder
@@ -120,13 +122,10 @@ struct StatisticsView: View {
             case .income:
             IncomeView(viewModel: incomeVM, year: selectedYear)
         case .clients:
-            ClientsView(year: selectedYear)
+            ClientsView(viewModel: clientsVM, year: selectedYear)
         case .tasks:
-            Text("Задачи")
+           TasksView(viewModel: tasksVM, year: selectedYear)
         }
     }
     
 }
-
-
-

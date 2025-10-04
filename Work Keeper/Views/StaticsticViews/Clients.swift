@@ -2,17 +2,15 @@ import SwiftUI
 
 struct ClientsView: View {
     
-    @StateObject var viewModel = ClientsStatViewModel()
+    @ObservedObject var viewModel: ClientsStatViewModel
     
     let year: Int
-    
-    
 
+    private let shortMonths: [String] = ["За год", "Я", "Ф", "М", "А", "М", "И", "И", "А", "С", "О", "Н", "Д"]
     
+    private let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
+ 
     var body: some View {
-        
-       
-       
         
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
@@ -34,11 +32,30 @@ struct ClientsView: View {
                         .padding(.horizontal, 10)
                 )
 
+                List {
+                    // 0 — за год
+                    ClientsStatRow(title: months[0], year: year, monthIndex: 0)
+                        .listRowSeparator(.hidden)
+
+                    // 1..12 — месяцы
+                    ForEach(1...12, id: \.self) { m in
+                        ClientsStatRow(title: months[m], year: year, monthIndex: m)
+                            .listRowSeparator(.hidden)
+                    }
+                }
+                .listStyle(PlainListStyle())
+                .padding(.horizontal, 10)
+
+                
+                
+                
+                
                 Spacer()
             }
         }
         .onAppear {
             viewModel.loadAllClientsCount()
+            viewModel.loadMonthlyActive(year: year)
         }
     }
 

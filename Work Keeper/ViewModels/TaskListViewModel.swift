@@ -1,12 +1,15 @@
 import Foundation
 import Combine
 
+@MainActor
 final class TaskListViewModel: ObservableObject {
     @Published var tasks: [Task] = []
     @Published var comment: String = ""
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var phone: String = ""
+    @Published var tasksCount: Int = 0
+    @Published var canceledTasksCount: Int = 0
     
     var groupedTasksByDate: [Date: [Task]] {
         Dictionary(grouping: tasks) { task in
@@ -34,10 +37,53 @@ final class TaskListViewModel: ObservableObject {
     
     func scheduleTask(task: Task) {
         store.makeScheduled(task)
+        loadTasks()
     }
     
+    // MARK: - Statistics Methods
     
+    @discardableResult
+    func countTasks(year: Int,
+                    month: Int?,
+                    status: Status?,
+                    dateKey: String = "scheduledAt",
+                    debug: Bool = false) -> Int {
+        tasksCount = store.countTasks(year: year,
+                                      month: month,
+                                      status: status,
+                                      dateKey: dateKey,
+                                      debug: debug
+        )
+        return tasksCount
+    }
+    
+    func loadAlltasksCount(debug: Bool = false) {
+        tasksCount = store.totalTasksCount()
+        print("loaded all clients count: \(tasksCount)")
+    }
+    
+    func loadAllCanceledTasksCount(debug: Bool = false) {
+        canceledTasksCount = store.totalCanceled(debug: debug)
+        print("loaded all canceled clients count: \(canceledTasksCount)")
+    }
+    
+    // MARK: - Convenience counters
+    @discardableResult
+    func completedCount(year: Int,
+                        month: Int?,
+                        dateKey: String = "scheduledAt",
+                        debug: Bool = false) -> Int {
+        countTasks(year: year, month: month, status: .completed, dateKey: dateKey, debug: debug)
+    }
 
+    @discardableResult
+    func canceledCount(year: Int,
+                       month: Int?,
+                       dateKey: String = "scheduledAt",
+                       debug: Bool = false) -> Int {
+        countTasks(year: year, month: month, status: .canceled, dateKey: dateKey, debug: debug)
+    }
+    
     
  
 }
@@ -422,4 +468,3 @@ final class EditTaskViewModel: ObservableObject {
         return result
     }
 }
-
