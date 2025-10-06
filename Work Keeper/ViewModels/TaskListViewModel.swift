@@ -4,7 +4,12 @@ import Combine
 @MainActor
 final class TaskListViewModel: ObservableObject {
     @Published var tasks: [Task] = []
+    @Published var yearCompletedTasksCount: Int = 0
+    @Published var yearCanceledTasksCount: Int = 0
+    @Published var monthCompletedTasksCount: Int = 0
+    @Published var monthCanceledTasksCount: Int = 0
     @Published var monthlyCompletedTasksCounts: [Int] = Array(repeating: 0, count: 12)
+    @Published var monthlyCanceledTasksCounts: [Int] = Array(repeating: 0, count: 12)
     @Published var comment: String = ""
     @Published var firstName: String = ""
     @Published var lastName: String = ""
@@ -60,13 +65,13 @@ final class TaskListViewModel: ObservableObject {
     }
     
     func loadAlltasksCount(debug: Bool = false) {
-        tasksCount = store.totalTasksCount()
-        print("loaded all clients count: \(tasksCount)")
+        tasksCount = store.totalTasksCount(debug: debug)
+        print("loaded all tasks count: \(tasksCount)")
     }
     
     func loadAllCanceledTasksCount(debug: Bool = false) {
         canceledTasksCount = store.totalCanceled(debug: debug)
-        print("loaded all canceled clients count: \(canceledTasksCount)")
+        print("loaded all canceled tasks count: \(canceledTasksCount)")
     }
     
     // MARK: - Convenience counters
@@ -89,10 +94,19 @@ final class TaskListViewModel: ObservableObject {
     func loadMonthlyCompletedTasks(year: Int) {
         var temp: [Int] = []
         for month in 1...12 {
-            let count = countTasks(year: year, month: month, status: .completed)
+            let count = store.countTasks(year: year, month: month, status: .completed)
             temp.append(count)
         }
         monthlyCompletedTasksCounts = temp
+    }
+    
+    func loadMonthlyCanceledTasks(year: Int) {
+        var temp: [Int] = []
+        for month in 1...12 {
+            let count = store.countTasks(year: year, month: month, status: .canceled)
+            temp.append(count)
+        }
+        monthlyCanceledTasksCounts = temp
     }
     
  

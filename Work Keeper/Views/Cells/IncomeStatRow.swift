@@ -5,8 +5,6 @@ struct IncomeRow: View {
     @ObservedObject var viewModel: IncomeViewModel
   
     let year: Int
-    /// 0 = "За год", 1...12 = месяцы
-
     let monthIndex: Int
     
     static let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
