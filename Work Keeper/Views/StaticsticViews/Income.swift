@@ -61,7 +61,7 @@ struct IncomeView: View {
                    
                 List {
                     ForEach(0..<IncomeRow.months.count, id: \.self) { idx in
-                        IncomeRow(viewModel: viewModel, year: year, monthIndex: idx)
+                        IncomeRow( year: year, monthIndex: idx)
                     }
                 }
                 .listRowSeparator(.hidden)

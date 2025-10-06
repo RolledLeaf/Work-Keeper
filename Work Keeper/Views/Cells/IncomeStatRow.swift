@@ -3,7 +3,7 @@ import CoreData
 
 struct IncomeRow: View {
     @Environment(\.managedObjectContext) private var context
-    @ObservedObject var viewModel: IncomeViewModel
+  
     let year: Int
     /// 0 = "За год", 1...12 = месяцы
 

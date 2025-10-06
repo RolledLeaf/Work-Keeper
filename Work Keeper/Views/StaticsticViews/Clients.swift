@@ -34,12 +34,12 @@ struct ClientsView: View {
 
                 List {
                     // 0 — за год
-                    ClientsStatRow(title: months[0], year: year, monthIndex: 0)
+                    ClientsStatRow(viewModel: viewModel, title: months[0], year: year, monthIndex: 0)
                         .listRowSeparator(.hidden)
 
                     // 1..12 — месяцы
                     ForEach(1...12, id: \.self) { m in
-                        ClientsStatRow(title: months[m], year: year, monthIndex: m)
+                        ClientsStatRow(viewModel: viewModel, title: months[m], year: year, monthIndex: m)
                             .listRowSeparator(.hidden)
                     }
                 }

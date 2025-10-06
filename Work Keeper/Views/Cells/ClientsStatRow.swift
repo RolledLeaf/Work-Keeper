@@ -1,10 +1,10 @@
 import SwiftUI
-import CoreData
+
 
 
 struct ClientsStatRow: View {
-    @Environment(\.managedObjectContext) private var context
-    private let store = ClientStore()
+   
+    @ObservedObject var viewModel: ClientsStatViewModel
 
     let title: String
     let year: Int
@@ -13,7 +13,14 @@ struct ClientsStatRow: View {
 
  
     
-    @State private var amount: Int = 0
+    private var computedAmount: Int {
+        if monthIndex == 0 {
+            return viewModel.yearActiveClientsCount
+        }
+        let idx = monthIndex - 1
+        guard idx >= 0 && idx < viewModel.monthlyActiveCounts.count else { return 0 }
+        return viewModel.monthlyActiveCounts[idx]
+    }
   
 
     var body: some View {
@@ -22,7 +29,7 @@ struct ClientsStatRow: View {
                 Text(title)
                     .font(.custom(SFPro.bold.rawValue, size: 19))
                 Spacer()
-                Text("\(amount)")
+                Text("\(computedAmount)")
                     .font(.custom(SFPro.bold.rawValue, size: 19))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
@@ -30,19 +37,13 @@ struct ClientsStatRow: View {
                 Text(title)
                     .font(.custom(SFPro.regular.rawValue, size: 17))
                 Spacer()
-                Text("\(amount)")
+                Text("\(computedAmount)")
                     .font(.custom(SFPro.regular.rawValue, size: 17))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
             }
         }
         .padding(.vertical, 8)
-        .task(id: year * 100 + monthIndex) {
-            if monthIndex == 0 {
-                amount = store.distinctClientsCount(year: year, month: nil, onlyCompleted: true, dateKey: "scheduledAt", debug: false)
-            } else {
-                amount = store.distinctClientsCount(year: year, month: monthIndex, onlyCompleted: true, dateKey: "scheduledAt", debug: false)
-            }
-        }
+   
     }
 }

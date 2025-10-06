@@ -35,7 +35,7 @@ final class ClientsStatViewModel: ObservableObject {
                                 onlyCompleted: Bool = true,
                                 dateKey: String = "scheduledAt",
                                 debug: Bool = false) {
-        print("Loading Month Client stats")
+       
         monthActiveClientsCount = store.distinctClientsCount(year: year,
                                                              month: month,
                                                              onlyCompleted: onlyCompleted,
