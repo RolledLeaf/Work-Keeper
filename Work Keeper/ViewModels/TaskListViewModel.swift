@@ -4,12 +4,14 @@ import Combine
 @MainActor
 final class TaskListViewModel: ObservableObject {
     @Published var tasks: [Task] = []
+    @Published var monthlyCompletedTasksCounts: [Int] = Array(repeating: 0, count: 12)
     @Published var comment: String = ""
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var phone: String = ""
     @Published var tasksCount: Int = 0
     @Published var canceledTasksCount: Int = 0
+    
     
     var groupedTasksByDate: [Date: [Task]] {
         Dictionary(grouping: tasks) { task in
@@ -84,9 +86,19 @@ final class TaskListViewModel: ObservableObject {
         countTasks(year: year, month: month, status: .canceled, dateKey: dateKey, debug: debug)
     }
     
+    func loadMonthlyCompletedTasks(year: Int) {
+        var temp: [Int] = []
+        for month in 1...12 {
+            let count = countTasks(year: year, month: month, status: .completed)
+            temp.append(count)
+        }
+        monthlyCompletedTasksCounts = temp
+    }
     
  
 }
+
+// MARK: - Task View Models Managments
 
 final class CreateTaskViewModel: ObservableObject {
     @Published var scheduledAt: Date = Date()

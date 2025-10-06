@@ -6,8 +6,7 @@ struct ClientsView: View {
     
     let year: Int
 
-    private let shortMonths: [String] = ["За год", "Я", "Ф", "М", "А", "М", "И", "И", "А", "С", "О", "Н", "Д"]
-    
+
     private let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
  
     var body: some View {

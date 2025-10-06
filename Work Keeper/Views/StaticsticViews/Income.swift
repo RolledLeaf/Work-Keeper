@@ -50,6 +50,7 @@ struct IncomeView: View {
                         y: .value("Доход", item.amount)
                     )
                     .foregroundStyle(by: .value("Месяц", item.month))
+                    
                 }
                 .frame(height: 220)
                 .padding(.horizontal)
@@ -61,7 +62,7 @@ struct IncomeView: View {
                    
                 List {
                     ForEach(0..<IncomeRow.months.count, id: \.self) { idx in
-                        IncomeRow( year: year, monthIndex: idx)
+                        IncomeRow( viewModel: viewModel, year: year, monthIndex: idx)
                     }
                 }
                 .listRowSeparator(.hidden)
@@ -77,6 +78,7 @@ struct IncomeView: View {
         }
         .onAppear {
             viewModel.loadTotal()
+            viewModel.loadMonthlyIncome(year: year)
         }
         .task(id: year) {
             monthly = (1...12).map { m in

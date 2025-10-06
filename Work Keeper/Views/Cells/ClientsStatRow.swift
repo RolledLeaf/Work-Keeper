@@ -8,7 +8,6 @@ struct ClientsStatRow: View {
 
     let title: String
     let year: Int
-    /// 0 = "За год", 1...12 = месяцы
     let monthIndex: Int
 
  

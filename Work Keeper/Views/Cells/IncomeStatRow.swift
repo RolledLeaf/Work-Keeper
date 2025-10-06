@@ -2,14 +2,23 @@ import SwiftUI
 import CoreData
 
 struct IncomeRow: View {
-    @Environment(\.managedObjectContext) private var context
+    @ObservedObject var viewModel: IncomeViewModel
   
     let year: Int
     /// 0 = "За год", 1...12 = месяцы
 
     let monthIndex: Int
+    
+    static let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
 
-    @State private var amount: Decimal = 0
+    private var computedAmount: Decimal {
+        if monthIndex == 0 {
+            return viewModel.yearIncome
+        }
+        let idx = monthIndex - 1
+        guard idx >= 0 && idx < viewModel.monthlyIncome.count else { return 0 }
+        return viewModel.monthlyIncome[idx]
+    }
 
     private func title() -> String {
         Self.months[monthIndex]
@@ -23,7 +32,7 @@ struct IncomeRow: View {
         return f.string(from: value as NSDecimalNumber) ?? "0 ₽"
     }
     
-   static let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
+
     
     
     var body: some View {
@@ -36,7 +45,7 @@ struct IncomeRow: View {
                     .font(.custom(SFPro.bold.rawValue, size: 19))
                 
                 Spacer()
-                Text(formatted(amount))
+                Text(formatted(computedAmount))
                     .font(.custom(SFPro.bold.rawValue, size: 19))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
@@ -45,7 +54,7 @@ struct IncomeRow: View {
                     .font(.custom(SFPro.regular.rawValue, size: 17))
                 
                 Spacer()
-                Text(formatted(amount))
+                Text(formatted(computedAmount))
                     .font(.custom(SFPro.regular.rawValue, size: 17))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
@@ -54,19 +63,8 @@ struct IncomeRow: View {
            
         }
         .padding(.vertical, 8)
-        .onAppear(perform: compute)
-        .onChange(of: year) { _ in compute() }
-        .onChange(of: monthIndex) { _ in compute() }
-        .task(id: year * 100 + monthIndex) {
-            compute()
-        }
+       
     }
 
-    private func compute() {
-        if monthIndex == 0 {
-            amount = totalIncome(context: context, year: year, month: nil, onlyCompleted: true, debug: false)
-        } else {
-            amount = totalIncome(context: context, year: year, month: monthIndex, onlyCompleted: true, debug: false)
-        }
-    }
+
 }

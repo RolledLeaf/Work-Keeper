@@ -48,7 +48,7 @@ struct TasksView: View {
         }
         .onAppear {
             viewModel.loadAlltasksCount()
-            viewModel.loadAllCanceledTasksCount()
+            viewModel.loadMonthlyCompletedTasks(year: year)
         }
         
        
