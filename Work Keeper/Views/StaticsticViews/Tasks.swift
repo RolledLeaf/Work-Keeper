@@ -3,6 +3,8 @@ import SwiftUI
 struct TasksView: View {
     @ObservedObject var viewModel: TaskListViewModel
     
+    
+    
     let year: Int
     
     private let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
@@ -17,19 +19,30 @@ struct TasksView: View {
                     Color.white
                    
                         HStack {
-                            Text("Всего")
-                                .font(Font.custom(SFPro.bold.rawValue, size: 24))
-                                .padding(10)
+                            Text("Выполнено: ")
+                                .font(Font.custom(SFPro.bold.rawValue, size: 22))
+                             
                             
                             Spacer()
-                            
+                                .frame(width: 30)
                             
                             Text("\(viewModel.tasksCount)")
-                                .font(Font.custom(SFPro.bold.rawValue, size: 24))
+                                .font(Font.custom(SFPro.bold.rawValue, size: 22))
 
+                            Spacer()
+                                .frame(width: 60)
+                            
+                            Text("Отмены: ")
+                                .font(Font.custom(SFPro.bold.rawValue, size: 22))
+                               
+                            
+                            Spacer()
+                                .frame(width: 30)
                             Text("\(viewModel.canceledTasksCount)")
-                                .font(Font.custom(SFPro.bold.rawValue, size: 24))
+                                .font(Font.custom(SFPro.bold.rawValue, size: 22))
                                 .foregroundColor(Color.custom(.taskCanceledOrange))
+                                
+                                
                     }
      
                 }

@@ -2,6 +2,8 @@ import SwiftUI
 
 struct TaskStatRow: View {
     @ObservedObject var viewModel: TaskListViewModel
+    
+    @State var canceledTasksCountOpacity: Double = 0
   
     static let months: [String] = ["За год", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
 
@@ -45,7 +47,15 @@ struct TaskStatRow: View {
                     .font(.custom(SFPro.bold.rawValue, size: 19))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
+                    .opacity(canceledTasksCountOpacity)
                     .foregroundColor(Color.custom(.taskCanceledOrange))
+                    .onChange(of: canceledAmount) { _, newValue in
+                        if newValue == 0 {
+                            canceledTasksCountOpacity = 0
+                        } else {
+                            canceledTasksCountOpacity = 1
+                        }
+                    }
       
             } else {
                 Text(title)
@@ -60,10 +70,19 @@ struct TaskStatRow: View {
                     .font(.custom(SFPro.bold.rawValue, size: 19))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
+                    .opacity(canceledTasksCountOpacity)
                     .foregroundColor(Color.custom(.taskCanceledOrange))
+                    .onChange(of: canceledAmount) { _, newValue in
+                        if newValue == 0 {
+                            canceledTasksCountOpacity = 0
+                        } else {
+                            canceledTasksCountOpacity = 1
+                        }
+                    }
             }
         }
         .padding(.vertical, 8)
+        .padding(.horizontal, 15)
    
     }
     

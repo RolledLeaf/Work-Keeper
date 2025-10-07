@@ -18,7 +18,7 @@ struct ClientsView: View {
                 ZStack {
                     Color.white
                     
-                    Text("За всё время — \(format(viewModel.allClientsCount))")
+                    Text("Клиентов в базе:  \(format(viewModel.allClientsCount))")
                         .font(Font.custom(SFPro.bold.rawValue, size: 24))
                     
                         .padding(10)

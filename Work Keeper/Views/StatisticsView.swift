@@ -65,7 +65,7 @@ struct YearWheelPickerView: View {
 enum TopBar: String, CaseIterable, Identifiable {
     case income = "Доходы"
     case clients = "Клиенты"
-    case tasks = "Задачи"
+    case tasks = "Задания"
     var id: String { self.rawValue }
 }
 

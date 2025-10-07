@@ -8,21 +8,21 @@ struct Income: Identifiable {
 }
 
 struct IncomeView: View {
-    @Environment(\.managedObjectContext) private var context
-
-    @ObservedObject var viewModel: IncomeViewModel
    
+    
+    @ObservedObject var viewModel: IncomeViewModel
+    
     @State private var monthly: [Income] = []
     @State private var amount: Decimal = 0
-   
+    
     static let months: [String] = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
     
     let year: Int
-   
+    
     
     var body: some View {
         
-
+        
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             
@@ -30,7 +30,7 @@ struct IncomeView: View {
                 ZStack {
                     Color.white
                     
-                    Text("За всё время — \(format(viewModel.total)) ₽")
+                    Text("За всё время:  \(format(viewModel.total)) ₽")
                         .font(Font.custom(SFPro.bold.rawValue, size: 24))
                     
                         .padding(10)
@@ -42,9 +42,9 @@ struct IncomeView: View {
                         .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                         .padding(.horizontal, 10)
                 )
-
                 
-                Chart(monthly) { item in
+                
+                Chart( (0..<viewModel.monthlyIncome.count).map { i in Income(month: Self.months[i], amount: viewModel.monthlyIncome[i]) } ) { item in
                     BarMark(
                         x: .value("Месяц", item.month),
                         y: .value("Доход", item.amount)
@@ -55,11 +55,7 @@ struct IncomeView: View {
                 .frame(height: 220)
                 .padding(.horizontal)
                 
-          
-            
-            
-                
-                   
+    
                 List {
                     ForEach(0..<IncomeRow.months.count, id: \.self) { idx in
                         IncomeRow( viewModel: viewModel, year: year, monthIndex: idx)
@@ -73,26 +69,27 @@ struct IncomeView: View {
                 
                 Spacer()
             }
-          
+            
             
         }
         .onAppear {
             viewModel.loadTotal()
-            viewModel.loadMonthlyIncome(year: year)
+            viewModel.loadForYear(year)
         }
         .task(id: year) {
-            monthly = (1...12).map { m in
-                let amount = totalIncome(context: context, year: year, month: m, onlyCompleted: true, debug: false)
-                return Income(month: Self.months[m-1], amount: amount)
-            }
+            viewModel.loadForYear(year)
+           
+           
         }
+        
         
         
     }
     private func format(_ value: Decimal) -> String {
-            let f = NumberFormatter()
-            f.numberStyle = .decimal
-            f.groupingSeparator = " "
-            return f.string(from: value as NSDecimalNumber) ?? "0"
-        }}
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.groupingSeparator = " "
+        return f.string(from: value as NSDecimalNumber) ?? "0"
+    }
+}
 
