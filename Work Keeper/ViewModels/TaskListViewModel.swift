@@ -1,12 +1,22 @@
 import Foundation
 import Combine
 
+@MainActor
 final class TaskListViewModel: ObservableObject {
     @Published var tasks: [Task] = []
+    @Published var yearCompletedTasksCount: Int = 0
+    @Published var yearCanceledTasksCount: Int = 0
+    @Published var monthCompletedTasksCount: Int = 0
+    @Published var monthCanceledTasksCount: Int = 0
+    @Published var monthlyCompletedTasksCounts: [Int] = Array(repeating: 0, count: 12)
+    @Published var monthlyCanceledTasksCounts: [Int] = Array(repeating: 0, count: 12)
     @Published var comment: String = ""
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var phone: String = ""
+    @Published var tasksCount: Int = 0
+    @Published var canceledTasksCount: Int = 0
+    
     
     var groupedTasksByDate: [Date: [Task]] {
         Dictionary(grouping: tasks) { task in
@@ -34,13 +44,75 @@ final class TaskListViewModel: ObservableObject {
     
     func scheduleTask(task: Task) {
         store.makeScheduled(task)
+        loadTasks()
     }
     
+    // MARK: - Statistics Methods
     
+    @discardableResult
+    func countTasks(year: Int,
+                    month: Int?,
+                    status: Status?,
+                    dateKey: String = "scheduledAt",
+                    debug: Bool = false) -> Int {
+        tasksCount = store.countTasks(year: year,
+                                      month: month,
+                                      status: status,
+                                      dateKey: dateKey,
+                                      debug: debug
+        )
+        return tasksCount
+    }
+    
+    func loadAlltasksCount(debug: Bool = false) {
+        tasksCount = store.totalTasksCount(debug: debug)
+        print("loaded all tasks count: \(tasksCount)")
+    }
+    
+    func loadAllCanceledTasksCount(debug: Bool = false) {
+        canceledTasksCount = store.totalCanceled(debug: debug)
+        print("loaded all canceled tasks count: \(canceledTasksCount)")
+    }
+    
+    // MARK: - Convenience counters
+    @discardableResult
+    func completedCount(year: Int,
+                        month: Int?,
+                        dateKey: String = "scheduledAt",
+                        debug: Bool = false) -> Int {
+        countTasks(year: year, month: month, status: .completed, dateKey: dateKey, debug: debug)
+    }
 
+    @discardableResult
+    func canceledCount(year: Int,
+                       month: Int?,
+                       dateKey: String = "scheduledAt",
+                       debug: Bool = false) -> Int {
+        countTasks(year: year, month: month, status: .canceled, dateKey: dateKey, debug: debug)
+    }
+    
+    func loadMonthlyCompletedTasks(year: Int) {
+        var temp: [Int] = []
+        for month in 1...12 {
+            let count = store.countTasks(year: year, month: month, status: .completed)
+            temp.append(count)
+        }
+        monthlyCompletedTasksCounts = temp
+    }
+    
+    func loadMonthlyCanceledTasks(year: Int) {
+        var temp: [Int] = []
+        for month in 1...12 {
+            let count = store.countTasks(year: year, month: month, status: .canceled)
+            temp.append(count)
+        }
+        monthlyCanceledTasksCounts = temp
+    }
     
  
 }
+
+// MARK: - Task View Models Managments
 
 final class CreateTaskViewModel: ObservableObject {
     @Published var scheduledAt: Date = Date()
@@ -422,4 +494,3 @@ final class EditTaskViewModel: ObservableObject {
         return result
     }
 }
-

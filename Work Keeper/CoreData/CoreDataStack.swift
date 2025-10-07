@@ -14,7 +14,7 @@ final class CoreDataStack {
                 print("❌ Error loading persistent stores: \(error.localizedDescription)")
             }
         }
-        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy //Данные из базы побеждают и перезаписывают локальные изменения.
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy 
 
         return container
     }()
