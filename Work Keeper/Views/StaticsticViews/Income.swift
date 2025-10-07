@@ -78,8 +78,6 @@ struct IncomeView: View {
         }
         .task(id: year) {
             viewModel.loadForYear(year)
-           
-           
         }
         
         

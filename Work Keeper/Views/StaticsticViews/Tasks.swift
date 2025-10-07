@@ -76,6 +76,10 @@ struct TasksView: View {
             viewModel.loadMonthlyCanceledTasks(year: year)
         }
         
+        .task(id: year) {
+            viewModel.loadMonthlyCompletedTasks(year: year)
+            viewModel.loadMonthlyCanceledTasks(year: year)
+        }
        
     }
     private func format(_ value: Int) -> String {
