@@ -15,6 +15,17 @@ struct TasksView: View {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             
             VStack {
+                
+                List {
+                    TaskStatRow(viewModel: viewModel, title: months[0], year: year, monthIndex: 0)
+                        .listRowSeparator(.hidden)
+                    
+                    ForEach(1...12, id: \.self) { m in
+                        TaskStatRow(viewModel: viewModel, title: months[m], year: year, monthIndex: m)
+                            .listRowSeparator(.hidden)
+                    }
+                }
+                
                 ZStack {
                     Color.white
                    
@@ -53,17 +64,7 @@ struct TasksView: View {
                         .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                         .padding(.horizontal, 10)
                 )
-                
-                List {
-                    TaskStatRow(viewModel: viewModel, title: months[0], year: year, monthIndex: 0)
-                        .listRowSeparator(.hidden)
-                    
-                    ForEach(1...12, id: \.self) { m in
-                        TaskStatRow(viewModel: viewModel, title: months[m], year: year, monthIndex: m)
-                            .listRowSeparator(.hidden)
-                    }
-                }
-                
+
                 
                 Spacer()
             }

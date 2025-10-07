@@ -33,11 +33,16 @@ struct TaskStatRow: View {
     
     
     var body: some View {
+        
+       
+        
         HStack {
+        
             if title == "За год" {
                 Text(title)
                     .font(.custom(SFPro.bold.rawValue, size: 19))
                 Spacer()
+                
                 Text("\(completedAmount)") //количество выполненных заданий
                     .font(.custom(SFPro.bold.rawValue, size: 19))
                     .monospacedDigit()
@@ -50,10 +55,10 @@ struct TaskStatRow: View {
                     .opacity(canceledTasksCountOpacity)
                     .foregroundColor(Color.custom(.taskCanceledOrange))
                     .onChange(of: canceledAmount) { _, newValue in
-                        if newValue == 0 {
-                            canceledTasksCountOpacity = 0
-                        } else {
+                        if newValue > 0 {
                             canceledTasksCountOpacity = 1
+                        } else {
+                            canceledTasksCountOpacity = 0
                         }
                     }
       
@@ -67,26 +72,31 @@ struct TaskStatRow: View {
                     .foregroundStyle(.primary)
                 
                 Text("\(canceledAmount)")
-                    .font(.custom(SFPro.bold.rawValue, size: 19))
+                    .font(.custom(SFPro.bold.rawValue, size: 17))
                     .monospacedDigit()
                     .foregroundStyle(.primary)
                     .opacity(canceledTasksCountOpacity)
                     .foregroundColor(Color.custom(.taskCanceledOrange))
                     .onChange(of: canceledAmount) { _, newValue in
-                        if newValue == 0 {
-                            canceledTasksCountOpacity = 0
-                        } else {
+                        if newValue > 0 {
                             canceledTasksCountOpacity = 1
+                        } else {
+                            canceledTasksCountOpacity = 0
                         }
                     }
             }
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 15)
+        .onAppear {
+            if canceledAmount > 0 {
+                canceledTasksCountOpacity = 1
+            }
+        }
    
     }
     
-   
+        
 
     
     
