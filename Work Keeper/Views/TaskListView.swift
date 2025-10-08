@@ -105,6 +105,33 @@ struct TaskListView: View {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color.custom(.searchFieldGray))
                     )
+                 
+                 Text("Статусы заданий")
+                 
+                 HStack(spacing: 8) {
+                      Rectangle()
+                           .frame(width: 15, height: 15)
+                           .foregroundColor(Color.custom(.taskCompleteGreen))
+                      
+                      Text("- выполнено")
+                           .font(.custom(SFPro.regular.rawValue, size: 14))
+                           
+                      
+                      Rectangle()
+                           .frame(width: 15, height: 15)
+                           .foregroundColor(Color.custom(.taskViewYellow))
+                      
+                      Text("- запланировано")
+                           .font(.custom(SFPro.regular.rawValue, size: 14))
+                           
+                      
+                      Rectangle()
+                           .frame(width: 15, height: 15)
+                           .foregroundColor(Color.custom(.taskCanceledOrange))
+                      
+                      Text("- отменено")
+                           .font(.custom(SFPro.regular.rawValue, size: 14))
+                 }
 
                 if viewModel.groupedTasksByDate.isEmpty {
                     Spacer()
@@ -124,7 +151,7 @@ struct TaskListView: View {
                     Spacer()
                 } else {
                     Spacer()
-                        .frame(height: 38)
+                        .frame(height: 20)
                     NavigationStack {
                         ScrollViewReader { proxy in
                             List {
@@ -417,6 +444,42 @@ struct TaskListView: View {
     }
 }
 
+struct TaskColoredLegend: View {
+     var body: some View {
+          VStack {
+               
+               Text("Статусы заданий")
+               
+               HStack(spacing: 8) {
+                    Rectangle()
+                         .frame(width: 15, height: 15)
+                         .foregroundColor(Color.custom(.taskCompleteGreen))
+                    
+                    Text("- выполнено")
+                         .font(.custom(SFPro.regular.rawValue, size: 14))
+                         
+                    
+                    Rectangle()
+                         .frame(width: 15, height: 15)
+                         .foregroundColor(Color.custom(.taskViewYellow))
+                    
+                    Text("- назначено")
+                         .font(.custom(SFPro.regular.rawValue, size: 14))
+                         
+                    
+                    Rectangle()
+                         .frame(width: 15, height: 15)
+                         .foregroundColor(Color.custom(.taskCanceledOrange))
+                    
+                    Text("- отменено")
+                         .font(.custom(SFPro.regular.rawValue, size: 14))
+               }
+          }
+     }
+}
+
 #Preview {
     TaskListView()
 }
+
+

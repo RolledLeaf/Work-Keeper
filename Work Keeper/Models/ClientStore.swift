@@ -91,117 +91,117 @@ func createOrFetchClient(firstName: String,
     }
     
     
-    func distinctClientsCount(
-        year: Int,
-        month: Int? = nil,
-        onlyCompleted: Bool = true,
-        dateKey: String = "scheduledAt",
-        debug: Bool = false
-    ) -> Int {
-        // Построим диапазон дат
-        var cal = Calendar.current
-        cal.timeZone = .current
-
-        var start = DateComponents()
-        start.year = year
-        start.month = month ?? 1
-        start.day = 1
-
-        var end = DateComponents()
-        end.year = (month == nil) ? (year + 1) : year
-        end.month = (month == nil) ? 1 : (month! + 1)
-        end.day = 1
-
-        guard let startDate = cal.date(from: start),
-              let endDate = cal.date(from: end) else {
-            if debug { print("[ClientStore] ERROR: failed to build date range for year=\(year) month=\(String(describing: month))") }
-            return 0
-        }
-
-        if debug {
-            print("[ClientStore] distinctClientsCount year=\(year) month=\(String(describing: month)) onlyCompleted=\(onlyCompleted) dateKey=\(dateKey)")
-            print("[ClientStore] Date range: \(startDate) ..< \(endDate)")
-        }
-
-        // Preflight: посчитаем задачи разными срезами, без выборки всех объектов
-        if debug {
-            do {
-                // Всего задач
-                let allTasksReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-                let allCount = try context.count(for: allTasksReq)
-
-                // С клиентом != nil
-                let withClientReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-                withClientReq.predicate = NSPredicate(format: "%K != nil", "client")
-                let withClientCount = try context.count(for: withClientReq)
-
-                // В диапазоне дат по dateKey
-                let inRangeReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-                inRangeReq.predicate = NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
-                let inRangeCount = try context.count(for: inRangeReq)
-
-                // В диапазоне дат + client != nil + (опционально) completed
-                let pred1 = NSPredicate(format: "%K != nil", "client")
-                let pred2 = NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
-                var preds = [pred1, pred2]
-                if onlyCompleted {
-                    preds.append(NSPredicate(format: "statusString in %@", ["completed", "scheduled"]))
-                }
-                let combinedReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-                combinedReq.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: preds)
-                let combinedCount = try context.count(for: combinedReq)
-
-                print("[ClientStore] Preflight — all=\(allCount), withClient=\(withClientCount), inRange=\(inRangeCount), final=\(combinedCount)")
-
-                // Возьмём пару примеров для sanity-check
-                let sampleReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-                sampleReq.fetchLimit = 5
-                sampleReq.predicate = combinedReq.predicate
-                sampleReq.includesPropertyValues = true
-                sampleReq.propertiesToFetch = ["client", "statusString", dateKey]
-                let sample = try context.fetch(sampleReq)
-                let peek: [String] = sample.map { obj in
-                    let status = obj.value(forKey: "statusString") as? String ?? "?"
-                    let dateVal = obj.value(forKey: dateKey) as Any
-                    let clientObj = obj.value(forKey: "client")
-                    let clientDesc: String
-                    if let c = clientObj as? NSManagedObject { clientDesc = c.objectID.uriRepresentation().absoluteString } else { clientDesc = "nil" }
-                    return "status=\(status), date=\(dateVal), client=\(clientDesc)"
-                }
-                print("[ClientStore] Sample rows:", peek)
-            } catch {
-                print("[ClientStore] Preflight error:", error)
-            }
-        }
-
-        // Агрегатный запрос по Task: достаём только поле client и считаем DISTINCT
-        let request = NSFetchRequest<NSDictionary>(entityName: "Task")
-        request.resultType = .dictionaryResultType
-        request.propertiesToFetch = ["client"]
-        request.returnsDistinctResults = true
-
-        var predicates: [NSPredicate] = [
-            NSPredicate(format: "%K != nil", "client"),
-            NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
-        ]
-        if onlyCompleted {
-            predicates.append(NSPredicate(format: "statusString == %@", "completed"))
-        }
-        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
-
-        if debug {
-            print("[ClientStore] DISTINCT predicate:", request.predicate?.predicateFormat ?? "<none>")
-        }
-
-        do {
-            let rows = try context.fetch(request)
-            if debug { print("[ClientStore] DISTINCT rows count:", rows.count) }
-            return rows.count // каждое словарик-значение — уникальный client
-        } catch {
-            print("❌ Error counting distinct clients:", error)
-            return 0
-        }
-    }
+//    func distinctClientsCount(
+//        year: Int,
+//        month: Int? = nil,
+//        onlyCompleted: Bool = true,
+//        dateKey: String = "scheduledAt",
+//        debug: Bool = false
+//    ) -> Int {
+//        // Построим диапазон дат
+//        var cal = Calendar.current
+//        cal.timeZone = .current
+//
+//        var start = DateComponents()
+//        start.year = year
+//        start.month = month ?? 1
+//        start.day = 1
+//
+//        var end = DateComponents()
+//        end.year = (month == nil) ? (year + 1) : year
+//        end.month = (month == nil) ? 1 : (month! + 1)
+//        end.day = 1
+//
+//        guard let startDate = cal.date(from: start),
+//              let endDate = cal.date(from: end) else {
+//            if debug { print("[ClientStore] ERROR: failed to build date range for year=\(year) month=\(String(describing: month))") }
+//            return 0
+//        }
+//
+//        if debug {
+//            print("[ClientStore] distinctClientsCount year=\(year) month=\(String(describing: month)) onlyCompleted=\(onlyCompleted) dateKey=\(dateKey)")
+//            print("[ClientStore] Date range: \(startDate) ..< \(endDate)")
+//        }
+//
+//        // Preflight: посчитаем задачи разными срезами, без выборки всех объектов
+//        if debug {
+//            do {
+//                // Всего задач
+//                let allTasksReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
+//                let allCount = try context.count(for: allTasksReq)
+//
+//                // С клиентом != nil
+//                let withClientReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
+//                withClientReq.predicate = NSPredicate(format: "%K != nil", "client")
+//                let withClientCount = try context.count(for: withClientReq)
+//
+//                // В диапазоне дат по dateKey
+//                let inRangeReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
+//                inRangeReq.predicate = NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
+//                let inRangeCount = try context.count(for: inRangeReq)
+//
+//                // В диапазоне дат + client != nil + (опционально) completed
+//                let pred1 = NSPredicate(format: "%K != nil", "client")
+//                let pred2 = NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
+//                var preds = [pred1, pred2]
+//                if onlyCompleted {
+//                    preds.append(NSPredicate(format: "statusString in %@", ["completed", "scheduled"]))
+//                }
+//                let combinedReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
+//                combinedReq.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: preds)
+//                let combinedCount = try context.count(for: combinedReq)
+//
+//                print("[ClientStore] Preflight — all=\(allCount), withClient=\(withClientCount), inRange=\(inRangeCount), final=\(combinedCount)")
+//
+//                // Возьмём пару примеров для sanity-check
+//                let sampleReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
+//                sampleReq.fetchLimit = 5
+//                sampleReq.predicate = combinedReq.predicate
+//                sampleReq.includesPropertyValues = true
+//                sampleReq.propertiesToFetch = ["client", "statusString", dateKey]
+//                let sample = try context.fetch(sampleReq)
+//                let peek: [String] = sample.map { obj in
+//                    let status = obj.value(forKey: "statusString") as? String ?? "?"
+//                    let dateVal = obj.value(forKey: dateKey) as Any
+//                    let clientObj = obj.value(forKey: "client")
+//                    let clientDesc: String
+//                    if let c = clientObj as? NSManagedObject { clientDesc = c.objectID.uriRepresentation().absoluteString } else { clientDesc = "nil" }
+//                    return "status=\(status), date=\(dateVal), client=\(clientDesc)"
+//                }
+//                print("[ClientStore] Sample rows:", peek)
+//            } catch {
+//                print("[ClientStore] Preflight error:", error)
+//            }
+//        }
+//
+//        // Агрегатный запрос по Task: достаём только поле client и считаем DISTINCT
+//        let request = NSFetchRequest<NSDictionary>(entityName: "Task")
+//        request.resultType = .dictionaryResultType
+//        request.propertiesToFetch = ["client"]
+//        request.returnsDistinctResults = true
+//
+//        var predicates: [NSPredicate] = [
+//            NSPredicate(format: "%K != nil", "client"),
+//            NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
+//        ]
+//        if onlyCompleted {
+//            predicates.append(NSPredicate(format: "statusString == %@", "completed"))
+//        }
+//        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+//
+//        if debug {
+//            print("[ClientStore] DISTINCT predicate:", request.predicate?.predicateFormat ?? "<none>")
+//        }
+//
+//        do {
+//            let rows = try context.fetch(request)
+//            if debug { print("[ClientStore] DISTINCT rows count:", rows.count) }
+//            return rows.count // каждое словарик-значение — уникальный client
+//        } catch {
+//            print("❌ Error counting distinct clients:", error)
+//            return 0
+//        }
+//    }
     
     func newClientsByMonth(
         year: Int,
