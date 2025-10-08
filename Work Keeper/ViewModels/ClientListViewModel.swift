@@ -30,33 +30,29 @@ final class ClientsStatViewModel: ObservableObject {
                                                                debug: debug)
        }
     
-    func loadMonthActiveClients(year: Int,
-                                month: Int,
-                                onlyCompleted: Bool = true,
-                                dateKey: String = "scheduledAt",
-                                debug: Bool = false) {
-       
-        monthActiveClientsCount = store.distinctClientsCount(year: year,
-                                                             month: month,
-                                                             onlyCompleted: onlyCompleted,
-                                                             dateKey: dateKey,
-                                                             debug: debug)
-    }
+//    func loadMonthActiveClients(year: Int,
+//                                month: Int,
+//                                onlyCompleted: Bool = true,
+//                                dateKey: String = "scheduledAt",
+//                                debug: Bool = false) {
+//       
+//        monthActiveClientsCount = store.distinctClientsCount(year: year,
+//                                                             month: month,
+//                                                             onlyCompleted: onlyCompleted,
+//                                                             dateKey: dateKey,
+//                                                             debug: debug)
+//    }
     
     func loadMonthlyActive(year: Int,
                            onlyCompleted: Bool = false,
                            dateKey: String = "scheduledAt",
                            debug: Bool = false) {
-        monthlyActiveCounts = (1...12).map { m in
-            store.distinctClientsCount(year: year,
-                                       month: m,
-                                       onlyCompleted: onlyCompleted,
-                                       dateKey: dateKey,
-                                       debug: debug)
+        monthlyActiveCounts =
+            store.newClientsByMonth(year: year, onlyCompleted: true)
         }
     }
     
-}
+
 
 
 final class ClientsListViewModel: ObservableObject {

@@ -75,20 +75,19 @@ final class TaskListViewModel: ObservableObject {
     }
     
     // MARK: - Convenience counters
-    @discardableResult
-    func completedCount(year: Int,
-                        month: Int?,
+   
+    func loadYearCompletedTasks(year: Int,
+                        
                         dateKey: String = "scheduledAt",
-                        debug: Bool = false) -> Int {
-        countTasks(year: year, month: month, status: .completed, dateKey: dateKey, debug: debug)
+                        debug: Bool = false) {
+        yearCompletedTasksCount = store.countTasks(year: year, month: nil, status: .completed, dateKey: dateKey, debug: debug)
     }
 
-    @discardableResult
-    func canceledCount(year: Int,
-                       month: Int?,
+   
+    func loadYearCanceledTasks(year: Int,
                        dateKey: String = "scheduledAt",
-                       debug: Bool = false) -> Int {
-        countTasks(year: year, month: month, status: .canceled, dateKey: dateKey, debug: debug)
+                       debug: Bool = false) {
+        yearCanceledTasksCount = store.countTasks(year: year, month: nil, status: .canceled, dateKey: dateKey, debug: debug)
     }
     
     func loadMonthlyCompletedTasks(year: Int) {

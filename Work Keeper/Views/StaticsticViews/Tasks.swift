@@ -75,11 +75,15 @@ struct TasksView: View {
             viewModel.loadAllCanceledTasksCount()
             viewModel.loadMonthlyCompletedTasks(year: year)
             viewModel.loadMonthlyCanceledTasks(year: year)
+            viewModel.loadYearCompletedTasks(year: year)
+            viewModel.loadYearCanceledTasks(year: year)
         }
         
         .task(id: year) {
             viewModel.loadMonthlyCompletedTasks(year: year)
             viewModel.loadMonthlyCanceledTasks(year: year)
+            viewModel.loadYearCompletedTasks(year: year)
+            viewModel.loadYearCanceledTasks(year: year)
         }
        
     }

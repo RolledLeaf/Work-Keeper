@@ -75,13 +75,17 @@ func createOrFetchClient(firstName: String,
     }
     
     func totalClientsCount(debug: Bool = false) -> Int {
+        // Count clients who have at least one task with status scheduled or completed
         let request: NSFetchRequest<Client> = Client.fetchRequest()
+        // Predicate: ANY tasks.statusString IN {"scheduled", "completed"}
+      
+
         do {
             let count = try context.count(for: request)
-            if debug { print("[ClientStore] totalClientsCount =", count) }
+            if debug { print("[ClientStore] totalClientsCount (scheduled|completed) =", count) }
             return count
         } catch {
-            print("❌ Error counting clients:", error)
+            print("❌ Error counting clients", error)
             return 0
         }
     }
@@ -141,7 +145,7 @@ func createOrFetchClient(firstName: String,
                 let pred2 = NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
                 var preds = [pred1, pred2]
                 if onlyCompleted {
-                    preds.append(NSPredicate(format: "statusString == %@", "completed"))
+                    preds.append(NSPredicate(format: "statusString in %@", ["completed", "scheduled"]))
                 }
                 let combinedReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
                 combinedReq.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: preds)
@@ -196,6 +200,82 @@ func createOrFetchClient(firstName: String,
         } catch {
             print("❌ Error counting distinct clients:", error)
             return 0
+        }
+    }
+    
+    func newClientsByMonth(
+        year: Int,
+        onlyCompleted: Bool = true,
+        dateKey: String = "scheduledAt",
+        debug: Bool = false
+    ) -> [Int] {
+        var result = Array(repeating: 0, count: 12)
+
+        // Построим диапазон дат на год
+        var cal = Calendar.current
+        cal.timeZone = .current
+
+        var startComp = DateComponents(); startComp.year = year; startComp.month = 1; startComp.day = 1
+        var endComp   = DateComponents(); endComp.year = year + 1; endComp.month = 1; endComp.day = 1
+
+        guard let startDate = cal.date(from: startComp),
+              let endDate = cal.date(from: endComp) else {
+            if debug { print("[ClientStore] ERROR: bad date range for year \(year)") }
+            return result
+        }
+
+        // Fetch tasks in the year with client != nil (and optionally status)
+        let req: NSFetchRequest<Task> = Task.fetchRequest()
+        req.predicate = {
+            var preds: [NSPredicate] = [
+                NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate),
+                NSPredicate(format: "%K != nil", "client")
+            ]
+            if onlyCompleted {
+                preds.append(NSPredicate(format: "statusString in %@", ["completed", "scheduled"]))
+            }
+            return NSCompoundPredicate(andPredicateWithSubpredicates: preds)
+        }()
+        // we only need the client relationship and date, but fetch objects for simplicity
+        req.includesPropertyValues = true
+        req.returnsObjectsAsFaults = false
+
+        do {
+            let tasks = try context.fetch(req)
+            // Map clientID -> earliest date within year
+            var firstDateByClient: [NSManagedObjectID: Date] = [:]
+
+            for task in tasks {
+                guard let client = task.client else { continue }
+                let clientId = client.objectID
+                // get date value
+                let dateVal = task.value(forKey: dateKey) as? Date ?? task.scheduledAt
+                guard let date = dateVal else { continue }
+
+                if let existing = firstDateByClient[clientId] {
+                    if date < existing {
+                        firstDateByClient[clientId] = date
+                    }
+                } else {
+                    firstDateByClient[clientId] = date
+                }
+            }
+
+            // Now count by month of the earliest date
+            for (_, firstDate) in firstDateByClient {
+                let month = cal.component(.month, from: firstDate) // 1...12
+                if month >= 1 && month <= 12 {
+                    result[month - 1] += 1
+                }
+            }
+
+            if debug {
+                print("[ClientStore] newClientsByMonth year=\(year) onlyCompleted=\(onlyCompleted) counts=", result)
+            }
+            return result
+        } catch {
+            print("[ClientStore] newClientsByMonth fetch error:", error)
+            return result
         }
     }
     

@@ -59,6 +59,7 @@ struct ClientsView: View {
         }
         .task(id: year) {
             viewModel.loadMonthlyActive(year: year)
+            viewModel.loadYearActiveClients(year: year)
         }
     }
 
