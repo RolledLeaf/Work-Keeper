@@ -3,8 +3,10 @@ import SwiftUI
 
 struct ClientsListView: View {
     @State private var showNewClientView = false
+    @State private var showDeleteAlert = false
     @StateObject private var viewModel = ClientsListViewModel()
     @State private var selectedClient: Client?
+    @State private var clientToDelete: Client?
     @State private var client: Client?
     
     var body: some View {
@@ -80,7 +82,8 @@ struct ClientsListView: View {
                                 }
                                 .swipeActions(edge: .trailing) {
                                     Button(action: {
-                                        viewModel.delete(client)
+                                        showDeleteAlert = true
+                                        clientToDelete = client
                                     }) {
                                         Image("delete")
                                         Text("Удалить")
@@ -123,6 +126,17 @@ struct ClientsListView: View {
         .onAppear {
             viewModel.loadClients()
             print("clients list reloaded")
+        }
+        .alert("Вы уверены?",
+               isPresented: $showDeleteAlert,
+               presenting: clientToDelete) {
+            client in
+            Button("Да", role: .destructive) {
+                viewModel.delete(client)
+            }
+            Button("Нет", role: .cancel) {}
+        } message: { client in
+            Text("Клиент \(client.firstName ?? "имя не указано") будет удалён")
         }
         
     }
