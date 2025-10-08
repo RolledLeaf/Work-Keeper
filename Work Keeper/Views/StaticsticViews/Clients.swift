@@ -54,6 +54,7 @@ struct ClientsView: View {
         }
         .onAppear {
             viewModel.loadAllClientsCount()
+            viewModel.loadYearActiveClients(year: year)
             viewModel.loadMonthlyActive(year: year)
         }
         .task(id: year) {
