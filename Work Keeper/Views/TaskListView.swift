@@ -14,6 +14,7 @@ struct TaskListView: View {
     
   
     @State private var selectedDate = Date()
+    @State private var showDeleteAlert = false
     @State private var showNewTaskView = false
     @State private var showCompleteTaskView = false
     @State private var showEditTaskView = false
@@ -21,6 +22,7 @@ struct TaskListView: View {
     @State private var showPopup = false
     @State private var selectedTask: Task?
     @State private var taskToCancel: Task?
+    @State private var taskToDelete: Task?
     @State private var navigateToTaskView = false
 
     @State private var selectedTaskForComplete: Task?
@@ -203,12 +205,14 @@ struct TaskListView: View {
                                                 }
                                                 .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                                     Button(action: {
-                                                        viewModel.delete(task)
+                                                        taskToDelete = task
+                                                        showDeleteAlert = true
                                                     }) {
                                                         Image("delete")
                                                         Text("Удалить")
                                                     }
                                                     .tint(Color.custom(.deleteButtonRed))
+                                                    
                                                     
                                                     Button(action: {
                                                         selectedTaskForEdit = task
@@ -398,6 +402,17 @@ struct TaskListView: View {
             if keys.contains(today) {
                 listScrollPosition = today
             }
+        }
+        .alert("Удалить задание?",
+               isPresented: $showDeleteAlert,
+               presenting: taskToDelete
+        ) { task in
+            Button("Удалить", role: .destructive) {
+                viewModel.delete(task)
+            }
+            Button("Отмена", role: .cancel) { }
+        } message: { task in
+            Text("Действие необратимо. Задание «\(task.taskDescription ?? "Без названия")» будет удалено навсегда.")
         }
     }
 }
