@@ -32,7 +32,14 @@ final class TaskListViewModel: ObservableObject {
     }
     
     func loadTasks() {
+        // load all tasks (no status filter)
         tasks = store.fetchTasks()
+    }
+
+    /// Load tasks filtered by an optional list of statuses. If statuses == nil, loads all tasks.
+    func applyFilter(statuses: [Status]?) {
+        // Use the store helper that accepts multiple statuses
+        tasks = store.fetchTasks(year: nil, month: nil, statuses: statuses)
     }
     
     func delete(_ task: Task) {

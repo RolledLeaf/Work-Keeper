@@ -373,7 +373,8 @@ struct TaskRow: View {
         }
         .background(Color.custom(.taskCellGray))
         .cornerRadius(12)
-        
+        .overlay(RoundedRectangle(cornerRadius: 12)
+            .stroke(Color.gray.opacity(0.5), lineWidth: 1))
         
     }
        

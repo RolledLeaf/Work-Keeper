@@ -9,6 +9,77 @@ private func dayKey(_ date: Date) -> Date {
     Calendar.current.startOfDay(for: date)
 }
 
+struct TasksFilterView: View {
+    @Binding var selectedFilters: Set<TaskStatus>
+
+    let allFilters: [TaskStatus] = [.all, .scheduled, .completed, .canceled]
+
+    var body: some View {
+        List {
+            ForEach(allFilters, id: \.self) { status in
+                HStack {
+                    Text(status.rawValue)
+                    Spacer()
+
+                    
+                    let statusColor: Color = {
+                        switch status {
+                        case .scheduled: return Color.custom(.taskViewYellow)
+                        case .completed: return Color.custom(.taskCompleteGreen)
+                        case .canceled: return Color.custom(.taskCanceledOrange)
+                        case .all: return Color.black
+                        }
+                    }()
+
+                    if selectedFilters.contains(status) {
+                        Image(systemName: "checkmark.square")
+                            .resizable()
+                            .foregroundColor(statusColor)
+                            .frame(width: 22, height: 22)
+                            .padding(.trailing, 8)
+                    } else {
+                        Image(systemName: "square")
+                            .resizable()
+                            .foregroundColor(statusColor.opacity(0.5))
+                            .frame(width: 22, height: 22)
+                            .padding(.trailing, 8)
+                    }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    // Ensure .all behaves as a pseudo-status: when .all is selected,
+                    // no other statuses can be combined. When any real status is selected,
+                    // .all is removed.
+                    if status == .all {
+                        // Tapping "Все" selects only it
+                        selectedFilters = [.all]
+                        return
+                    }
+
+                    // For real statuses: remove .all if present
+                    if selectedFilters.contains(.all) {
+                        selectedFilters.remove(.all)
+                    }
+
+                    // Toggle the tapped status
+                    if selectedFilters.contains(status) {
+                        selectedFilters.remove(status)
+                    } else {
+                        selectedFilters.insert(status)
+                    }
+
+                    // If nothing remains selected, fall back to .all
+                    if selectedFilters.isEmpty {
+                        selectedFilters = [.all]
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle("Фильтры")
+    }
+}
+
 struct TaskListView: View {
     @StateObject private var viewModel = TaskListViewModel()
     
@@ -18,6 +89,9 @@ struct TaskListView: View {
     @State private var showNewTaskView = false
     @State private var showCompleteTaskView = false
     @State private var showEditTaskView = false
+    
+    @State private var showFilters = false
+    @State private var selectedFilters: Set<TaskStatus> = [.all]
     
     @State private var showPopup = false
     @State private var selectedTask: Task?
@@ -40,7 +114,7 @@ struct TaskListView: View {
             VStack {
                 HStack {
                     Button(action: {
-                        selectedDate = Date() 
+                        selectedDate = Date()
                     }) {
                         Image("today")
                             .resizable()
@@ -48,7 +122,7 @@ struct TaskListView: View {
                     }
 
                     Button(action: {
-                        //action
+                        showFilters = true
                     }) {
                         Image("filters")
                             .resizable()
@@ -417,6 +491,44 @@ struct TaskListView: View {
             viewModel.loadTasks()
         }) { task in
             CompleteTaskView(viewModel: CompleteTaskViewModel(task: task))
+        }
+        .popover(isPresented: $showFilters) {
+            NavigationStack {
+                TasksFilterView(selectedFilters: $selectedFilters)
+                    .navigationTitle("Фильтры")
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Готово") {
+                                // Build array of Status (or nil) from selectedFilters and apply to VM
+                                let statuses: [Status]? = {
+                                    // If .all is selected -> no status filter (nil)
+                                    if selectedFilters.contains(.all) {
+                                        return nil
+                                    }
+                                    var arr: [Status] = []
+                                    for ts in selectedFilters {
+                                        switch ts {
+                                        case .scheduled:
+                                            arr.append(.scheduled)
+                                        case .completed:
+                                            arr.append(.completed)
+                                        case .canceled:
+                                            arr.append(.canceled)
+                                        case .all:
+                                            break
+                                        }
+                                    }
+                                    return arr.isEmpty ? nil : arr
+                                }()
+
+                                // Apply filter and close
+                                viewModel.applyFilter(statuses: statuses)
+                                showFilters = false
+                            }
+                        }
+                    }
+            }
+            .presentationDetents([.fraction(0.45)])
         }
         .onAppear {
             viewModel.loadTasks()

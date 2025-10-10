@@ -230,6 +230,53 @@ final class TaskStore: NSObject, ObservableObject {
         do { return try context.fetch(request) } catch { print("❌ fetchTasks error:", error); return [] }
     }
 
+    /// Fetch tasks with an optional array of statuses (OR semantics).
+    /// If `statuses` is nil, returns tasks regardless of status (same as fetchTasks without status param).
+    func fetchTasks(
+        year: Int? = nil,
+        month: Int? = nil,
+        statuses: [Status]? = nil,
+        dateKey: String = "scheduledAt",
+        limit: Int? = nil,
+        debug: Bool = false
+    ) -> [Task] {
+        var cal = Calendar.current
+        cal.timeZone = .current
+
+        var start: Date? = nil
+        var end: Date? = nil
+        if let year = year {
+            var startComp = DateComponents(); startComp.year = year; startComp.month = month ?? 1; startComp.day = 1
+            var endComp = DateComponents(); endComp.year = (month == nil) ? (year + 1) : year
+            endComp.month = (month == nil) ? 1 : (month! + 1); endComp.day = 1
+            start = cal.date(from: startComp)
+            end = cal.date(from: endComp)
+        }
+
+        let request: NSFetchRequest<Task> = Task.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Task.scheduledAt, ascending: true)]
+
+        var predicates: [NSPredicate] = []
+        if let start = start, let end = end {
+            predicates.append(NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, start as NSDate, dateKey, end as NSDate))
+        }
+        if let statuses = statuses, !statuses.isEmpty {
+            let raw = statuses.map { $0.rawValue }
+            predicates.append(NSPredicate(format: "statusString IN %@", raw))
+        }
+        if !predicates.isEmpty {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+        }
+        if let limit = limit { request.fetchLimit = limit }
+
+        if debug {
+            print("[TaskStore] fetchTasks(year:\(String(describing: year)), month:\(String(describing: month)), statuses:\(String(describing: statuses?.map({$0.rawValue}))), dateKey:\(dateKey), limit:\(String(describing: limit)))")
+            print("[TaskStore] predicate:", request.predicate?.predicateFormat ?? "<none>")
+        }
+
+        do { return try context.fetch(request) } catch { print("❌ fetchTasks(error):", error); return [] }
+    }
+
     /// Удобные хелперы для completed / canceled
     func completedCount(year: Int, month: Int? = nil, dateKey: String = "scheduledAt") -> Int {
         countTasks(year: year, month: month, status: .completed, dateKey: dateKey)

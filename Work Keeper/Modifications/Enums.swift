@@ -1,5 +1,18 @@
 import Foundation
 
+enum TaskStatus: String, Identifiable, CaseIterable {
+    case all = "Все"
+    case scheduled = "Запланированные"
+    case completed = "Выполненные"
+    case canceled = "Отменённые"
+    
+    var id: String { rawValue }
+    
+}
+
+
+
+
 enum Status: String, CaseIterable {
     case scheduled
     case completed
