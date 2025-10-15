@@ -225,7 +225,7 @@ func createOrFetchClient(firstName: String,
         }
 
         // Fetch tasks in the year with client != nil (and optionally status)
-        let req: NSFetchRequest<Task> = Task.fetchRequest()
+        let req: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         req.predicate = {
             var preds: [NSPredicate] = [
                 NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate),
@@ -308,7 +308,7 @@ func deleteClient(_ client: Client) {
     }
 
     // 2) Удаляем задачи клиента, если в модели Task.client стоит required
-    if let tasks = client.tasks as? Set<Task> {
+    if let tasks = client.tasks as? Set<TaskEntity> {
         for task in tasks {
             context.delete(task)
         }
@@ -345,19 +345,19 @@ extension Client {
     }
     
     var scheduledTasksCount: Int {
-          (tasks as? Set<Task>)?
+          (tasks as? Set<TaskEntity>)?
               .filter { $0.status == .scheduled }
               .count ?? 0
       }
 
       var completedTasksCount: Int {
-          (tasks as? Set<Task>)?
+          (tasks as? Set<TaskEntity>)?
               .filter { $0.status == .completed }
               .count ?? 0
       }
 
       var canceledTasksCount: Int {
-          (tasks as? Set<Task>)?
+          (tasks as? Set<TaskEntity>)?
               .filter { $0.status == .canceled }
               .count ?? 0
       }
@@ -386,7 +386,7 @@ extension Client {
     }
     
     var totalIncome: Double {
-           (tasks as? Set<Task>)?
+           (tasks as? Set<TaskEntity>)?
                .compactMap { $0.totalAmount }
                .reduce(0, +) ?? 0
        }
@@ -394,7 +394,7 @@ extension Client {
       
 
        var totalTasksCount: Int {
-           (tasks as? Set<Task>)?.count ?? 0
+           (tasks as? Set<TaskEntity>)?.count ?? 0
        }
     
    

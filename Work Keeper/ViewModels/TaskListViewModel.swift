@@ -1,24 +1,26 @@
 import Foundation
+import CoreData
 import Combine
 
 @MainActor
 final class TaskListViewModel: ObservableObject {
-    @Published var tasks: [Task] = []
+    @Published var tasks: [TaskEntity] = []
     @Published var yearCompletedTasksCount: Int = 0
     @Published var yearCanceledTasksCount: Int = 0
     @Published var monthCompletedTasksCount: Int = 0
     @Published var monthCanceledTasksCount: Int = 0
     @Published var monthlyCompletedTasksCounts: [Int] = Array(repeating: 0, count: 12)
     @Published var monthlyCanceledTasksCounts: [Int] = Array(repeating: 0, count: 12)
+    @Published var searchText = ""
     @Published var comment: String = ""
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var phone: String = ""
     @Published var tasksCount: Int = 0
     @Published var canceledTasksCount: Int = 0
+    @Published var selectedStatuses: [Status]? = nil
     
-    
-    var groupedTasksByDate: [Date: [Task]] {
+    var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
             let date = task.scheduledAt ?? Date.distantPast
             return Calendar.current.startOfDay(for: date) // normalize to day
@@ -26,30 +28,99 @@ final class TaskListViewModel: ObservableObject {
     }
     
     private let store = TaskStore()
+    private var cancellables = Set<AnyCancellable>()
+    
+    
     
     init() {
+        // initial load
         loadTasks()
+        // Debounce searchText changes and apply combined filters after user stops typing
+        $searchText
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                self?.applyFiltersAsync()
+            }
+            .store(in: &cancellables)
+
+        // React to status selection changes immediately
+        $selectedStatuses
+            .sink { [weak self] _ in
+                self?.applyFiltersAsync()
+            }
+            .store(in: &cancellables)
     }
+
+    private func applyFiltersAsync() {
+        print("[TaskListViewModel] applyFiltersAsync called with searchText:", searchText)
+        Task { // без [weak self]
+            
+            applyCurrentFiltersUsingDB()
+        }
+    }
+    
     
     func loadTasks() {
         // load all tasks (no status filter)
         tasks = store.fetchTasks()
     }
 
-    /// Load tasks filtered by an optional list of statuses. If statuses == nil, loads all tasks.
-    func applyFilter(statuses: [Status]?) {
-        // Use the store helper that accepts multiple statuses
-        tasks = store.fetchTasks(year: nil, month: nil, statuses: statuses)
+
+    
+    /// Собрать предикат по текущим фильтрам и выполнить fetch через TaskStore.
+    /// Если `selectedStatuses` == nil => не добавляем предикат по статусу (показываем всё).
+    func applyCurrentFiltersUsingDB(debug: Bool = false) {
+        print("[TaskListViewModel] applyCurrentFiltersUsingDB called with searchText:", searchText)
+        
+        var andPreds: [NSPredicate] = []
+        
+        if let statuses = selectedStatuses, !statuses.isEmpty {
+            let raw = statuses.map { $0.rawValue }
+            andPreds.append(NSPredicate(format: "statusString IN %@", raw))
+        }
+
+        let text = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !text.isEmpty {
+            print("[TaskListViewModel] Searching text:", text)
+            let t = text as NSString
+            let textPreds: [NSPredicate] = [
+                NSPredicate(format: "taskDescription CONTAINS[cd] %@", t),
+                NSPredicate(format: "client.firstName CONTAINS[cd] %@", t),
+                NSPredicate(format: "client.lastName CONTAINS[cd] %@", t),
+                NSPredicate(format: "client.phone CONTAINS[cd] %@", t),
+                NSPredicate(format: "ANY client.address.street.name CONTAINS[cd] %@", t)
+            ]
+            let orText = NSCompoundPredicate(orPredicateWithSubpredicates: textPreds)
+            andPreds.append(orText)
+        }
+
+        let finalPredicate: NSPredicate? = andPreds.isEmpty ? nil : NSCompoundPredicate(andPredicateWithSubpredicates: andPreds)
+        
+        if debug { print("[TaskListViewModel] finalPredicate:", finalPredicate?.predicateFormat ?? "<none>") }
+
+        let results: [TaskEntity]
+        if let predicate = finalPredicate {
+            results = store.fetchTasks(matching: predicate, debug: debug)
+        } else {
+            results = store.fetchTasks()
+        }
+
+        print("[TaskListViewModel] Fetched tasks count:", results.count)
+        self.tasks = results
     }
     
-    func delete(_ task: Task) {
+    
+    
+    
+    func delete(_ task: TaskEntity) {
         store.deleteTask(task)
         loadTasks()
     }
     
    
     
-    func scheduleTask(task: Task) {
+    func scheduleTask(task: TaskEntity) {
         store.makeScheduled(task)
         loadTasks()
     }
@@ -270,10 +341,10 @@ final class CompleteTaskViewModel: ObservableObject {
     }
     
 
-    private let task: Task
+    private let task: TaskEntity
     private let store = TaskStore()
 
-    init(task: Task) {
+    init(task: TaskEntity) {
         self.task = task
         self.contractAmount = task.contractAmount
         self.contractAmountText = "\(Int(task.contractAmount))"
@@ -296,10 +367,10 @@ final class CompleteTaskViewModel: ObservableObject {
 final class CancelTaskViewModel: ObservableObject {
     @Published var comment: String = ""
 
-    private let task: Task
+    private let task: TaskEntity
     private let store = TaskStore()
 
-    init(task: Task) {
+    init(task: TaskEntity) {
         self.task = task
         self.comment = task.comment ?? ""
     }
@@ -357,11 +428,11 @@ final class EditTaskViewModel: ObservableObject {
     }
 
     // MARK: - Internal
-    private let task: Task
+    private let task: TaskEntity
     private let store = TaskStore()
 
     // MARK: - Initialization
-    init(task: Task) {
+    init(task: TaskEntity) {
         let rawPhone = task.client?.phone ?? ""
         let digitsAll = rawPhone.filter { $0.isNumber }
         var nsn = digitsAll
@@ -500,3 +571,4 @@ final class EditTaskViewModel: ObservableObject {
         return result
     }
 }
+

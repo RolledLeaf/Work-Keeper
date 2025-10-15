@@ -17,12 +17,14 @@ struct TaskRow: View {
     
  
     var clientTasksCount: Int {
-        guard let tasks = task.client?.tasks as? Set<Task> else { return 0 }
+        guard let tasks = task.client?.tasks as? Set<TaskEntity> else { return 0 }
         return tasks.count
     }
     
   
-    let task: Task
+    let task: TaskEntity
+    
+    
     
     var body: some View {
         

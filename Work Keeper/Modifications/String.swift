@@ -24,4 +24,8 @@ extension String {
 
         return "+7(\(area))\(middle)-\(last2)-\(last2end)"
     }
+    
+    func clearText() -> String {
+        return ""
+    }
 }

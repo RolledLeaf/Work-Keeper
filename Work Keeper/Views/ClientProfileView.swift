@@ -4,7 +4,7 @@ struct ClientProfileView: View {
 
     @ObservedObject var viewModel = ClientsListViewModel()
     var client: Client
-    @State private var selectedTaskForDetails: Task?
+    @State private var selectedTaskForDetails: TaskEntity?
     
         var body: some View {
             
@@ -159,7 +159,7 @@ struct ClientProfileView: View {
                 // MARK: - Tasks list for this client
                 let defaultDate = Date()
                 
-                let clientTasks = (client.tasks as? Set<Task>)?.sorted(by: { ($0.scheduledAt ?? defaultDate) > ($1.scheduledAt ?? defaultDate) }) ?? []
+                let clientTasks = (client.tasks as? Set<TaskEntity>)?.sorted(by: { ($0.scheduledAt ?? defaultDate) > ($1.scheduledAt ?? defaultDate) }) ?? []
 
                 if clientTasks.isEmpty {
                     VStack(spacing: 12) {

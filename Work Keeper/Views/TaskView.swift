@@ -5,7 +5,7 @@ struct TaskView: View {
  
     @ObservedObject var viewModel = TaskListViewModel()
   
-    let task: Task
+    let task: TaskEntity
   
     @State private var didCopyTaskDescription = false
     @State private var didCopyTaskComment = false

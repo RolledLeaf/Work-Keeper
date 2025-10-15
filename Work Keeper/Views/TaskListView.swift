@@ -94,13 +94,13 @@ struct TaskListView: View {
     @State private var selectedFilters: Set<TaskStatus> = [.all]
     
     @State private var showPopup = false
-    @State private var selectedTask: Task?
-    @State private var taskToCancel: Task?
-    @State private var taskToDelete: Task?
+    @State private var selectedTask: TaskEntity?
+    @State private var taskToCancel: TaskEntity?
+    @State private var taskToDelete: TaskEntity?
     @State private var navigateToTaskView = false
 
-    @State private var selectedTaskForComplete: Task?
-    @State private var selectedTaskForEdit: Task?
+    @State private var selectedTaskForComplete: TaskEntity?
+    @State private var selectedTaskForEdit: TaskEntity?
     @State private var listScrollPosition: Date?
     
 
@@ -160,20 +160,31 @@ struct TaskListView: View {
                 }
                 .padding(.leading, 3)
 
-                TextField("Поиск задания", text: .constant(""))
-                    .submitLabel(.done)
-                    .onSubmit {
-                        hideKeyboard() // кастомная функция
-                    }
+                TextField("Поиск задания", text: $viewModel.searchText)
+                    .onChange(of: viewModel.searchText) { newValue in
+                           print("[TaskListView] searchText changed:", newValue)
+                       }
                     .padding(9)
                     .padding(.leading, 25)
+                    .onSubmit {
+                        hideKeyboard()
+                    }
                     .background(
                         HStack {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
                             Spacer()
+                            
+                            if !viewModel.searchText.isEmpty {
+                                Button(action:  {
+                                    viewModel.searchText = ""
+                                }) {
+                                    Image(systemName: "xmark.circle")
+                                        .frame(width: 30, height: 30)
+                                }
+                            }
                         }
-                        .padding(.leading, 10)
+                        .padding(.horizontal, 10)
                     )
                     .background(
                         RoundedRectangle(cornerRadius: 16)
@@ -522,7 +533,7 @@ struct TaskListView: View {
                                 }()
 
                                 // Apply filter and close
-                                viewModel.applyFilter(statuses: statuses)
+                                viewModel.selectedStatuses = statuses
                                 showFilters = false
                             }
                         }

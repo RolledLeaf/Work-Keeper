@@ -17,11 +17,11 @@ final class TaskStore: NSObject, ObservableObject {
                     isRemote: Bool,
                     status: Status,
                     contractAmount: Double,
-                    cost: Double?) -> Task {
+                    cost: Double?) -> TaskEntity {
         
         
         
-        let task = Task(context: context)
+        let task = TaskEntity(context: context)
         task.id = UUID()
         task.scheduledAt = scheduledAt
         task.client = client
@@ -43,7 +43,7 @@ final class TaskStore: NSObject, ObservableObject {
     
    
     
-    func makeCompleted(_ task: Task,
+    func makeCompleted(_ task: TaskEntity,
                        comment: String?,
                        contractAmount: Double,
                        cost: Double?,
@@ -63,7 +63,7 @@ final class TaskStore: NSObject, ObservableObject {
         }
     }
     
-    func makeScheduled(_ task: Task) {
+    func makeScheduled(_ task: TaskEntity) {
         task.status = .scheduled
         task.paymentType = .none
         do {
@@ -73,7 +73,7 @@ final class TaskStore: NSObject, ObservableObject {
         }
     }
     
-    func makeCanceled(_ task: Task, comment: String?) {
+    func makeCanceled(_ task: TaskEntity, comment: String?) {
         task.status = .canceled
         task.comment = comment
         task.contractAmount = 0
@@ -87,10 +87,10 @@ final class TaskStore: NSObject, ObservableObject {
         }
     }
     
-    func fetchTasks() -> [Task] {
-        let request: NSFetchRequest<Task> = Task.fetchRequest()
+    func fetchTasks() -> [TaskEntity] {
+        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         request.sortDescriptors = [
-            NSSortDescriptor(keyPath: \Task.scheduledAt, ascending: true)
+            NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)
         ]
         
         do {
@@ -101,7 +101,7 @@ final class TaskStore: NSObject, ObservableObject {
         }
     }
      
-    func deleteTask(_ task: Task) {
+    func deleteTask(_ task: TaskEntity) {
         context.delete(task)
         do {
             try context.save()
@@ -110,7 +110,7 @@ final class TaskStore: NSObject, ObservableObject {
         }
     }
     
-    func updateTask(_ task: Task,
+    func updateTask(_ task: TaskEntity,
                     scheduledAt: Date,
                     client: Client,
                     taskDescription: String?,
@@ -179,7 +179,7 @@ final class TaskStore: NSObject, ObservableObject {
 
         guard let startDate = cal.date(from: start), let endDate = cal.date(from: end) else { return 0 }
 
-        let request: NSFetchRequest<Task> = Task.fetchRequest()
+        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
 
         var predicates: [NSPredicate] = [
             NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
@@ -193,6 +193,29 @@ final class TaskStore: NSObject, ObservableObject {
         }
         do { return try context.count(for: request) } catch { print("❌ countTasks error:", error); return 0 }
     }
+    
+    func fetchTasks(
+        matching predicate: NSPredicate? = nil,
+        sortDescriptors: [NSSortDescriptor] = [NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)],
+        limit: Int? = nil,
+        debug: Bool = false
+    ) -> [TaskEntity] {
+        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+        request.sortDescriptors = sortDescriptors
+        request.predicate = predicate
+        if let limit = limit { request.fetchLimit = limit }
+
+        if debug {
+            print("[TaskStore] fetchTasks(matching:) predicate:", predicate?.predicateFormat ?? "<none>")
+        }
+
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("❌ TaskStore.fetchTasks(matching:) error:", error)
+            return []
+        }
+    }
 
     /// Выборка задач за период с опциональным фильтром статуса (для списков/деталей)
     func fetchTasks(
@@ -202,7 +225,7 @@ final class TaskStore: NSObject, ObservableObject {
         dateKey: String = "scheduledAt",
         limit: Int? = nil,
         debug: Bool = false
-    ) -> [Task] {
+    ) -> [TaskEntity] {
         var cal = Calendar.current
         cal.timeZone = .current
 
@@ -212,8 +235,8 @@ final class TaskStore: NSObject, ObservableObject {
 
         guard let startDate = cal.date(from: start), let endDate = cal.date(from: end) else { return [] }
 
-        let request: NSFetchRequest<Task> = Task.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \Task.scheduledAt, ascending: true)]
+        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)]
 
         var predicates: [NSPredicate] = [
             NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
@@ -239,7 +262,7 @@ final class TaskStore: NSObject, ObservableObject {
         dateKey: String = "scheduledAt",
         limit: Int? = nil,
         debug: Bool = false
-    ) -> [Task] {
+    ) -> [TaskEntity] {
         var cal = Calendar.current
         cal.timeZone = .current
 
@@ -253,8 +276,8 @@ final class TaskStore: NSObject, ObservableObject {
             end = cal.date(from: endComp)
         }
 
-        let request: NSFetchRequest<Task> = Task.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \Task.scheduledAt, ascending: true)]
+        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)]
 
         var predicates: [NSPredicate] = []
         if let start = start, let end = end {
@@ -287,7 +310,7 @@ final class TaskStore: NSObject, ObservableObject {
     
     @discardableResult
     func totalTasksCount(debug: Bool = false) -> Int {
-        let request: NSFetchRequest<Task> = Task.fetchRequest()
+        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         do {
             let count = try context.count(for: request)
             if debug { print("[TaskStore] totalTaskCount =", count) }
@@ -300,7 +323,7 @@ final class TaskStore: NSObject, ObservableObject {
     
     @discardableResult
     func totalCanceled(debug: Bool = false) -> Int {
-        let request: NSFetchRequest<Task> = Task.fetchRequest()
+        let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         request.predicate = NSPredicate(format: "statusString == %@", Status.canceled.rawValue)
         do {
             let count = try context.count(for: request)
@@ -314,7 +337,7 @@ final class TaskStore: NSObject, ObservableObject {
 }
 
 
-extension Task {
+extension TaskEntity {
     var status: Status {
         get {
             Status(rawValue: statusString ?? "") ?? .scheduled
@@ -326,7 +349,7 @@ extension Task {
 }
 
 
-extension Task {
+extension TaskEntity {
     var payment: PaymentType {
         get { PaymentType(rawValue: paymentType ?? "" ) ?? .none }
         set { paymentType = newValue.rawValue }
