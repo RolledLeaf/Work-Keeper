@@ -13,7 +13,7 @@ struct TaskRow: View {
     @State private var repeatBadgeOpacity: Double = 0
     @State private var creditCardOpacity: Double = 0
     @State private var cashOpacity: Double = 0
-    @State var viewModel = TaskListViewModel()
+    @ObservedObject var viewModel: TaskListViewModel
     
  
     var clientTasksCount: Int {
@@ -91,9 +91,8 @@ struct TaskRow: View {
                                     repeatBadgeOpacity = clientTasksCount > 1 ? 1 : 0
                                 }
                             
-                                Text(task.client?.firstName ?? "")
+                            Text(highlighted(task.client?.firstName ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
-                                   
                             
                             Spacer()
                             
@@ -134,7 +133,13 @@ struct TaskRow: View {
                         .padding(.trailing, 5)
                         .frame(maxHeight: 35)
                         
-                        Text("\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")")
+                        HStack {
+                            Text(highlighted(task.client?.primaryAddress?.street?.name ?? "", query: viewModel.searchText, highlightColor: .highlightBlue)
+                        )
+                            
+                            Text("\(task.client?.primaryAddress?.house ?? "")")
+                            
+                        }
                             .font(.custom(SFPro.regular.rawValue, size: 27))
                             .foregroundColor(.custom(.taskTextGray))
                             .frame(maxHeight: 46)
@@ -183,7 +188,7 @@ struct TaskRow: View {
                             .foregroundColor(Color.black)
                             .padding(.top, -15)
                         
-                        Text(task.taskDescription ?? "")
+                        Text(highlighted(task.taskDescription ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                             .font(.custom(SFPro.regular.rawValue, size: 22))
                             .bold()
                             .frame(maxWidth: 355, alignment: .center)
@@ -241,7 +246,7 @@ struct TaskRow: View {
                                     repeatBadgeOpacity = clientTasksCount > 1 ? 1 : 0
                                 }
                             
-                                Text(task.client?.firstName ?? "")
+                            Text(highlighted(task.client?.firstName ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
                             
                             Spacer()
@@ -303,7 +308,7 @@ struct TaskRow: View {
                             .foregroundColor(Color.black)
                             
                         
-                        Text(task.taskDescription ?? "")
+                        Text(highlighted(task.taskDescription ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                             .font(.custom(SFPro.bold.rawValue, size: 30))
                             .frame(maxWidth: .infinity, alignment: .center)
                             .frame(maxHeight: 40)
@@ -387,7 +392,6 @@ struct TaskRow: View {
     TaskListView()
 }
 
-    
 
 
 // MARK: - Payment Icon Logic

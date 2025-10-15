@@ -10,7 +10,7 @@ struct NewTaskView: View {
     @StateObject private var streetListViewModel = StreetListViewModel()
     
     private var maxFirstNameCharactersCount: Int = 13
-    private let maxBuildingCharactersCount: Int = 8
+    private let maxBuildingCharactersCount: Int = 9
     private let maxStreetCharactersCount: Int = 44
     private let maxDescriptionCharactersCount: Int = 85
     private let maxApartmentCharactersCount: Int = 6

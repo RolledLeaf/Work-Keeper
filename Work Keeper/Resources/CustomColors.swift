@@ -29,6 +29,7 @@ enum CustomColor: String {
     case yellowEndPoint = "yellowEndPoint"
     case orangeStartPoint = "orangeStartPoint"
     case orangeEndPoint = "orangeEndPoint"
+    case highlightBlue = "highlightBlue"
 }
 
 

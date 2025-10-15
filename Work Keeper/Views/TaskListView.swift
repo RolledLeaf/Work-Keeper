@@ -246,7 +246,8 @@ struct TaskListView: View {
                                             (viewModel.groupedTasksByDate[dateKey] ?? [])
                                                 .sorted { $0.scheduledAt ?? Date.distantPast < $1.scheduledAt ?? Date.distantPast }
                                         ) { task in
-                                            TaskRow(task: task)
+                                            TaskRow(viewModel: viewModel, task: task
+                                            )
                                                 .contentShape(Rectangle())
                                                 .onTapGesture {
                                                     selectedTask = task
