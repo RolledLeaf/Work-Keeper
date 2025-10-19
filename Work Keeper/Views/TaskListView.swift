@@ -160,36 +160,42 @@ struct TaskListView: View {
                 }
                 .padding(.leading, 3)
 
-                TextField("Поиск задания", text: $viewModel.searchText)
-                    .onChange(of: viewModel.searchText) { newValue in
-                           print("[TaskListView] searchText changed:", newValue)
-                       }
-                    .padding(9)
-                    .padding(.leading, 25)
-                    .onSubmit {
-                        hideKeyboard()
-                    }
-                    .background(
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                            Spacer()
-                            
-                            if !viewModel.searchText.isEmpty {
-                                Button(action:  {
-                                    viewModel.searchText = ""
-                                }) {
-                                    Image(systemName: "xmark.circle")
-                                        .frame(width: 30, height: 30)
-                                }
-                            }
+                HStack {
+                    TextField("Поиск задания", text: $viewModel.searchText)
+                        .onChange(of: viewModel.searchText) { newValue in
+                            print("[TaskListView] searchText changed:", newValue)
                         }
-                        .padding(.horizontal, 10)
-                    )
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.custom(.searchFieldGray))
-                    )
+                        .padding(9)
+                        .padding(.leading, 25)
+                        .onSubmit {
+                            hideKeyboard()
+                        }
+                        .background(
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.gray)
+                                Spacer()
+                                
+                                
+                            }
+                                .padding(.horizontal, 10)
+                        )
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.custom(.searchFieldGray))
+                        )
+                    
+                    if !viewModel.searchText.isEmpty {
+                        Button(action:  {
+                            viewModel.searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle")
+                                .resizable()
+                                .frame(width: 25, height: 25)
+                        }
+                        
+                    }
+                }
                  
                  Text("Статусы заданий")
                  
