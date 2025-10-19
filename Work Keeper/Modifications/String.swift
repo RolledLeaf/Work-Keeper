@@ -19,7 +19,7 @@ func highlighted(_ text: String, query: String, highlightColor: Color = .yellow)
     let pattern = "(" + escaped.joined(separator: "|") + ")"
 
     // Компилируем регулярку с флагами (регистро- и диакритико- нечувств.)
-    let options: NSRegularExpression.Options = []
+    let options: NSRegularExpression.Options = [.caseInsensitive]
     let matchingOptions: NSRegularExpression.MatchingOptions = []
     let regex: NSRegularExpression
     do {
