@@ -201,6 +201,7 @@ struct TaskView: View {
                     }
                 }
                 .frame(height: 82)
+                .cornerRadius(8)
                 .padding(.horizontal, 16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
@@ -251,6 +252,7 @@ struct TaskView: View {
                     }
                 }
                 .frame(height: 96)
+                .cornerRadius(8)
                 .padding(.horizontal, 16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
