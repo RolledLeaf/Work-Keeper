@@ -103,117 +103,7 @@ func createOrFetchClient(firstName: String,
     }
     
     
-//    func distinctClientsCount(
-//        year: Int,
-//        month: Int? = nil,
-//        onlyCompleted: Bool = true,
-//        dateKey: String = "scheduledAt",
-//        debug: Bool = false
-//    ) -> Int {
-//        // Построим диапазон дат
-//        var cal = Calendar.current
-//        cal.timeZone = .current
-//
-//        var start = DateComponents()
-//        start.year = year
-//        start.month = month ?? 1
-//        start.day = 1
-//
-//        var end = DateComponents()
-//        end.year = (month == nil) ? (year + 1) : year
-//        end.month = (month == nil) ? 1 : (month! + 1)
-//        end.day = 1
-//
-//        guard let startDate = cal.date(from: start),
-//              let endDate = cal.date(from: end) else {
-//            if debug { print("[ClientStore] ERROR: failed to build date range for year=\(year) month=\(String(describing: month))") }
-//            return 0
-//        }
-//
-//        if debug {
-//            print("[ClientStore] distinctClientsCount year=\(year) month=\(String(describing: month)) onlyCompleted=\(onlyCompleted) dateKey=\(dateKey)")
-//            print("[ClientStore] Date range: \(startDate) ..< \(endDate)")
-//        }
-//
-//        // Preflight: посчитаем задачи разными срезами, без выборки всех объектов
-//        if debug {
-//            do {
-//                // Всего задач
-//                let allTasksReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-//                let allCount = try context.count(for: allTasksReq)
-//
-//                // С клиентом != nil
-//                let withClientReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-//                withClientReq.predicate = NSPredicate(format: "%K != nil", "client")
-//                let withClientCount = try context.count(for: withClientReq)
-//
-//                // В диапазоне дат по dateKey
-//                let inRangeReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-//                inRangeReq.predicate = NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
-//                let inRangeCount = try context.count(for: inRangeReq)
-//
-//                // В диапазоне дат + client != nil + (опционально) completed
-//                let pred1 = NSPredicate(format: "%K != nil", "client")
-//                let pred2 = NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
-//                var preds = [pred1, pred2]
-//                if onlyCompleted {
-//                    preds.append(NSPredicate(format: "statusString in %@", ["completed", "scheduled"]))
-//                }
-//                let combinedReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-//                combinedReq.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: preds)
-//                let combinedCount = try context.count(for: combinedReq)
-//
-//                print("[ClientStore] Preflight — all=\(allCount), withClient=\(withClientCount), inRange=\(inRangeCount), final=\(combinedCount)")
-//
-//                // Возьмём пару примеров для sanity-check
-//                let sampleReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
-//                sampleReq.fetchLimit = 5
-//                sampleReq.predicate = combinedReq.predicate
-//                sampleReq.includesPropertyValues = true
-//                sampleReq.propertiesToFetch = ["client", "statusString", dateKey]
-//                let sample = try context.fetch(sampleReq)
-//                let peek: [String] = sample.map { obj in
-//                    let status = obj.value(forKey: "statusString") as? String ?? "?"
-//                    let dateVal = obj.value(forKey: dateKey) as Any
-//                    let clientObj = obj.value(forKey: "client")
-//                    let clientDesc: String
-//                    if let c = clientObj as? NSManagedObject { clientDesc = c.objectID.uriRepresentation().absoluteString } else { clientDesc = "nil" }
-//                    return "status=\(status), date=\(dateVal), client=\(clientDesc)"
-//                }
-//                print("[ClientStore] Sample rows:", peek)
-//            } catch {
-//                print("[ClientStore] Preflight error:", error)
-//            }
-//        }
-//
-//        // Агрегатный запрос по Task: достаём только поле client и считаем DISTINCT
-//        let request = NSFetchRequest<NSDictionary>(entityName: "Task")
-//        request.resultType = .dictionaryResultType
-//        request.propertiesToFetch = ["client"]
-//        request.returnsDistinctResults = true
-//
-//        var predicates: [NSPredicate] = [
-//            NSPredicate(format: "%K != nil", "client"),
-//            NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
-//        ]
-//        if onlyCompleted {
-//            predicates.append(NSPredicate(format: "statusString == %@", "completed"))
-//        }
-//        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
-//
-//        if debug {
-//            print("[ClientStore] DISTINCT predicate:", request.predicate?.predicateFormat ?? "<none>")
-//        }
-//
-//        do {
-//            let rows = try context.fetch(request)
-//            if debug { print("[ClientStore] DISTINCT rows count:", rows.count) }
-//            return rows.count // каждое словарик-значение — уникальный client
-//        } catch {
-//            print("❌ Error counting distinct clients:", error)
-//            return 0
-//        }
-//    }
+
     
     func newClientsByMonth(
         year: Int,
@@ -337,6 +227,62 @@ func deleteClient(_ client: Client) {
     }
 }
     
+    
+    /// Fetch clients sorted by the number of completed tasks using a DB-side aggregation.
+    /// Returns Client objects in the provided context ordered by completed tasks count.
+    func fetchClientsSortedByCompletedCountDB(descending: Bool = true, limit: Int? = nil, debug: Bool = false) -> [Client] {
+        // Build expression: count of tasks with status == "completed"
+        let exprFormat = "SUBQUERY(tasks, $t, $t.statusString == %@).@count"
+        let expr = NSExpression(format: exprFormat, "completed")
+
+        let exprDesc = NSExpressionDescription()
+        exprDesc.name = "completedCount"
+        exprDesc.expression = expr
+        exprDesc.expressionResultType = .integer32AttributeType
+
+        // Request dictionary results containing objectID and the computed count
+        let req = NSFetchRequest<NSDictionary>(entityName: "Client")
+        req.resultType = .dictionaryResultType
+        req.propertiesToFetch = ["objectID", exprDesc]
+        req.returnsDistinctResults = false
+
+        // Sort by the computed value
+        req.sortDescriptors = [NSSortDescriptor(key: "completedCount", ascending: !descending)]
+        if let limit = limit { req.fetchLimit = limit }
+
+        if debug { print("[ClientStore] fetchClientsSortedByCompletedCountDB predicate: <none>, sorting by completedCount \(descending ? "desc" : "asc")") }
+
+        do {
+            let rows = try context.fetch(req)
+            var clients: [Client] = []
+            clients.reserveCapacity(rows.count)
+
+            for row in rows {
+                if let objId = row["objectID"] as? NSManagedObjectID {
+                    // obtain fault for object id in this context
+                    if let client = try? context.existingObject(with: objId) as? Client {
+                        clients.append(client)
+                    }
+                } else if let obj = row.object(forKey: "objectID") as? NSManagedObjectID {
+                    if let client = try? context.existingObject(with: obj) as? Client {
+                        clients.append(client)
+                    }
+                }
+            }
+
+            if debug {
+                let sample = clients.prefix(10).map { c in
+                    "\(c.firstName ?? "?") \(c.lastName ?? "") — completed:\(c.completedTasksCount)"
+                }
+                print("[ClientStore] fetchClientsSortedByCompletedCountDB sample:", sample)
+            }
+
+            return clients
+        } catch {
+            print("❌ ClientStore.fetchClientsSortedByCompletedCountDB error:", error)
+            return []
+        }
+    }
 }
 
 extension Client {

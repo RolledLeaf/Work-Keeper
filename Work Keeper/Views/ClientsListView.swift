@@ -222,10 +222,10 @@ struct ClientsListView: View {
         }
         .sheet(isPresented: $showSortOrderMenu) {
             SortPopoverView(selection: $sortSelection) { chosen in
-                // применяем сортировку в ViewModel
-                viewModel.loadSorted(sortingString: viewModel.name , ascending: true)
-            }
-        }
+                viewModel.applySort(option: chosen)
+                       }
+                   }
+               
         
         .onAppear {
             viewModel.loadClients()

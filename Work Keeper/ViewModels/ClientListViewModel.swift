@@ -2,9 +2,34 @@
 import Foundation
 import Combine
 
+enum SortOption: String, CaseIterable, Identifiable {
+    case nameAZ = "По именам А-Я"
+    case nameZA = "По именам Я-А"
+//    case addressAZ = "По адресам А-Я"
+//    case addressZA = "По адресам Я-А"
+    case moreCompleted = "Больше выполненных заданий"
+    case lessCompleted = "Меньше выполненных заданий"
+    
+    var id: String { rawValue }
+    
+    var sortKey: String? {
+        switch self {
+        case .nameAZ, .nameZA: return "firstName"
+//        case .addressAZ, .addressZA: return "address.street.name"
+        case .moreCompleted, .lessCompleted: return nil
+        }
+    }
+    var ascendingForSortKey: Bool {
+        switch self {
+        case .nameAZ/*, .addressAZ*/: return true
+        case .nameZA/*, .addressZA*/: return false
+        case .moreCompleted: return false
+        case .lessCompleted: return true
+        }
+    }
+}
 
-
-
+// Временно исключить сортировку по адресам, пока нет сетевого эндпоинта, так как сортировать to-many объекты из базы данных невоможно
 
 final class ClientsStatViewModel: ObservableObject {
     private let store = ClientStore()
@@ -38,24 +63,12 @@ final class ClientsStatViewModel: ObservableObject {
 final class ClientsListViewModel: ObservableObject {
     @Published var clients: [Client] = []
     @Published var selectedClient: Client?
+    @Published var client: Client?
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var phone: String = ""
-    
-    @Published var name = "firstName"
-    @Published var address = "address"
-    @Published var tasks = "task"
-
-  
-    
-//    @Published var sort: String = "+"
-    
-    
-    @Published var client: Client?
-    
     @Published var total: Int = 0
-    
-    
+
     private let store = ClientStore()
     
     init() {
@@ -65,7 +78,22 @@ final class ClientsListViewModel: ObservableObject {
     
     func loadSorted(sortingString: String, ascending: Bool) {
         clients = store.fetchClients(sortedBy: sortingString, ascending: ascending )
-            
+    } //метод для сортировки по именам
+    
+    func loadSortedByCount(ascending: Bool) {
+        clients = store.fetchClientsSortedByCompletedCountDB(descending: ascending, limit: nil, debug: true)
+    } //метод для сортировки по количеству выполненных заданий
+    
+    func applySort(option: SortOption) {
+        if let key = option.sortKey {
+            loadSorted(sortingString: key, ascending: option.ascendingForSortKey)
+        } else {
+            switch option {
+            case .moreCompleted: loadSortedByCount( ascending: true)
+            case .lessCompleted: loadSortedByCount( ascending: false)
+            default: break
+            }
+        }
     }
     
     func pickClient(_ client: Client) {
