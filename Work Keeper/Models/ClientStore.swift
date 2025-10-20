@@ -74,6 +74,18 @@ func createOrFetchClient(firstName: String,
         }
     }
     
+    func fetchClients(sortedBy keypath: String, ascending: Bool) -> [Client] {
+        let request: NSFetchRequest<Client> = Client.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: keypath, ascending: ascending)]
+        
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("❌ Error fetching clients: \(error)")
+            return []
+        }
+    }
+    
     func totalClientsCount(debug: Bool = false) -> Int {
         // Count clients who have at least one task with status scheduled or completed
         let request: NSFetchRequest<Client> = Client.fetchRequest()

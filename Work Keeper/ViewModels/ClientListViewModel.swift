@@ -1,45 +1,37 @@
 
-
 import Foundation
 import Combine
+
+
+
 
 
 final class ClientsStatViewModel: ObservableObject {
     private let store = ClientStore()
     
     @Published var allClientsCount: Int = 0                  // всего клиентов в базе
-//       @Published var yearActiveClientsCount: Int = 0           // уникальные клиенты с задачами за выбранный год
-      
-       @Published var monthlyActiveCounts: [Int] = Array(repeating: 0, count: 12) // по месяцам выбранного года
-
+    //       @Published var yearActiveClientsCount: Int = 0           // уникальные клиенты с задачами за выбранный год
+    
+    @Published var monthlyActiveCounts: [Int] = Array(repeating: 0, count: 12) // по месяцам выбранного года
+    
     
     func loadAllClientsCount(debug: Bool = false) {
         allClientsCount = store.totalClientsCount(debug: debug)
         print("loaded all clients count: \(allClientsCount)")
     }
     
-//    func loadYearActiveClients(year: Int,
-//                                  onlyCompleted: Bool = true,
-//                                  dateKey: String = "scheduledAt",
-//                                  debug: Bool = false) {
-//        print("Loading Year Client stats")
-//           yearActiveClientsCount = store.distinctClientsCount(year: year,
-//                                                               month: nil,
-//                                                               onlyCompleted: onlyCompleted,
-//                                                               dateKey: dateKey,
-//                                                               debug: debug)
-//       }
-    
 
+    
+    
     func loadMonthlyActive(year: Int,
                            onlyCompleted: Bool = false,
                            dateKey: String = "scheduledAt",
                            debug: Bool = false) {
         monthlyActiveCounts =
-            store.newClientsByMonth(year: year, onlyCompleted: true)
-        }
+        store.newClientsByMonth(year: year, onlyCompleted: true)
     }
-    
+}
+
 
 
 
@@ -50,19 +42,32 @@ final class ClientsListViewModel: ObservableObject {
     @Published var lastName: String = ""
     @Published var phone: String = ""
     
+    @Published var name = "firstName"
+    @Published var address = "address"
+    @Published var tasks = "task"
+
+  
+    
+//    @Published var sort: String = "+"
+    
+    
     @Published var client: Client?
     
     @Published var total: Int = 0
-  
-
+    
+    
     private let store = ClientStore()
-
+    
     init() {
         loadClients()
     }
     
-  
-
+    
+    func loadSorted(sortingString: String, ascending: Bool) {
+        clients = store.fetchClients(sortedBy: sortingString, ascending: ascending )
+            
+    }
+    
     func pickClient(_ client: Client) {
         selectedClient = client
     }
@@ -70,7 +75,7 @@ final class ClientsListViewModel: ObservableObject {
     func loadClients() {
         clients = store.fetchClients()
     }
-
+    
     func delete(_ client: Client) {
         store.deleteClient(client)
         loadClients()
@@ -104,7 +109,7 @@ final class CreateClientViewModel: ObservableObject {
     func createClient() {
         // 1) Улица
         let street = streetStore.createOrFetchStreet(name: streetName.trimmingCharacters(in: .whitespacesAndNewlines))
-
+        
         // 2) Клиент (пока без адресов)
         let client = store.createClient(
             firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -112,7 +117,7 @@ final class CreateClientViewModel: ObservableObject {
             addresses: [],
             phone: phoneDigits.isEmpty ? "" : "+7" + phoneDigits
         )
-
+        
         // 3) Адрес, привязанный к клиенту
         let address = addressStore.createOrFetchAddress(
             house: building.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -126,7 +131,7 @@ final class CreateClientViewModel: ObservableObject {
             roomType: roomType,
             entranceType: entranceType
         )
-
+        
         // 4) Обновляем клиента, чтобы адрес точно оказался в его наборе адресов и сохранился комментарий
         store.updateClient(
             client,

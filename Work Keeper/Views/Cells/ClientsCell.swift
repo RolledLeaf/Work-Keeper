@@ -63,6 +63,7 @@ struct ClientRow: View {
                     
                 }
                 .padding(.leading, 17)
+                
                 Spacer()
                 
                 VStack {
@@ -97,12 +98,13 @@ struct ClientRow: View {
             .frame(maxWidth: .infinity)
             
         }
+        .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
         )
         .padding(.vertical, 8)
-        .cornerRadius(12)
+        
         
     }
 }
