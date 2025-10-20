@@ -17,21 +17,12 @@ struct ClientListToPickView: View {
                 }
             
             VStack {
-                HStack {
-                    Button(action: {
-                        //action
-                    }) {
-                        Image("sortAZ")
-                            .resizable()
-                            .frame(width: 31, height: 22)
-                    }
-                    .padding(.leading, 3)
+                
+           
                     
-                    
-                    Spacer()
-                    
-                    
-                }
+                
+                Spacer()
+                    .frame(height: 10)
                 
                 TextField("Поиск клиента", text: .constant(""))
                     .padding(9)
@@ -48,7 +39,7 @@ struct ClientListToPickView: View {
                     })
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
+                            .fill(Color.custom(.searchFieldGray))
                     )
                     .padding(.leading, 1)
                     .padding(.trailing, 1)

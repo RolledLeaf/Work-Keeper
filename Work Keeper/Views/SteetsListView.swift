@@ -2,6 +2,7 @@ import SwiftUI
 
 struct StreetsListView: View {
     @State private var showAddStreetView = false
+    @State private var sortToggle: Bool = false
     @ObservedObject var viewModel: StreetListViewModel
     @Environment(\.dismiss)
     private var dismiss
@@ -14,7 +15,23 @@ struct StreetsListView: View {
            
             
             HStack {
-                Image("sortAZ")
+                Button(action: {
+                    switch sortToggle {
+                    case true:
+                        sortToggle = false
+                        viewModel.loadSortedStreets(ascending: true)
+                    case false:
+                        sortToggle = true
+                        viewModel.loadSortedStreets(ascending: false)
+                    }
+                   
+                }) {
+                    if sortToggle {
+                        Image("sortZA")
+                    } else {
+                        Image("sortAZ")
+                    }
+                }
                 
                 Spacer()
                 

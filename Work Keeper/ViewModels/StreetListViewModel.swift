@@ -3,8 +3,6 @@ import Combine
 
 
 
-
-
 @MainActor
 final class StreetListViewModel: ObservableObject {
     @Published var streets: [Street] = []
@@ -20,6 +18,10 @@ final class StreetListViewModel: ObservableObject {
 
     func loadStreets() {
         streets = store.fetchStreets()
+    }
+    
+    func loadSortedStreets(ascending: Bool) {
+        streets = store.fetchStreets(ascending: ascending)
     }
     
     func pickStreet(_ street: Street) {
