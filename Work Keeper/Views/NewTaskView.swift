@@ -112,7 +112,7 @@ struct NewTaskView: View {
                     }
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     .padding(.horizontal, 16)
                     
@@ -175,7 +175,7 @@ struct NewTaskView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                             
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         .cornerRadius(8)
                         .frame(width: 170)
@@ -327,7 +327,7 @@ struct NewTaskView: View {
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         
                     )
                     .padding(.horizontal, 20)
@@ -364,7 +364,7 @@ struct NewTaskView: View {
                         .frame(width: 75, height: 30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         Spacer()
                         
@@ -402,7 +402,7 @@ struct NewTaskView: View {
                         .frame(width: 66, height: 30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         Spacer()
                         
@@ -438,7 +438,7 @@ struct NewTaskView: View {
                         .frame(width: 37, height: 30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                     }
                     .padding(.horizontal, 20)
@@ -470,7 +470,7 @@ struct NewTaskView: View {
                         
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         
                         Text("Частный дом")
@@ -538,7 +538,7 @@ struct NewTaskView: View {
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                     .fill(Color.white)
                             )
                     }
@@ -573,7 +573,7 @@ struct NewTaskView: View {
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                     .fill(Color.white)
                             )
                     }

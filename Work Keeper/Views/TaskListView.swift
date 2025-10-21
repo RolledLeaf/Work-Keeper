@@ -425,7 +425,7 @@ struct TaskListView: View {
                                 .cornerRadius(10)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                 )
                             }
 

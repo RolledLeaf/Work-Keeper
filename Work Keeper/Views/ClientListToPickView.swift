@@ -17,14 +17,10 @@ struct ClientListToPickView: View {
                 }
             
             VStack {
-                
-           
-                    
-                
                 Spacer()
                     .frame(height: 10)
                 
-                TextField("Поиск клиента", text: .constant(""))
+                TextField("Поиск клиента", text: $viewModel.searchText)
                     .padding(9)
                     .padding(.leading, 25)
                     .onTapGesture {
