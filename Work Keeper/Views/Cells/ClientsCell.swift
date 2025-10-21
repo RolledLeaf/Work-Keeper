@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ClientRow: View {
     let client: Client
-    
+    @ObservedObject var viewModel: ClientsListViewModel
     
     
     var body: some View {
@@ -40,12 +40,12 @@ struct ClientRow: View {
                 .padding(.leading, 8)
                 
                 VStack {
-                    Text("\(client.firstName ?? "") \(client.lastName ?? "")")
+                    Text(highlighted(client.firstName ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                         .font(.custom(SFPro.bold.rawValue, size: 24))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 25, alignment: .center)
                     Spacer()
-                    Text(client.phone?.formattedAsPhone() ?? "")
+                    Text(highlighted(client.phone?.formattedAsPhone() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                         .font(.custom(SFPro.regular.rawValue, size: 16))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 20, alignment: .center)
@@ -53,7 +53,12 @@ struct ClientRow: View {
                         .foregroundColor(.custom(.taskTextGray))
                         .offset(y: 4)
                     Spacer()
-                    Text("\(client.primaryAddress?.street?.name ?? "Адрес не указан") \(client.primaryAddress?.house ?? "")")
+//                    Text("\(client.primaryAddress?.street?.name ?? "Адрес не указан")
+                    HStack {
+                        Text(highlighted(client.primaryAddress?.street?.name ?? "Адрес не указан", query: viewModel.searchText, highlightColor: .highlightBlue))
+                        
+                        Text("\(client.primaryAddress?.house ?? "")")
+                    }
                         .font(.custom(SFPro.regular.rawValue, size: 17))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(height: 34, alignment: .center)

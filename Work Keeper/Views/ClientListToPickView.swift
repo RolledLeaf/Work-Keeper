@@ -55,7 +55,7 @@ struct ClientListToPickView: View {
                     Text("Клиентов пока нет")
                 } else {
                     List(viewModel.clients) { client in
-                        ClientRow(client: client)
+                        ClientRow(client: client, viewModel: viewModel)
                             .onTapGesture {
                                 viewModel.pickClient(client)
                                 dismiss()

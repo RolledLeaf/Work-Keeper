@@ -141,7 +141,8 @@ struct ClientsListView: View {
                     .padding(.trailing, 5)
                 }
                 
-                TextField("Поиск клиента", text: .constant(""))
+                HStack {
+                TextField("Поиск клиента", text: $viewModel.searchText)
                     .padding(9)
                     .padding(.leading, 25)
                     .onTapGesture {
@@ -160,6 +161,19 @@ struct ClientsListView: View {
                     )
                     .padding(.leading, 1)
                     .padding(.trailing, 1)
+                if !viewModel.searchText.isEmpty {
+                    Button(action:  {
+                        viewModel.searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle")
+                            .resizable()
+                            .frame(width: 25, height: 25)
+                    }
+                    
+                }
+            }
+                
+                
                 if viewModel.clients.isEmpty {
                     
                     Spacer()
@@ -173,7 +187,7 @@ struct ClientsListView: View {
                 } else {
                    
                         List(viewModel.clients) { client in
-                            ClientRow(client: client)
+                            ClientRow(client: client, viewModel: viewModel)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     selectedClient = client

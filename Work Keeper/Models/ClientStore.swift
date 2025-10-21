@@ -86,6 +86,23 @@ func createOrFetchClient(firstName: String,
         }
     }
     
+    func fetchClients(matching predicate: NSPredicate? = nil,
+                      sortDescriptors: [NSSortDescriptor] = [NSSortDescriptor(keyPath: \Client.firstName, ascending: true)],
+                      limit: Int? = nil,
+                      debug: Bool = false) -> [Client] {
+        let request: NSFetchRequest<Client> = Client.fetchRequest()
+        request.sortDescriptors = sortDescriptors
+        request.predicate = predicate
+        if let limit = limit { request.fetchLimit = limit }
+        if debug { print("[ClientStore] fetchClients(matching:) predicate:", predicate?.predicateFormat ?? "<none>") }
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("❌ ClientStore.fetchClients(matching:) error:", error)
+            return []
+        }
+    }
+    
     func totalClientsCount(debug: Bool = false) -> Int {
         // Count clients who have at least one task with status scheduled or completed
         let request: NSFetchRequest<Client> = Client.fetchRequest()

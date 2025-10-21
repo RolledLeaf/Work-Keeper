@@ -67,12 +67,44 @@ final class ClientsListViewModel: ObservableObject {
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var phone: String = ""
+    @Published var searchText: String = ""
     @Published var total: Int = 0
+    
+    private var cancellables = Set<AnyCancellable>()
 
     private let store = ClientStore()
     
     init() {
         loadClients()
+        $searchText
+            .debounce(for: .milliseconds(250), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.applySearchUsingDB()
+            }
+            .store(in: &cancellables)
+    }
+    
+    
+    func applySearchUsingDB(debug: Bool = false) {
+        let q = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !q.isEmpty else {
+            clients = store.fetchClients()
+            return
+        }
+
+        let t = q as NSString
+        // Build a predicate that matches firstName/lastName/phone OR any related address.street.name
+        let namePred = NSPredicate(format: "firstName CONTAINS[cd] %@", t)
+        let lastPred = NSPredicate(format: "lastName CONTAINS[cd] %@", t)
+        let phonePred = NSPredicate(format: "phone CONTAINS[cd] %@", t)
+        // Use SUBQUERY to avoid unsupported SQL generation for multi-hop ANY predicates
+        let addressSubquery = NSPredicate(format: "SUBQUERY(address, $a, $a.street.name CONTAINS[cd] %@).@count > 0", t)
+        let orPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [namePred, lastPred, phonePred, addressSubquery])
+
+        if debug { print("[ClientsListViewModel] applySearchUsingDB predicate:", orPredicate.predicateFormat) }
+        clients = store.fetchClients(matching: orPredicate)
     }
     
     
