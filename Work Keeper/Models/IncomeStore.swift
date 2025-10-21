@@ -9,7 +9,7 @@ func totalIncomeAllTime(context: NSManagedObjectContext,
         print("[IncomeStore] ERROR: context has no persistentStoreCoordinator")
         return 0
     }
-    let request = NSFetchRequest<NSDictionary>(entityName: "Task")
+    let request = NSFetchRequest<NSDictionary>(entityName: "TaskEntity")
     request.resultType = .dictionaryResultType
 
   
@@ -28,10 +28,10 @@ func totalIncomeAllTime(context: NSManagedObjectContext,
     // DEBUG: Preflight checks
     if debug {
         do {
-            let allReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
+            let allReq = NSFetchRequest<NSManagedObject>(entityName: "TaskEntity")
             let allCount = try context.count(for: allReq)
 
-            let completedReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
+            let completedReq = NSFetchRequest<NSManagedObject>(entityName: "TaskEntity")
             completedReq.predicate = NSPredicate(format: "statusString == %@", "completed")
             let completedCount = try context.count(for: completedReq)
 
@@ -40,7 +40,7 @@ func totalIncomeAllTime(context: NSManagedObjectContext,
            
 
             // Peek first 5 completed tasks to verify totalAmount values
-            let sampleReq = NSFetchRequest<NSManagedObject>(entityName: "Task")
+            let sampleReq = NSFetchRequest<NSManagedObject>(entityName: "TaskEntity")
             sampleReq.fetchLimit = 5
             sampleReq.predicate = onlyCompleted ? NSPredicate(format: "statusString == %@", "completed") : nil
             sampleReq.propertiesToFetch = ["totalAmount", "statusString"]
@@ -100,7 +100,7 @@ func totalIncome(
         return 0
     }
 
-    let request = NSFetchRequest<NSDictionary>(entityName: "Task")
+    let request = NSFetchRequest<NSDictionary>(entityName: "TaskEntity")
     request.resultType = .dictionaryResultType
 
     // Сумма по totalAmount

@@ -41,6 +41,30 @@ final class StreetStore: NSObject, ObservableObject {
             return []
         }
     }
+
+    func fetchStreets(matching name: String) -> [Street] {
+       
+        let request: NSFetchRequest<Street> = Street.fetchRequest()
+        request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", name)
+        request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("Error fetching streets by name: \(error)")
+            return []
+        }
+    }
+    
+    func fetchStreets( ascending: Bool) -> [Street] {
+        let request: NSFetchRequest<Street> = Street.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: ascending)]
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("Error fetching streets: \(error)")
+            return []
+        }
+    }
     
     func createStreet(name: String) {
         let street = Street(context: context)

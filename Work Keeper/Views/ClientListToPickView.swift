@@ -17,23 +17,10 @@ struct ClientListToPickView: View {
                 }
             
             VStack {
-                HStack {
-                    Button(action: {
-                        //action
-                    }) {
-                        Image("sortAZ")
-                            .resizable()
-                            .frame(width: 31, height: 22)
-                    }
-                    .padding(.leading, 3)
-                    
-                    
-                    Spacer()
-                    
-                    
-                }
+                Spacer()
+                    .frame(height: 10)
                 
-                TextField("Поиск клиента", text: .constant(""))
+                TextField("Поиск клиента", text: $viewModel.searchText)
                     .padding(9)
                     .padding(.leading, 25)
                     .onTapGesture {
@@ -48,7 +35,7 @@ struct ClientListToPickView: View {
                     })
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
+                            .fill(Color.custom(.searchFieldGray))
                     )
                     .padding(.leading, 1)
                     .padding(.trailing, 1)
@@ -64,7 +51,7 @@ struct ClientListToPickView: View {
                     Text("Клиентов пока нет")
                 } else {
                     List(viewModel.clients) { client in
-                        ClientRow(client: client)
+                        ClientRow(client: client, viewModel: viewModel)
                             .onTapGesture {
                                 viewModel.pickClient(client)
                                 dismiss()

@@ -18,7 +18,7 @@ struct StreetRow: View {
             VStack {
                 Spacer()
                 HStack {
-                    Text(street.name ?? "без названия")
+                    Text(highlighted(street.name ?? "без названия", query: viewModel.searchText, highlightColor: .highlightBlue))
                         .padding(.leading, 15)
                     Spacer()
                 }

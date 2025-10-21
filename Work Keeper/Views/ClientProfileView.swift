@@ -4,11 +4,11 @@ struct ClientProfileView: View {
 
     @ObservedObject var viewModel = ClientsListViewModel()
     var client: Client
-    @State private var selectedTaskForDetails: Task?
+    @State private var selectedTaskForDetails: TaskEntity?
     
         var body: some View {
             
-            let initials = ((client.firstName?.prefix(1) ?? "") + (client.lastName?.prefix(1) ?? "")) // boiler code
+          
 
             VStack {
                 
@@ -144,12 +144,20 @@ struct ClientProfileView: View {
                     .frame(height: 19)
                 
                 HStack {
-                    
-                    Text("✅ - \(client.completedTasksCount)")
+                    Rectangle()
+                         .frame(width: 20, height: 20)
+                         .foregroundColor(Color.custom(.taskCompleteGreen))
+                    Text(" - \(client.completedTasksCount)")
                     Spacer()
-                    Text("🔄 - \(client.scheduledTasksCount)")
+                    Rectangle()
+                        .frame(width: 20, height: 20)
+                         .foregroundColor(Color.custom(.taskViewYellow))
+                    Text(" - \(client.scheduledTasksCount)")
                     Spacer()
-                    Text("❌ - \(client.canceledTasksCount)")
+                    Rectangle()
+                        .frame(width: 20, height: 20)
+                         .foregroundColor(Color.custom(.taskCanceledOrange))
+                    Text(" - \(client.canceledTasksCount)")
                 }
                 .padding(.horizontal, 58)
            
@@ -159,7 +167,7 @@ struct ClientProfileView: View {
                 // MARK: - Tasks list for this client
                 let defaultDate = Date()
                 
-                let clientTasks = (client.tasks as? Set<Task>)?.sorted(by: { ($0.scheduledAt ?? defaultDate) > ($1.scheduledAt ?? defaultDate) }) ?? []
+                let clientTasks = (client.tasks as? Set<TaskEntity>)?.sorted(by: { ($0.scheduledAt ?? defaultDate) > ($1.scheduledAt ?? defaultDate) }) ?? []
 
                 if clientTasks.isEmpty {
                     VStack(spacing: 12) {

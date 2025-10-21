@@ -17,6 +17,7 @@ struct TasksView: View {
             VStack {
                 
                 List {
+                   
                     TaskStatRow(viewModel: viewModel, title: months[0], year: year, monthIndex: 0)
                         .listRowSeparator(.hidden)
                     
@@ -75,11 +76,15 @@ struct TasksView: View {
             viewModel.loadAllCanceledTasksCount()
             viewModel.loadMonthlyCompletedTasks(year: year)
             viewModel.loadMonthlyCanceledTasks(year: year)
+            viewModel.loadYearCompletedTasks(year: year)
+            viewModel.loadYearCanceledTasks(year: year)
         }
         
         .task(id: year) {
             viewModel.loadMonthlyCompletedTasks(year: year)
             viewModel.loadMonthlyCanceledTasks(year: year)
+            viewModel.loadYearCompletedTasks(year: year)
+            viewModel.loadYearCanceledTasks(year: year)
         }
        
     }

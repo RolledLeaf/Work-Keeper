@@ -5,7 +5,7 @@ struct TaskView: View {
  
     @ObservedObject var viewModel = TaskListViewModel()
   
-    let task: Task
+    let task: TaskEntity
   
     @State private var didCopyTaskDescription = false
     @State private var didCopyTaskComment = false
@@ -201,6 +201,7 @@ struct TaskView: View {
                     }
                 }
                 .frame(height: 82)
+                .cornerRadius(8)
                 .padding(.horizontal, 16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
@@ -251,6 +252,7 @@ struct TaskView: View {
                     }
                 }
                 .frame(height: 96)
+                .cornerRadius(8)
                 .padding(.horizontal, 16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)

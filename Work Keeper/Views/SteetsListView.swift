@@ -2,6 +2,7 @@ import SwiftUI
 
 struct StreetsListView: View {
     @State private var showAddStreetView = false
+    @State private var sortToggle: Bool = false
     @ObservedObject var viewModel: StreetListViewModel
     @Environment(\.dismiss)
     private var dismiss
@@ -14,7 +15,23 @@ struct StreetsListView: View {
            
             
             HStack {
-                Image("sortAZ")
+                Button(action: {
+                    switch sortToggle {
+                    case true:
+                        sortToggle = false
+                        viewModel.loadSortedStreets(ascending: true)
+                    case false:
+                        sortToggle = true
+                        viewModel.loadSortedStreets(ascending: false)
+                    }
+                   
+                }) {
+                    if sortToggle {
+                        Image("sortZA")
+                    } else {
+                        Image("sortAZ")
+                    }
+                }
                 
                 Spacer()
                 
@@ -33,7 +50,8 @@ struct StreetsListView: View {
             Spacer()
                 .frame(height: 15)
             
-            TextField("Начните вводить адрес", text: .constant(""))
+            HStack {
+            TextField("Начните вводить адрес", text: $viewModel.searchText)
                 .padding(9)
                 .padding(.leading, 25)
                 .onTapGesture {
@@ -50,13 +68,28 @@ struct StreetsListView: View {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color.custom(.searchFieldGray))
                 )
-                .padding(.horizontal, 13)
+                
+            if !viewModel.searchText.isEmpty {
+                Button(action:  {
+                    viewModel.searchText = ""
+                }) {
+                    Image(systemName: "xmark.circle")
+                        .resizable()
+                        .foregroundColor(.black)
+                        .frame(width: 25, height: 25)
+                        
+                }
+                
+            }
+        }
+            .padding(.horizontal, 13)
+            
             
             if viewModel.streets.isEmpty {
-                
+               
                 VStack {
                     Spacer()
-                        .frame(height: 123)
+                        .frame(height: 40)
                     Image("noAddressPlaceholder")
                     Spacer()
                         .frame(height: 51)

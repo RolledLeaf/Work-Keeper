@@ -108,7 +108,7 @@ struct EditTaskView: View {
                     }
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     .padding(.horizontal, 16)
                     
@@ -153,7 +153,7 @@ struct EditTaskView: View {
                     }
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     .padding(.horizontal, 16)
                     
@@ -217,7 +217,7 @@ struct EditTaskView: View {
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                             
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         .cornerRadius(8)
                         .frame(width: 170)
@@ -365,7 +365,7 @@ struct EditTaskView: View {
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         
                     )
                     .padding(.horizontal, 20)
@@ -402,7 +402,7 @@ struct EditTaskView: View {
                         .frame(width: 75, height: 30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         Spacer()
                         
@@ -439,7 +439,7 @@ struct EditTaskView: View {
                         .frame(width: 66, height: 30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         Spacer()
                         
@@ -475,7 +475,7 @@ struct EditTaskView: View {
                         .frame(width: 37, height: 30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                     }
                     .padding(.horizontal, 20)
@@ -507,7 +507,7 @@ struct EditTaskView: View {
                         
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         
                         Text("Частный дом")
@@ -611,7 +611,7 @@ struct EditTaskView: View {
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                     .fill(Color.white)
                             )
                     }
@@ -643,7 +643,7 @@ struct EditTaskView: View {
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                     .fill(Color.white)
                             )
                     }

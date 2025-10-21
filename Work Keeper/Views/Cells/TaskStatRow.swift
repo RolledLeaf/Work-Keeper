@@ -33,9 +33,7 @@ struct TaskStatRow: View {
     
     
     var body: some View {
-        
-       
-        
+  
         HStack {
         
             if title == "За год" {

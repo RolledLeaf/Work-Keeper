@@ -9,22 +9,98 @@ private func dayKey(_ date: Date) -> Date {
     Calendar.current.startOfDay(for: date)
 }
 
+struct TasksFilterView: View {
+    @Binding var selectedFilters: Set<TaskStatus>
+
+    let allFilters: [TaskStatus] = [.all, .scheduled, .completed, .canceled]
+
+    var body: some View {
+        List {
+            ForEach(allFilters, id: \.self) { status in
+                HStack {
+                    Text(status.rawValue)
+                    Spacer()
+
+                    
+                    let statusColor: Color = {
+                        switch status {
+                        case .scheduled: return Color.custom(.taskViewYellow)
+                        case .completed: return Color.custom(.taskCompleteGreen)
+                        case .canceled: return Color.custom(.taskCanceledOrange)
+                        case .all: return Color.black
+                        }
+                    }()
+
+                    if selectedFilters.contains(status) {
+                        Image(systemName: "checkmark.square")
+                            .resizable()
+                            .foregroundColor(statusColor)
+                            .frame(width: 22, height: 22)
+                            .padding(.trailing, 8)
+                    } else {
+                        Image(systemName: "square")
+                            .resizable()
+                            .foregroundColor(statusColor.opacity(0.5))
+                            .frame(width: 22, height: 22)
+                            .padding(.trailing, 8)
+                    }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    // Ensure .all behaves as a pseudo-status: when .all is selected,
+                    // no other statuses can be combined. When any real status is selected,
+                    // .all is removed.
+                    if status == .all {
+                        // Tapping "Все" selects only it
+                        selectedFilters = [.all]
+                        return
+                    }
+
+                    // For real statuses: remove .all if present
+                    if selectedFilters.contains(.all) {
+                        selectedFilters.remove(.all)
+                    }
+
+                    // Toggle the tapped status
+                    if selectedFilters.contains(status) {
+                        selectedFilters.remove(status)
+                    } else {
+                        selectedFilters.insert(status)
+                    }
+
+                    // If nothing remains selected, fall back to .all
+                    if selectedFilters.isEmpty {
+                        selectedFilters = [.all]
+                    }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle("Фильтры")
+    }
+}
+
 struct TaskListView: View {
     @StateObject private var viewModel = TaskListViewModel()
     
   
     @State private var selectedDate = Date()
+    @State private var showDeleteAlert = false
     @State private var showNewTaskView = false
     @State private var showCompleteTaskView = false
     @State private var showEditTaskView = false
     
+    @State private var showFilters = false
+    @State private var selectedFilters: Set<TaskStatus> = [.all]
+    
     @State private var showPopup = false
-    @State private var selectedTask: Task?
-    @State private var taskToCancel: Task?
+    @State private var selectedTask: TaskEntity?
+    @State private var taskToCancel: TaskEntity?
+    @State private var taskToDelete: TaskEntity?
     @State private var navigateToTaskView = false
 
-    @State private var selectedTaskForComplete: Task?
-    @State private var selectedTaskForEdit: Task?
+    @State private var selectedTaskForComplete: TaskEntity?
+    @State private var selectedTaskForEdit: TaskEntity?
     @State private var listScrollPosition: Date?
     
 
@@ -38,7 +114,7 @@ struct TaskListView: View {
             VStack {
                 HStack {
                     Button(action: {
-                        selectedDate = Date() 
+                        selectedDate = Date()
                     }) {
                         Image("today")
                             .resizable()
@@ -46,7 +122,7 @@ struct TaskListView: View {
                     }
 
                     Button(action: {
-                        //action
+                        showFilters = true
                     }) {
                         Image("filters")
                             .resizable()
@@ -84,25 +160,69 @@ struct TaskListView: View {
                 }
                 .padding(.leading, 3)
 
-                TextField("Поиск задания", text: .constant(""))
-                    .submitLabel(.done)
-                    .onSubmit {
-                        hideKeyboard() // кастомная функция
-                    }
-                    .padding(9)
-                    .padding(.leading, 25)
-                    .background(
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                            Spacer()
+                HStack {
+                    TextField("Поиск задания", text: $viewModel.searchText)
+                        .onChange(of: viewModel.searchText) { newValue in
+                            print("[TaskListView] searchText changed:", newValue)
                         }
-                        .padding(.leading, 10)
-                    )
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.custom(.searchFieldGray))
-                    )
+                        .padding(9)
+                        .padding(.leading, 25)
+                        .onSubmit {
+                            hideKeyboard()
+                        }
+                        .background(
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.gray)
+                                Spacer()
+                                
+                                
+                            }
+                                .padding(.horizontal, 10)
+                        )
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.custom(.searchFieldGray))
+                        )
+                    
+                    if !viewModel.searchText.isEmpty {
+                        Button(action:  {
+                            viewModel.searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle")
+                                .resizable()
+                                .frame(width: 25, height: 25)
+                        }
+                        
+                    }
+                }
+                 
+                 Text("Статусы заданий")
+                 
+                 HStack(spacing: 8) {
+                      Rectangle()
+                           .frame(width: 15, height: 15)
+                           .foregroundColor(Color.custom(.taskCompleteGreen))
+                      
+                      Text("- выполнено")
+                           .font(.custom(SFPro.regular.rawValue, size: 14))
+                           
+                      
+                      Rectangle()
+                           .frame(width: 15, height: 15)
+                           .foregroundColor(Color.custom(.taskViewYellow))
+                      
+                      Text("- запланировано")
+                           .font(.custom(SFPro.regular.rawValue, size: 14))
+                           
+                      
+                      Rectangle()
+                           .frame(width: 15, height: 15)
+                           .foregroundColor(Color.custom(.taskCanceledOrange))
+                      
+                      Text("- отменено")
+                           .font(.custom(SFPro.regular.rawValue, size: 14))
+                 }
 
                 if viewModel.groupedTasksByDate.isEmpty {
                     Spacer()
@@ -122,7 +242,7 @@ struct TaskListView: View {
                     Spacer()
                 } else {
                     Spacer()
-                        .frame(height: 38)
+                        .frame(height: 20)
                     NavigationStack {
                         ScrollViewReader { proxy in
                             List {
@@ -132,7 +252,8 @@ struct TaskListView: View {
                                             (viewModel.groupedTasksByDate[dateKey] ?? [])
                                                 .sorted { $0.scheduledAt ?? Date.distantPast < $1.scheduledAt ?? Date.distantPast }
                                         ) { task in
-                                            TaskRow(task: task)
+                                            TaskRow(viewModel: viewModel, task: task
+                                            )
                                                 .contentShape(Rectangle())
                                                 .onTapGesture {
                                                     selectedTask = task
@@ -203,12 +324,14 @@ struct TaskListView: View {
                                                 }
                                                 .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                                     Button(action: {
-                                                        viewModel.delete(task)
+                                                        taskToDelete = task
+                                                        showDeleteAlert = true
                                                     }) {
                                                         Image("delete")
                                                         Text("Удалить")
                                                     }
                                                     .tint(Color.custom(.deleteButtonRed))
+                                                    
                                                     
                                                     Button(action: {
                                                         selectedTaskForEdit = task
@@ -302,7 +425,7 @@ struct TaskListView: View {
                                 .cornerRadius(10)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                 )
                             }
 
@@ -387,6 +510,44 @@ struct TaskListView: View {
         }) { task in
             CompleteTaskView(viewModel: CompleteTaskViewModel(task: task))
         }
+        .popover(isPresented: $showFilters) {
+            NavigationStack {
+                TasksFilterView(selectedFilters: $selectedFilters)
+                    .navigationTitle("Фильтры")
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Готово") {
+                                // Build array of Status (or nil) from selectedFilters and apply to VM
+                                let statuses: [Status]? = {
+                                    // If .all is selected -> no status filter (nil)
+                                    if selectedFilters.contains(.all) {
+                                        return nil
+                                    }
+                                    var arr: [Status] = []
+                                    for ts in selectedFilters {
+                                        switch ts {
+                                        case .scheduled:
+                                            arr.append(.scheduled)
+                                        case .completed:
+                                            arr.append(.completed)
+                                        case .canceled:
+                                            arr.append(.canceled)
+                                        case .all:
+                                            break
+                                        }
+                                    }
+                                    return arr.isEmpty ? nil : arr
+                                }()
+
+                                // Apply filter and close
+                                viewModel.selectedStatuses = statuses
+                                showFilters = false
+                            }
+                        }
+                    }
+            }
+            .presentationDetents([.fraction(0.45)])
+        }
         .onAppear {
             viewModel.loadTasks()
         }
@@ -399,9 +560,56 @@ struct TaskListView: View {
                 listScrollPosition = today
             }
         }
+        .alert("Удалить задание?",
+               isPresented: $showDeleteAlert,
+               presenting: taskToDelete
+        ) { task in
+            Button("Удалить", role: .destructive) {
+                viewModel.delete(task)
+            }
+            Button("Отмена", role: .cancel) { }
+        } message: { task in
+            Text("Действие необратимо. Задание «\(task.taskDescription ?? "Без названия")» будет удалено навсегда.")
+        }
     }
+}
+
+struct TaskColoredLegend: View {
+     var body: some View {
+          VStack {
+               
+               Text("Статусы заданий")
+               
+               HStack(spacing: 8) {
+                    Rectangle()
+                         .frame(width: 15, height: 15)
+                         .foregroundColor(Color.custom(.taskCompleteGreen))
+                    
+                    Text("- выполнено")
+                         .font(.custom(SFPro.regular.rawValue, size: 14))
+                         
+                    
+                    Rectangle()
+                         .frame(width: 15, height: 15)
+                         .foregroundColor(Color.custom(.taskViewYellow))
+                    
+                    Text("- назначено")
+                         .font(.custom(SFPro.regular.rawValue, size: 14))
+                         
+                    
+                    Rectangle()
+                         .frame(width: 15, height: 15)
+                         .foregroundColor(Color.custom(.taskCanceledOrange))
+                    
+                    Text("- отменено")
+                         .font(.custom(SFPro.regular.rawValue, size: 14))
+               }
+          }
+     }
 }
 
 #Preview {
     TaskListView()
 }
+
+

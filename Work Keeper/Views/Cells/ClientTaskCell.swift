@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ClientTaskCell: View {
     
-    let task: Task
+    let task: TaskEntity
     
     var body: some View {
         let statusGradient: LinearGradient

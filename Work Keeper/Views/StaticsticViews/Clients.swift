@@ -17,11 +17,12 @@ struct ClientsView: View {
             VStack {
                 ZStack {
                     Color.white
-                    
-                    Text("Клиентов в базе:  \(format(viewModel.allClientsCount))")
-                        .font(Font.custom(SFPro.bold.rawValue, size: 24))
-                    
-                        .padding(10)
+
+                        Text("Всего в базе:  \(format(viewModel.allClientsCount))")
+                            .font(Font.custom(SFPro.bold.rawValue, size: 24))
+                        
+                            .padding(10)
+                        
                 }
                 .frame(height: 50)
                 .padding(.horizontal, 10)
@@ -32,7 +33,7 @@ struct ClientsView: View {
                 )
 
                 List {
-                    // 0 — за год
+                    TextHeaderView()
                     ClientsStatRow(viewModel: viewModel, title: months[0], year: year, monthIndex: 0)
                         .listRowSeparator(.hidden)
 
@@ -54,13 +55,46 @@ struct ClientsView: View {
         }
         .onAppear {
             viewModel.loadAllClientsCount()
+//            viewModel.loadYearActiveClients(year: year)
             viewModel.loadMonthlyActive(year: year)
         }
         .task(id: year) {
             viewModel.loadMonthlyActive(year: year)
+//            viewModel.loadYearActiveClients(year: year)
         }
     }
 
+    
+    struct TextHeaderView: View {
+        var body: some View {
+            ZStack {
+                
+                VStack {
+                  
+                    HStack {
+                        Spacer()
+                        Text("Клиенты с активными заданиями")
+                            .font(Font.custom(SFPro.bold.rawValue, size: 20))
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+                    
+                    HStack {
+                        Rectangle()
+                            .frame(width: 15, height: 15)
+                            .foregroundColor(Color.custom(.taskCompleteGreen))
+                        
+                        
+                        Rectangle()
+                            .frame(width: 15, height: 15)
+                            .foregroundColor(Color.custom(.taskViewYellow))
+                    }
+                    
+                }
+                .padding(.vertical, 6)
+            }
+        }
+    }
 
 private func format(_ value: Int) -> String {
         let f = NumberFormatter()

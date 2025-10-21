@@ -1,84 +1,133 @@
 
-
 import Foundation
 import Combine
 
+enum SortOption: String, CaseIterable, Identifiable {
+    case nameAZ = "По именам А-Я"
+    case nameZA = "По именам Я-А"
+//    case addressAZ = "По адресам А-Я"
+//    case addressZA = "По адресам Я-А"
+    case moreCompleted = "Больше выполненных заданий"
+    case lessCompleted = "Меньше выполненных заданий"
+    
+    var id: String { rawValue }
+    
+    var sortKey: String? {
+        switch self {
+        case .nameAZ, .nameZA: return "firstName"
+//        case .addressAZ, .addressZA: return "address.street.name"
+        case .moreCompleted, .lessCompleted: return nil
+        }
+    }
+    var ascendingForSortKey: Bool {
+        switch self {
+        case .nameAZ/*, .addressAZ*/: return true
+        case .nameZA/*, .addressZA*/: return false
+        case .moreCompleted: return false
+        case .lessCompleted: return true
+        }
+    }
+}
+
+// Временно исключить сортировку по адресам, пока нет сетевого эндпоинта, так как сортировать to-many объекты из базы данных невоможно
 
 final class ClientsStatViewModel: ObservableObject {
     private let store = ClientStore()
     
     @Published var allClientsCount: Int = 0                  // всего клиентов в базе
-       @Published var yearActiveClientsCount: Int = 0           // уникальные клиенты с задачами за выбранный год
-       @Published var monthActiveClientsCount: Int = 0          // уникальные клиенты с задачами за выбранный месяц
-       @Published var monthlyActiveCounts: [Int] = Array(repeating: 0, count: 12) // по месяцам выбранного года
-
+    //       @Published var yearActiveClientsCount: Int = 0           // уникальные клиенты с задачами за выбранный год
+    
+    @Published var monthlyActiveCounts: [Int] = Array(repeating: 0, count: 12) // по месяцам выбранного года
+    
     
     func loadAllClientsCount(debug: Bool = false) {
         allClientsCount = store.totalClientsCount(debug: debug)
         print("loaded all clients count: \(allClientsCount)")
     }
     
-    func loadYearActiveClients(year: Int,
-                                  onlyCompleted: Bool = true,
-                                  dateKey: String = "scheduledAt",
-                                  debug: Bool = false) {
-        print("Loading Year Client stats")
-           yearActiveClientsCount = store.distinctClientsCount(year: year,
-                                                               month: nil,
-                                                               onlyCompleted: onlyCompleted,
-                                                               dateKey: dateKey,
-                                                               debug: debug)
-       }
+
     
-    func loadMonthActiveClients(year: Int,
-                                month: Int,
-                                onlyCompleted: Bool = true,
-                                dateKey: String = "scheduledAt",
-                                debug: Bool = false) {
-       
-        monthActiveClientsCount = store.distinctClientsCount(year: year,
-                                                             month: month,
-                                                             onlyCompleted: onlyCompleted,
-                                                             dateKey: dateKey,
-                                                             debug: debug)
-    }
     
     func loadMonthlyActive(year: Int,
                            onlyCompleted: Bool = false,
                            dateKey: String = "scheduledAt",
                            debug: Bool = false) {
-        monthlyActiveCounts = (1...12).map { m in
-            store.distinctClientsCount(year: year,
-                                       month: m,
-                                       onlyCompleted: onlyCompleted,
-                                       dateKey: dateKey,
-                                       debug: debug)
-        }
+        monthlyActiveCounts =
+        store.newClientsByMonth(year: year, onlyCompleted: true)
     }
-    
 }
+
+
 
 
 final class ClientsListViewModel: ObservableObject {
     @Published var clients: [Client] = []
     @Published var selectedClient: Client?
+    @Published var client: Client?
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     @Published var phone: String = ""
-    
-    @Published var client: Client?
-    
+    @Published var searchText: String = ""
     @Published var total: Int = 0
-  
+    
+    private var cancellables = Set<AnyCancellable>()
 
     private let store = ClientStore()
-
+    
     init() {
         loadClients()
+        $searchText
+            .debounce(for: .milliseconds(250), scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.applySearchUsingDB()
+            }
+            .store(in: &cancellables)
     }
     
-  
+    
+    func applySearchUsingDB(debug: Bool = false) {
+        let q = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !q.isEmpty else {
+            clients = store.fetchClients()
+            return
+        }
 
+        let t = q as NSString
+        // Build a predicate that matches firstName/lastName/phone OR any related address.street.name
+        let namePred = NSPredicate(format: "firstName CONTAINS[cd] %@", t)
+        let lastPred = NSPredicate(format: "lastName CONTAINS[cd] %@", t)
+        let phonePred = NSPredicate(format: "phone CONTAINS[cd] %@", t)
+        // Use SUBQUERY to avoid unsupported SQL generation for multi-hop ANY predicates
+        let addressSubquery = NSPredicate(format: "SUBQUERY(address, $a, $a.street.name CONTAINS[cd] %@).@count > 0", t)
+        let orPredicate = NSCompoundPredicate(orPredicateWithSubpredicates: [namePred, lastPred, phonePred, addressSubquery])
+
+        if debug { print("[ClientsListViewModel] applySearchUsingDB predicate:", orPredicate.predicateFormat) }
+        clients = store.fetchClients(matching: orPredicate)
+    }
+    
+    
+    func loadSorted(sortingString: String, ascending: Bool) {
+        clients = store.fetchClients(sortedBy: sortingString, ascending: ascending )
+    } //метод для сортировки по именам
+    
+    func loadSortedByCount(ascending: Bool) {
+        clients = store.fetchClientsSortedByCompletedCountDB(descending: ascending, limit: nil, debug: true)
+    } //метод для сортировки по количеству выполненных заданий
+    
+    func applySort(option: SortOption) {
+        if let key = option.sortKey {
+            loadSorted(sortingString: key, ascending: option.ascendingForSortKey)
+        } else {
+            switch option {
+            case .moreCompleted: loadSortedByCount( ascending: true)
+            case .lessCompleted: loadSortedByCount( ascending: false)
+            default: break
+            }
+        }
+    }
+    
     func pickClient(_ client: Client) {
         selectedClient = client
     }
@@ -86,7 +135,7 @@ final class ClientsListViewModel: ObservableObject {
     func loadClients() {
         clients = store.fetchClients()
     }
-
+    
     func delete(_ client: Client) {
         store.deleteClient(client)
         loadClients()
@@ -120,7 +169,7 @@ final class CreateClientViewModel: ObservableObject {
     func createClient() {
         // 1) Улица
         let street = streetStore.createOrFetchStreet(name: streetName.trimmingCharacters(in: .whitespacesAndNewlines))
-
+        
         // 2) Клиент (пока без адресов)
         let client = store.createClient(
             firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -128,7 +177,7 @@ final class CreateClientViewModel: ObservableObject {
             addresses: [],
             phone: phoneDigits.isEmpty ? "" : "+7" + phoneDigits
         )
-
+        
         // 3) Адрес, привязанный к клиенту
         let address = addressStore.createOrFetchAddress(
             house: building.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -142,7 +191,7 @@ final class CreateClientViewModel: ObservableObject {
             roomType: roomType,
             entranceType: entranceType
         )
-
+        
         // 4) Обновляем клиента, чтобы адрес точно оказался в его наборе адресов и сохранился комментарий
         store.updateClient(
             client,

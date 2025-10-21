@@ -11,7 +11,7 @@ struct IncomeRow: View {
 
     private var computedAmount: Decimal {
         if monthIndex == 0 {
-            return viewModel.yearIncome
+            return viewModel.monthlyIncome.reduce(0, +)
         }
         let idx = monthIndex - 1
         guard idx >= 0 && idx < viewModel.monthlyIncome.count else { return 0 }

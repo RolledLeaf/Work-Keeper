@@ -14,7 +14,7 @@ struct ClientsStatRow: View {
     
     private var computedAmount: Int {
         if monthIndex == 0 {
-            return viewModel.yearActiveClientsCount
+            return viewModel.monthlyActiveCounts.reduce(0, +)
         }
         let idx = monthIndex - 1
         guard idx >= 0 && idx < viewModel.monthlyActiveCounts.count else { return 0 }
