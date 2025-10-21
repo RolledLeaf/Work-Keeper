@@ -60,7 +60,7 @@ struct CompleteTaskView: View {
             .cornerRadius(10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
             )
             .padding(.horizontal, 20)
                 
@@ -96,7 +96,7 @@ struct CompleteTaskView: View {
                         }
                         .background(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                 .fill(Color.white)
                         )
                 }
@@ -129,7 +129,7 @@ struct CompleteTaskView: View {
                         }
                         .background(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                 .fill(Color.white)
                         )
                 }
@@ -161,7 +161,7 @@ struct CompleteTaskView: View {
                         }
                         .background(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.custom(.strokeGray) ?? .gray, lineWidth: 0.5)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                 .fill(Color.white)
                         )
                 }
