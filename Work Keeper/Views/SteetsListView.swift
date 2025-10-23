@@ -7,6 +7,15 @@ struct StreetsListView: View {
     @Environment(\.dismiss)
     private var dismiss
     
+    func loadUserDefaults() {
+        if userDefaults.bool(forKey: UserDefaultKeys.streetsSorting.rawValue) {
+            sortToggle = true
+            viewModel.loadSortedStreets(ascending: false)
+        } else {
+            viewModel.loadSortedStreets(ascending: true)
+        }
+    }
+    
     var body: some View {
         Spacer()
             .frame(height: 20)
@@ -20,9 +29,11 @@ struct StreetsListView: View {
                     case true:
                         sortToggle = false
                         viewModel.loadSortedStreets(ascending: true)
+                        userDefaults.removeObject(forKey: UserDefaultKeys.streetsSorting.rawValue)
                     case false:
                         sortToggle = true
                         viewModel.loadSortedStreets(ascending: false)
+                        userDefaults.set(true, forKey: UserDefaultKeys.streetsSorting.rawValue)
                     }
                    
                 }) {
@@ -120,6 +131,7 @@ struct StreetsListView: View {
         }
         .onAppear {
             viewModel.loadStreets()
+            loadUserDefaults()
         }
         
         .onTapGesture {
