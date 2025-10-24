@@ -101,9 +101,12 @@ struct ClientsListView: View {
     @State private var showNewClientView = false
     @State private var showDeleteAlert = false
     @State private var showSortOrderMenu = false
+    @State private var showEditClientView = false
     @StateObject private var viewModel = ClientsListViewModel()
+
     @State private var selectedClient: Client?
     @State private var clientToDelete: Client?
+    @State private var clientToEdit: Client?
     @State private var client: Client?
     
     
@@ -112,82 +115,82 @@ struct ClientsListView: View {
     var body: some View {
         
         NavigationStack {
-        ZStack {
-        
-            Color(.white).ignoresSafeArea()
-                .onTapGesture {
-                    hideKeyboard()
-                }
-            
-            VStack {
-                HStack {
-                    Button(action: {
-                        showSortOrderMenu = true
-                    }) {
-                        Image("sortAZ")
-                            .resizable()
-                            .frame(width: 31, height: 22)
-                    }
-                    .padding(.leading, 3)
-                    
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        showNewClientView = true
-                    }) {
-                        Image("addClientButton")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                    }
-                    .padding(.trailing, 5)
-                }
+            ZStack {
                 
-                HStack {
-                TextField("Поиск клиента", text: $viewModel.searchText)
-                    .padding(9)
-                    .padding(.leading, 25)
+                Color(.white).ignoresSafeArea()
                     .onTapGesture {
                         hideKeyboard()
                     }
-                    .background(
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(.gray)
-                                .padding(.leading, 10)
-                            Spacer()
-                        })
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.custom(.searchFieldGray))
-                    )
-                    .padding(.leading, 1)
-                    .padding(.trailing, 1)
-                if !viewModel.searchText.isEmpty {
-                    Button(action:  {
-                        viewModel.searchText = ""
-                    }) {
-                        Image(systemName: "xmark.circle")
-                            .resizable()
-                            .frame(width: 25, height: 25)
+                
+                VStack {
+                    HStack {
+                        Button(action: {
+                            showSortOrderMenu = true
+                        }) {
+                            Image("sortAZ")
+                                .resizable()
+                                .frame(width: 31, height: 22)
+                        }
+                        .padding(.leading, 3)
+                        
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showNewClientView = true
+                        }) {
+                            Image("addClientButton")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                        }
+                        .padding(.trailing, 5)
                     }
                     
-                }
-            }
-                
-                
-                if viewModel.clients.isEmpty {
+                    HStack {
+                        TextField("Поиск клиента", text: $viewModel.searchText)
+                            .padding(9)
+                            .padding(.leading, 25)
+                            .onTapGesture {
+                                hideKeyboard()
+                            }
+                            .background(
+                                HStack {
+                                    Image(systemName: "magnifyingglass")
+                                        .foregroundColor(.gray)
+                                        .padding(.leading, 10)
+                                    Spacer()
+                                })
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.custom(.searchFieldGray))
+                            )
+                            .padding(.leading, 1)
+                            .padding(.trailing, 1)
+                        if !viewModel.searchText.isEmpty {
+                            Button(action:  {
+                                viewModel.searchText = ""
+                            }) {
+                                Image(systemName: "xmark.circle")
+                                    .resizable()
+                                    .frame(width: 25, height: 25)
+                            }
+                            
+                        }
+                    }
                     
-                    Spacer()
-                        .frame(height: 165)
                     
-                    Image("noClientsPlaceholder")
-                        .resizable()
-                        .frame(width: 276, height: 268)
-                    
-                    Text("Клиентов пока нет")
-                } else {
-                   
+                    if viewModel.clients.isEmpty {
+                        
+                        Spacer()
+                            .frame(height: 165)
+                        
+                        Image("noClientsPlaceholder")
+                            .resizable()
+                            .frame(width: 276, height: 268)
+                        
+                        Text("Клиентов пока нет")
+                    } else {
+                        
                         List(viewModel.clients) { client in
                             ClientRow(client: client, viewModel: viewModel)
                                 .contentShape(Rectangle())
@@ -203,9 +206,10 @@ struct ClientsListView: View {
                                         Text("Удалить")
                                     }
                                     .tint(Color.custom(.deleteButtonRed))
-
+                                    
                                     Button(action: {
-                                        
+                                        clientToEdit = client
+                                        showEditClientView = true
                                     }) {
                                         Image("edit")
                                         Text("Редактировать")
@@ -236,6 +240,13 @@ struct ClientsListView: View {
         }) {
             NewClientView()
         }
+        
+        .sheet(item: $clientToEdit, onDismiss: {
+            viewModel.loadUserDefaultsAndSort()
+        }) { client in
+            EditClientView(viewModel: EditClientViewModel(client: client))
+        }
+        
         .sheet(isPresented: $showSortOrderMenu) {
             SortPopoverView(selection: $viewModel.sortSelection) { chosen in
                 viewModel.applySort(option: chosen)

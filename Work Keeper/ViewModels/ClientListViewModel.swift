@@ -220,7 +220,7 @@ final class CreateClientViewModel: ObservableObject {
     private let addressStore = AddressStore()
     
     func canCreateClient() -> Bool {
-        !firstName.isEmpty && !phoneDigits.isEmpty 
+        !firstName.isEmpty && !phoneDigits.isEmpty
     }
     
     func createClient() {
@@ -257,5 +257,127 @@ final class CreateClientViewModel: ObservableObject {
             addresses: [address],
             phone: client.phone ?? ""
         )
+    }
+}
+
+final class EditClientViewModel: ObservableObject {
+    @Published var firstName: String
+    @Published var lastName: String
+    @Published var streetName: String
+    @Published var house: String
+    @Published var apartment: String
+    @Published var entrance: String
+    @Published var floor: String
+    @Published var isPrivateHouse: Bool
+    @Published var roomType: String
+    @Published var entranceType: String
+    @Published var phoneNumber: String
+    @Published var phoneDigits: String = ""
+    
+    let roomTypes = ["кв.", "оф.", "каб."]
+    let entranceTypes = ["под.", "вход."]
+    
+    private let client: Client
+    private let store = ClientStore()
+    private let streetStore = StreetStore()
+    private let addressStore = AddressStore()
+    
+    init(client: Client) {
+        let rawPhone = client.phone ?? ""
+        let digitsAll = rawPhone.filter { $0.isNumber }
+        var nsn = digitsAll
+        if nsn.hasPrefix("7") { nsn.removeFirst() }     // убираем +7
+        if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
+        self.phoneDigits = nsn
+        self.phoneNumber = rawPhone // можно не использовать во View
+        
+        self.client = client
+        self.firstName = client.firstName ?? ""
+        self.lastName = client.lastName ?? ""
+        
+        
+        //Populate client info
+        self.firstName = client.firstName ?? ""
+        self.lastName = client.lastName ?? ""
+        self.phoneNumber = client.phone ?? ""
+        
+        
+        if let address = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
+            self.streetName = address.street?.name ?? ""
+            self.house = address.house ?? ""
+            self.apartment = address.apartment ?? ""
+            self.entrance = address.entrance ?? ""
+            self.floor = address.floor ?? ""
+            self.isPrivateHouse = address.isPrivateHouse
+            self.roomType = address.roomType ?? "кв."
+            self.entranceType = address.entranceType ?? "под."
+        } else {
+            self.streetName = ""
+            self.house = ""
+            self.apartment = ""
+            self.entrance = ""
+            self.floor = ""
+            self.isPrivateHouse = false
+            self.roomType =  ""
+            self.entranceType = ""
+            self.phoneNumber = ""
+        }
+    }
+    
+    func canUpdateClient() -> Bool {
+        !firstName.isEmpty && !phoneDigits.isEmpty
+    }
+    
+    func update() {
+        // normalize phone
+        let phoneValue = phoneDigits.isEmpty ? "" : "+7" + phoneDigits
+
+        // Update client basic fields
+        client.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        client.lastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
+        client.phone = phoneValue
+
+        // Prepare an array of addresses to persist (we will update existing primary address or create a new one)
+        var resultingAddresses: [Address] = []
+
+        if let existingPrimary = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
+            // Ensure street entity exists and assign
+            let streetObj = streetStore.createOrFetchStreet(name: streetName.trimmingCharacters(in: .whitespacesAndNewlines))
+            existingPrimary.street = streetObj
+
+            existingPrimary.house = house.trimmingCharacters(in: .whitespacesAndNewlines)
+            existingPrimary.apartment = apartment.trimmingCharacters(in: .whitespacesAndNewlines)
+            existingPrimary.entrance = entrance.trimmingCharacters(in: .whitespacesAndNewlines)
+            existingPrimary.floor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
+            existingPrimary.isPrivateHouse = isPrivateHouse
+            existingPrimary.entranceType = entranceType
+            existingPrimary.roomType = roomType
+
+            resultingAddresses = [existingPrimary]
+        } else {
+            // No primary address exists — create one and attach to client
+            let streetObj = streetStore.createOrFetchStreet(name: streetName.trimmingCharacters(in: .whitespacesAndNewlines))
+            let newAddress = addressStore.createOrFetchAddress(
+                house: buildingSafe(house),
+                apartment: apartment.trimmingCharacters(in: .whitespacesAndNewlines),
+                entrance: entrance.trimmingCharacters(in: .whitespacesAndNewlines),
+                floor: floor.trimmingCharacters(in: .whitespacesAndNewlines),
+                isPrivateHouse: isPrivateHouse,
+                street: streetObj,
+                client: client,
+                isPrimary: true,
+                roomType: roomType,
+                entranceType: entranceType
+            )
+            resultingAddresses = [newAddress]
+        }
+
+        // Persist changes using store.updateClient which will save context
+        store.updateClient(client, firstName: client.firstName ?? "", lastName: client.lastName, addresses: resultingAddresses, phone: client.phone ?? "")
+    }
+
+    // helper to avoid passing optional empty strings
+    private func buildingSafe(_ s: String) -> String {
+        return s.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
