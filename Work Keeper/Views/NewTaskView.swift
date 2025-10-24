@@ -23,7 +23,7 @@ struct NewTaskView: View {
     private let maxFloorCharacters: Int = 3
     
     @State private var phoneMasked: String = ""
-    @State private var previousPhoneMasked: String = "" // у тебя уже есть — оставь
+    @State private var previousPhoneMasked: String = ""
     
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var DescriptionCharactersTextOpacity: Double = 0
@@ -34,6 +34,9 @@ struct NewTaskView: View {
     @State private var streetTextFieldColor: CustomColor = .pureWhite
     @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
+   
+    
+    @State private var showNewTaskAlert = false
     
     
     
@@ -242,7 +245,7 @@ struct NewTaskView: View {
                     
                     //address section
                     HStack {
-                        Text("Адрес")
+                        Text("Улица")
                             .padding(.leading, 21)
                             .foregroundColor(Color.custom(.textTitleGray))
                             .font(.system(size: 19, weight: .regular, design: .default))
@@ -593,11 +596,7 @@ struct NewTaskView: View {
                     
                     Spacer()
                         .frame(height: 20)
-                    
-                    
-                    
-                    
-                    
+      
                     HStack {
                         Button(action: {
                             dismiss()
@@ -617,13 +616,19 @@ struct NewTaskView: View {
                         )
                         
                         Button(action: {
-                            viewModel.saveTask()
-                            dismiss()
+                            if  viewModel.saveTask() {
+                                
+                                    dismiss()
+                        } else {
                             
+                            showNewTaskAlert = true
+                            
+                        }
+                    
                         }) {
                             ZStack {
                                 Rectangle()
-                                    .tint(Color.custom(.inactiveButtonGray))
+                                    .tint(Color.custom(viewModel.canSaveTask() ? .highlightBlue : .inactiveButtonGray))
                                 Text("Cоздать")
                                     .tint(Color.white)
                             }
@@ -642,6 +647,12 @@ struct NewTaskView: View {
             .onTapGesture {
                 hideKeyboard()
             }
+        }
+        .alert(isPresented: $showNewTaskAlert) {
+            if viewModel.isRemote == false {
+                Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя, номер телефона, название улицы и номер дома "), dismissButton: .default(Text("OK"))) } else {
+                    Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя и номер телефона"), dismissButton: .default(Text("OK")))
+                }
         }
         
         .onAppear {

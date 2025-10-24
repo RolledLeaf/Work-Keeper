@@ -201,7 +201,7 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var isPrivateHouse: Bool = false
     @Published var firstName: String = ""
     @Published var lastName: String = ""
-    // Храним только цифры (10-значный российский NSN)
+  
     @Published var phoneDigits: String = ""
     @Published var comment: String = ""
     @Published var description: String = ""
@@ -242,8 +242,26 @@ final class CreateTaskViewModel: ObservableObject {
     private let taskStore = TaskStore()
     
   
+    func canSaveTask() -> Bool {
+        if isRemote == false {
+            !streetName.isBlank && !firstName.isBlank && !phoneDigits.isBlank && !house.isBlank }
+            else {
+                 !firstName.isBlank && !phoneDigits.isBlank
+            }
+        
+    }
+    
+    func updateCreateButtonColor(color: CustomColor) -> CustomColor {
+        canSaveTask() ? .highlightBlue
+        : .inactiveFiledGray
+    }
 
-    func saveTask() {
+    func saveTask() -> Bool {
+        guard canSaveTask() else {
+            print("❌ Не все поля заполнены ")
+            return false
+        }
+        
         let street = streetStore.createOrFetchStreet(name: streetName)
 
         let normalizedPhone = phoneDigits.isEmpty ? nil : "+7" + phoneDigits
@@ -296,6 +314,7 @@ final class CreateTaskViewModel: ObservableObject {
          Тип Входа: \(entranceType ?? "")
          🧾 Статус: \(status.rawValue)
          """)
+        return true
     }
     
     private func maskRU(fromDigits s: String) -> String {

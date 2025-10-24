@@ -241,8 +241,7 @@ struct ClientsListView: View {
                 viewModel.applySort(option: chosen)
                        }
                    }
-               
-        
+
         .onAppear {
             viewModel.loadUserDefaultsAndSort()
             
