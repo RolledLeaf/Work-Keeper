@@ -29,7 +29,6 @@ struct StreetRow: View {
                     .padding(.leading, 15)
                     .foregroundColor(.custom(.separatorLineGray))
             }
-            
         }
         
         .listRowInsets(EdgeInsets())

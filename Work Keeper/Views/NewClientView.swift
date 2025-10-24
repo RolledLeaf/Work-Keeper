@@ -22,7 +22,7 @@ struct NewClientView: View {
     @State private var previousPhoneMasked: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
  
-    
+    @State private var showCreateClientAlert = false
     @State private var showStreetsView = false
     @FocusState private var focusedField: Field?
     
@@ -114,7 +114,7 @@ struct NewClientView: View {
                         .frame(height: 35)
                     
                     HStack {
-                        Text("Адрес")
+                        Text("Улица")
                             .padding(.leading, 21)
                             .foregroundColor(Color.custom(.textTitleGray))
                             .font(.system(size: 19, weight: .regular, design: .default))
@@ -398,12 +398,16 @@ struct NewClientView: View {
                         )
                         
                         Button(action: {
-                            viewModel.createClient()
-                            dismiss()
+                            if viewModel.canCreateClient() {
+                                viewModel.createClient()
+                                dismiss()
+                            } else {
+                                showCreateClientAlert = true
+                            }
                         }) {
                             ZStack {
                                 Rectangle()
-                                    .tint(Color.custom(.inactiveButtonGray))
+                                    .tint(Color.custom(viewModel.canCreateClient() ? .highlightBlue : .inactiveButtonGray))
                                 Text("Cоздать")
                                     .tint(Color.white)
                             }
@@ -434,6 +438,9 @@ struct NewClientView: View {
          StreetsListView(viewModel: streetListViewModel)
      }
 
+     .alert(isPresented: $showCreateClientAlert) {
+         Alert(title: Text("Ошибка"), message: Text("Заполните Имя и телефон"), dismissButton: .default(Text("OK")))
+     }
         .onAppear {
             phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
             previousPhoneMasked = phoneMasked

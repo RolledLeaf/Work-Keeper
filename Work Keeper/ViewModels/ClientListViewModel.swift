@@ -199,7 +199,7 @@ final class CreateClientViewModel: ObservableObject {
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     
-    @Published var phoneDigits: String = ""  // храним только 10 цифр РФ
+    @Published var phoneDigits: String = ""
     @Published var addresses: [Address] = []
     @Published var apartment: String = ""
     @Published var comment: String = ""
@@ -218,6 +218,10 @@ final class CreateClientViewModel: ObservableObject {
     private let store = ClientStore()
     private let streetStore = StreetStore()
     private let addressStore = AddressStore()
+    
+    func canCreateClient() -> Bool {
+        !firstName.isEmpty && !phoneDigits.isEmpty 
+    }
     
     func createClient() {
         // 1) Улица
