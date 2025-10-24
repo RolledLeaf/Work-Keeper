@@ -7,7 +7,7 @@ struct SortPopoverView: View {
     @Environment(\.dismiss) private var dismiss
     
     var onApply: ((SortOption) -> Void)?
-    
+
     var body: some View {
           NavigationStack {
               VStack(spacing: 16) {
@@ -78,7 +78,7 @@ struct SortPopoverView: View {
       }
   }
 
-  // small radio circle view
+
   struct RadioCircle: View {
       let isSelected: Bool
       var body: some View {
@@ -105,7 +105,9 @@ struct ClientsListView: View {
     @State private var selectedClient: Client?
     @State private var clientToDelete: Client?
     @State private var client: Client?
-    @State private var sortSelection: SortOption = .nameAZ
+    
+    
+
     
     var body: some View {
         
@@ -229,21 +231,21 @@ struct ClientsListView: View {
             .padding(.leading, 20)
         }
         .sheet(isPresented: $showNewClientView, onDismiss: {
-            viewModel.loadClients()
+            viewModel.loadUserDefaultsAndSort()
             print("clients list reloaded (onDismiss)")
         }) {
             NewClientView()
         }
         .sheet(isPresented: $showSortOrderMenu) {
-            SortPopoverView(selection: $sortSelection) { chosen in
+            SortPopoverView(selection: $viewModel.sortSelection) { chosen in
                 viewModel.applySort(option: chosen)
                        }
                    }
                
         
         .onAppear {
-            viewModel.loadClients()
-            print("clients list reloaded")
+            viewModel.loadUserDefaultsAndSort()
+            
         }
         .alert("Вы уверены?",
                isPresented: $showDeleteAlert,

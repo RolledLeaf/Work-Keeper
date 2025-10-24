@@ -68,6 +68,7 @@ func createOrFetchClient(firstName: String,
         
         do {
             return try context.fetch(request)
+       
         } catch {
             print("❌ Error fetching clients: \(error)")
             return []
@@ -75,6 +76,7 @@ func createOrFetchClient(firstName: String,
     }
     
     func fetchClients(sortedBy keypath: String, ascending: Bool) -> [Client] {
+        print("Fetching and sorting clients...")
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: keypath, ascending: ascending)]
         
@@ -90,6 +92,7 @@ func createOrFetchClient(firstName: String,
                       sortDescriptors: [NSSortDescriptor] = [NSSortDescriptor(keyPath: \Client.firstName, ascending: true)],
                       limit: Int? = nil,
                       debug: Bool = false) -> [Client] {
+        print("Fetching clients with no predicate...")
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = sortDescriptors
         request.predicate = predicate

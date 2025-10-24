@@ -45,6 +45,9 @@ enum PaymentType: String, Codable {
 
 let userDefaults = UserDefaults.standard
 
-enum UserDefaultKeys: String, CaseIterable {
+enum UserDefaultsKeys: String, CaseIterable {
     case streetsSorting = "streetsSorting"
+    
+    case clientsSorting = "clientsSorting"
+  
 }

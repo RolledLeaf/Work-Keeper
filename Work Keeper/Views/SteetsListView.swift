@@ -7,8 +7,8 @@ struct StreetsListView: View {
     @Environment(\.dismiss)
     private var dismiss
     
-    func loadUserDefaults() {
-        if userDefaults.bool(forKey: UserDefaultKeys.streetsSorting.rawValue) {
+    private func loadUserDefaults() {
+        if userDefaults.bool(forKey: UserDefaultsKeys.streetsSorting.rawValue) {
             sortToggle = true
             viewModel.loadSortedStreets(ascending: false)
         } else {
@@ -29,11 +29,11 @@ struct StreetsListView: View {
                     case true:
                         sortToggle = false
                         viewModel.loadSortedStreets(ascending: true)
-                        userDefaults.removeObject(forKey: UserDefaultKeys.streetsSorting.rawValue)
+                        userDefaults.removeObject(forKey: UserDefaultsKeys.streetsSorting.rawValue)
                     case false:
                         sortToggle = true
                         viewModel.loadSortedStreets(ascending: false)
-                        userDefaults.set(true, forKey: UserDefaultKeys.streetsSorting.rawValue)
+                        userDefaults.set(true, forKey: UserDefaultsKeys.streetsSorting.rawValue)
                     }
                    
                 }) {

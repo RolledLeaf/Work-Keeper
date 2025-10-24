@@ -62,5 +62,7 @@ final class StreetListViewModel: ObservableObject {
         store.deleteStreet(street: street)
         loadStreets()
     }
+    
+    
 }
 

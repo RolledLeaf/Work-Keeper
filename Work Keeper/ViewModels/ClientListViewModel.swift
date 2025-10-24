@@ -69,13 +69,14 @@ final class ClientsListViewModel: ObservableObject {
     @Published var phone: String = ""
     @Published var searchText: String = ""
     @Published var total: Int = 0
+    @Published var sortSelection: SortOption = .lessCompleted
     
     private var cancellables = Set<AnyCancellable>()
 
     private let store = ClientStore()
     
     init() {
-        loadClients()
+ 
         $searchText
             .debounce(for: .milliseconds(250), scheduler: RunLoop.main)
             .removeDuplicates()
@@ -88,9 +89,10 @@ final class ClientsListViewModel: ObservableObject {
     
     
     func applySearchUsingDB(debug: Bool = false) {
-        let q = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !q.isEmpty else {
-            clients = store.fetchClients()
+        print(" Applying search: \(searchText)")
+        let q = searchText
+        guard !q.isBlank else {
+            loadUserDefaultsAndSort()
             return
         }
 
@@ -110,19 +112,70 @@ final class ClientsListViewModel: ObservableObject {
     
     func loadSorted(sortingString: String, ascending: Bool) {
         clients = store.fetchClients(sortedBy: sortingString, ascending: ascending )
-    } //метод для сортировки по именам
+    }
     
     func loadSortedByCount(ascending: Bool) {
         clients = store.fetchClientsSortedByCompletedCountDB(descending: ascending, limit: nil, debug: true)
-    } //метод для сортировки по количеству выполненных заданий
+    }
     
+    func saveUserDefaults(option: SortOption, key: String) {
+        userDefaults.set(option.rawValue, forKey: key)
+        print("Clients \(option) sorting is saved")
+    }
+    
+     func loadUserDefaultsAndSort() {
+        if let savedSorting = userDefaults.string(forKey: UserDefaultsKeys.clientsSorting.rawValue),
+           let sortType = SortOption(rawValue: savedSorting) {
+            
+            sortSelection = sortType
+            
+            switch sortSelection {
+            case .nameAZ:
+                loadClients()
+                print("UserDefaults loaded: Clients sorted by NameAZ")
+            case .nameZA:
+                loadSorted(sortingString: sortType.sortKey ?? "", ascending: false)
+                print("UserDefaults loaded: Clients sorted by NameZA")
+            case .moreCompleted:
+                loadSortedByCount(ascending: true)
+                print("UserDefaults loaded: Clients sorted by moreCompleted")
+            case .lessCompleted:
+                loadSortedByCount(ascending: false)
+                print("UserDefaults loaded: Clients sorted by lessCompleted")
+            }
+        }
+    
+    }
+    
+    func loadUserDefaultsAndApplySorting(sortingOption: SortOption) {
+       if let savedSorting = userDefaults.string(forKey: UserDefaultsKeys.clientsSorting.rawValue),
+          let sortingOption = SortOption(rawValue: savedSorting) {
+   
+           switch sortingOption {
+           case .nameAZ:
+               clients = store.fetchClients(sortedBy: "name", ascending: true)
+           case .nameZA:
+               clients = store.fetchClients(sortedBy: "name", ascending: false)
+           case .moreCompleted:
+               loadSortedByCount( ascending: true)
+           case .lessCompleted:
+               loadSortedByCount( ascending: false)
+           }
+       }
+    }
+    
+ 
     func applySort(option: SortOption) {
         if let key = option.sortKey {
             loadSorted(sortingString: key, ascending: option.ascendingForSortKey)
+            saveUserDefaults(option: option, key: UserDefaultsKeys.clientsSorting.rawValue)
+            
         } else {
             switch option {
             case .moreCompleted: loadSortedByCount( ascending: true)
+                saveUserDefaults(option: option, key: UserDefaultsKeys.clientsSorting.rawValue)
             case .lessCompleted: loadSortedByCount( ascending: false)
+                saveUserDefaults(option: option, key: UserDefaultsKeys.clientsSorting.rawValue)
             default: break
             }
         }
