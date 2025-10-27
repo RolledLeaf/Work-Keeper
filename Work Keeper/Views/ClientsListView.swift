@@ -181,14 +181,17 @@ struct ClientsListView: View {
                     
                     if viewModel.clients.isEmpty {
                         
+                        VStack {
+                            
+                            Image("noClientsPlaceholder")
+                                .resizable()
+                                .frame(width: 276, height: 268)
+                            
+                            Text("Клиентов пока нет")
+                        }
+                        .padding(.top, 50)
+                        
                         Spacer()
-                            .frame(height: 165)
-                        
-                        Image("noClientsPlaceholder")
-                            .resizable()
-                            .frame(width: 276, height: 268)
-                        
-                        Text("Клиентов пока нет")
                     } else {
                         
                         List(viewModel.clients) { client in

@@ -414,7 +414,7 @@ struct EditClientView: View {
                             ZStack {
                                 Rectangle()
                                     .tint(Color.custom(viewModel.canUpdateClient() ? .highlightBlue : .inactiveButtonGray))
-                                Text("Обновить")
+                                Text("Сохранить")
                                     .tint(Color.white)
                             }
                         }

@@ -18,6 +18,17 @@ struct AddStreetView: View {
         
         VStack {
             HStack {
+                Button(action: {
+                        dismiss()
+                }) {
+                    
+                    Text("Отмена")
+                        .font(.custom(SFPro.regular.rawValue, size: 15))
+                }
+                .padding(.top, 20)
+                .padding(.leading, 15)
+                .tint(.black)
+                
                 Spacer()
             Text("Новая улица")
                 .font(.custom(SFPro.bold.rawValue, size: 20))
@@ -47,7 +58,6 @@ struct AddStreetView: View {
                                     saveButtomOpacity = 0
                                     }
                             }
-                            
                     
                 }
                 .padding(.top, 20)
@@ -55,30 +65,43 @@ struct AddStreetView: View {
             Spacer()
                 .frame(height: 38)
             
-            TextField("Введите название улицы", text: $streetName)
-                .font(.system(size: 24, weight: .medium, design: .default))
-                .onSubmit {
-                    hideKeyboard()
-                }
-                .submitLabel(.done)
-                .padding(.leading, 40)
-                .padding(.trailing, 20)
-                .frame(height: 75)
-                .onChange(of: streetName) { newValue in
-                    if newValue.count > maxStreetCharactersCount {
-                        streetName = String(newValue.prefix(maxStreetCharactersCount))
+            HStack {
+                TextField("Введите название улицы", text: $streetName)
+                    .font(.system(size: 24, weight: .medium, design: .default))
+                    .onSubmit {
+                        hideKeyboard()
                     }
-                    if streetName.count >= maxStreetCharactersCount {
-                        maxStreetCharactersTextOpacity = 1 } else {
-                            maxStreetCharactersTextOpacity = 0
+                    .submitLabel(.done)
+                    .padding(.leading, 40)
+                    .padding(.trailing, 20)
+                    .frame(height: 75)
+                    .onChange(of: streetName) { newValue in
+                        if newValue.count > maxStreetCharactersCount {
+                            streetName = String(newValue.prefix(maxStreetCharactersCount))
                         }
-                
+                        if streetName.count >= maxStreetCharactersCount {
+                            maxStreetCharactersTextOpacity = 1 } else {
+                                maxStreetCharactersTextOpacity = 0
+                            }
+                        
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.custom(.searchFieldGray))
+                            .padding(.horizontal, 15)
+                    )
+                if !streetName.isEmpty {
+                    Button(action:  {
+                        streetName = ""
+                    }) {
+                        Image(systemName: "xmark.circle")
+                            .resizable()
+                            .frame(width: 35, height: 35)
+                            .offset(x: -10)
+                    }
+                    
                 }
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.custom(.searchFieldGray) ?? .searchFieldGray)
-                        .padding(.horizontal, 15)
-                )
+            }
             
             Text("максимум символов \(maxStreetCharactersCount)")
                 .font(.system(size: 12, weight: .medium))

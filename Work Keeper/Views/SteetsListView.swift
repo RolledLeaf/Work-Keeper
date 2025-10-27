@@ -17,10 +17,27 @@ struct StreetsListView: View {
     }
     
     var body: some View {
-        Spacer()
-            .frame(height: 20)
+     
         VStack {
-            Text("Адрес")
+            HStack {
+                Button(action: {
+                    dismiss()
+                }) {
+                    
+                    Text("Отмена")
+                        .font(.custom(SFPro.regular.rawValue, size: 15))
+                }
+                .padding(.top, 20)
+                .padding(.leading, 15)
+                .tint(.black)
+                
+                Spacer()
+                Text("Список улиц")
+                    .font(.custom(SFPro.bold.rawValue, size: 20))
+                    .padding(.trailing, 30)
+                    .offset(y: 30)
+                Spacer()
+            }
            
             
             HStack {
@@ -55,6 +72,7 @@ struct StreetsListView: View {
                         .frame(width: 25, height: 25)
                 }
             }
+            .padding(.top, 20)
             .padding(.leading, 27)
             .padding(.trailing, 20)
             
@@ -97,17 +115,18 @@ struct StreetsListView: View {
             
             
             if viewModel.streets.isEmpty {
-               
+                Spacer()
+                    .frame(height: 40)
                 VStack {
-                    Spacer()
-                        .frame(height: 40)
+                  
                     Image("noAddressPlaceholder")
-                    Spacer()
-                        .frame(height: 51)
+                  
                     
                     Text("Адресов пока нет")
                         .font(.custom(SFPro.bold.rawValue, size: 30))
                 }
+            Spacer()
+                
             } else {
                 Spacer()
                     .frame(height: 40)
@@ -125,9 +144,9 @@ struct StreetsListView: View {
                 
                 .listStyle(PlainListStyle())
                 .padding(.horizontal, 10)
-                // убирает отступы List'а
+                Spacer()
             }
-            Spacer()
+           
         }
         .onAppear {
             viewModel.loadStreets()

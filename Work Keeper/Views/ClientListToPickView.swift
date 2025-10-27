@@ -17,38 +17,71 @@ struct ClientListToPickView: View {
                 }
             
             VStack {
-                Spacer()
-                    .frame(height: 10)
-                
-                TextField("Поиск клиента", text: $viewModel.searchText)
-                    .padding(9)
-                    .padding(.leading, 25)
-                    .onTapGesture {
-                        hideKeyboard()
+                HStack {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        
+                        Text("Отмена")
+                            .font(.custom(SFPro.regular.rawValue, size: 15))
                     }
-                    .background(
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                            .padding(.leading, 10)
-                        Spacer()
-                    })
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color.custom(.searchFieldGray))
-                    )
-                    .padding(.leading, 1)
-                    .padding(.trailing, 1)
-                if viewModel.clients.isEmpty {
+                    
+                   
+                    .tint(.black)
                     
                     Spacer()
-                        .frame(height: 165)
+                }
+                
+                Spacer()
+                    .frame(height: 30)
+                
+                HStack {
+                    TextField("Поиск клиента", text: $viewModel.searchText)
+                        .padding(9)
+                        .padding(.leading, 25)
+                        .onTapGesture {
+                            hideKeyboard()
+                        }
+                        .background(
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.gray)
+                                    .padding(.leading, 10)
+                                Spacer()
+                            })
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.custom(.searchFieldGray))
+                        )
+                        .padding(.leading, 1)
+                        .padding(.trailing, 1)
                     
-                    Image("noClientsPlaceholder")
-                        .resizable()
-                        .frame(width: 276, height: 268)
+                    if !viewModel.searchText.isEmpty {
+                        
+                        Button(action:  {
+                            viewModel.searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle")
+                                .resizable()
+                                .frame(width: 25, height: 25)
+                                .foregroundStyle(.black)
+                        }
+                    }
+                }
                     
-                    Text("Клиентов пока нет")
+                if viewModel.clients.isEmpty {
+                    
+                    VStack {
+                        
+                        Image("noClientsPlaceholder")
+                            .resizable()
+                            .frame(width: 276, height: 268)
+                        
+                        Text("Клиентов пока нет")
+                    }
+                    .padding(.top, 50)
+                        
+                        
                 } else {
                     List(viewModel.clients) { client in
                         ClientRow(client: client, viewModel: viewModel)

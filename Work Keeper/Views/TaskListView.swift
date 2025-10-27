@@ -225,19 +225,19 @@ struct TaskListView: View {
                  }
 
                 if viewModel.groupedTasksByDate.isEmpty {
-                    Spacer()
-                        .frame(height: 117)
-
-                    Image("noTasksPlaceholder")
-                        .imageScale(.large)
-                        .foregroundStyle(.tint)
-                        .frame(width: 266, height: 273)
-                        .padding(.leading, 65)
-
-                    Text("Заданий пока нет")
-                        .font(.custom(SFPro.regular.rawValue, size: 24))
-                        .fontWeight(.bold)
-                        .multilineTextAlignment(.center)
+                  
+                    VStack {
+                        Image("noTasksPlaceholder")
+                            .imageScale(.large)
+                            .foregroundStyle(.tint)
+                            .frame(width: 266, height: 273)
+                            .padding(.leading, 65)
+                        
+                        Text("Заданий пока нет")
+                            .font(.custom(SFPro.regular.rawValue, size: 24))
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+                    }
 
                     Spacer()
                 } else {
