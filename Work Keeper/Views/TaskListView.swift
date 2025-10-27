@@ -560,7 +560,7 @@ struct TaskListView: View {
                 listScrollPosition = today
             }
         }
-        .alert("Удалить задание?",
+        .alert("Вы уверены?",
                isPresented: $showDeleteAlert,
                presenting: taskToDelete
         ) { task in
@@ -569,7 +569,7 @@ struct TaskListView: View {
             }
             Button("Отмена", role: .cancel) { }
         } message: { task in
-            Text("Действие необратимо. Задание «\(task.taskDescription ?? "Без названия")» будет удалено навсегда.")
+            Text("Задание «\(task.taskDescription ?? "Без названия")» будет удалено безвозвратно.")
         }
     }
 }

@@ -98,8 +98,9 @@ struct ClientRow: View {
                     Spacer()
                 }
                 .padding(.trailing, 10)
+                .padding(.vertical, 7)
             }
-            .frame(height: 90)
+            .frame(height: 100)
             .frame(maxWidth: .infinity)
             
         }

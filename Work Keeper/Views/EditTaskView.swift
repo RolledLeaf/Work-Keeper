@@ -23,11 +23,12 @@ struct EditTaskView: View {
     @State private var phoneMasked: String = ""
     @State private var previousPhoneMasked: String = ""
     @State private var StreetCharactersTextOpacity: Double = 0
-    @State private var maxCharachtersWarningTextOpacity: Double = 0
-    @State private var maxCharachtersWarningCommentTextOpacity: Double = 0
+    @State private var maxCharactersWarningTextOpacity: Double = 0
+    @State private var maxCharactersWarningCommentTextOpacity: Double = 0
     @State private var streetChevronOpacity: Double = 1
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
+    @State private var showEditTaskAlert = false
     @State private var hideScrollContentBackground = false
     @State private var streetTextFieldColor: CustomColor = .pureWhite
     @State private var houseTextFieldColor: CustomColor = .pureWhite
@@ -98,8 +99,8 @@ struct EditTaskView: View {
                                 }
                                 
                                 if viewModel.descriptionText.count >= maxDescriptionCharactersCount {
-                                    maxCharachtersWarningTextOpacity = 1
-                                } else { maxCharachtersWarningTextOpacity = 0
+                                    maxCharactersWarningTextOpacity = 1
+                                } else { maxCharactersWarningTextOpacity = 0
                                     
                                 }
                                 
@@ -115,7 +116,7 @@ struct EditTaskView: View {
                     Text("максимум символов \(maxDescriptionCharactersCount)")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.red)
-                        .opacity(maxCharachtersWarningTextOpacity)
+                        .opacity(maxCharactersWarningTextOpacity)
                     
                     HStack {
                         Text("Комментарий")
@@ -143,8 +144,8 @@ struct EditTaskView: View {
                                 }
                                 
                                 if viewModel.comment.count >= maxCommentCharactersCount {
-                                    maxCharachtersWarningCommentTextOpacity = 1
-                                } else { maxCharachtersWarningCommentTextOpacity = 0
+                                    maxCharactersWarningCommentTextOpacity = 1
+                                } else { maxCharactersWarningCommentTextOpacity = 0
                                     
                                 }
                                 
@@ -160,7 +161,7 @@ struct EditTaskView: View {
                     Text("максимум символов \(maxCommentCharactersCount)")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.red)
-                        .opacity(maxCharachtersWarningCommentTextOpacity)
+                        .opacity(maxCharactersWarningCommentTextOpacity)
                     
                     Spacer()
                         .frame(height: 10)
@@ -300,7 +301,7 @@ struct EditTaskView: View {
                             .disabled(viewModel.shouldBlockRemote)
                             .onChange(of: viewModel.isRemote) { _, newValue in
                                 if newValue == true {
-                                    viewModel.remoteEdditingBlock = true
+                                    viewModel.remoteEditingBlock = true
                                     viewModel.privateHouseBlock = true
                                     viewModel.shouldBlockPrivate = true
                                     hideScrollContentBackground = true
@@ -310,7 +311,7 @@ struct EditTaskView: View {
                                     textFieldColor = CustomColor.inactiveFiledGray
                                 } else {
                                     streetChevronOpacity = 1
-                                    viewModel.remoteEdditingBlock = false
+                                    viewModel.remoteEditingBlock = false
                                     viewModel.privateHouseBlock = false
                                     viewModel.shouldBlockPrivate = false
                                     hideScrollContentBackground = false
@@ -332,7 +333,7 @@ struct EditTaskView: View {
                                 .lineLimit(1, reservesSpace: false)
                                 .minimumScaleFactor(0.5)
                                 .multilineTextAlignment(.leading)
-                                .disabled(viewModel.remoteEdditingBlock)
+                                .disabled(viewModel.remoteEditingBlock)
                                 .background(Color.custom(streetTextFieldColor))
                                 .scrollContentBackground(hideScrollContentBackground ? .hidden : .visible)
                             //.onChange(of: street) { oldValue, newValue in
@@ -391,7 +392,7 @@ struct EditTaskView: View {
                             TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.remoteEdditingBlock)
+                                .disabled(viewModel.remoteEditingBlock)
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -698,12 +699,17 @@ struct EditTaskView: View {
                         )
                         
                         Button(action: {
-                            viewModel.update()
-                            dismiss()
+                            if  viewModel.update() {
+                                
+                                    dismiss()
+                            } else {
+                                
+                                showEditTaskAlert = true
+                            }
                         }) {
                             ZStack {
                                 Rectangle()
-                                    .tint(Color.custom(.inactiveButtonGray))
+                                    .tint(Color.custom(viewModel.canSaveTask() ? .highlightBlue : .inactiveButtonGray))
                                 Text("Сохранить")
                                     .tint(Color.white)
                             }
@@ -722,6 +728,12 @@ struct EditTaskView: View {
             .onTapGesture {
                 hideKeyboard()
             }
+        }
+        .alert(isPresented: $showEditTaskAlert) {
+            if viewModel.isRemote == false {
+                Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя, номер телефона, название улицы и номер дома "), dismissButton: .default(Text("OK"))) } else {
+                    Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя и номер телефона"), dismissButton: .default(Text("OK")))
+                }
         }
        
         .sheet(isPresented: $showStreetsView, onDismiss: {
@@ -774,7 +786,7 @@ struct EditTaskView: View {
         }
         .onAppear {
             if viewModel.isRemote {
-                viewModel.remoteEdditingBlock = true
+                viewModel.remoteEditingBlock = true
                 viewModel.privateHouseBlock = true
                 viewModel.shouldBlockPrivate = true
                 hideScrollContentBackground = true
@@ -784,7 +796,7 @@ struct EditTaskView: View {
                 textFieldColor = CustomColor.inactiveFiledGray
             } else {
                 streetChevronOpacity = 1
-                viewModel.remoteEdditingBlock = false
+                viewModel.remoteEditingBlock = false
                 viewModel.privateHouseBlock = false
                 viewModel.shouldBlockPrivate = false
                 hideScrollContentBackground = false

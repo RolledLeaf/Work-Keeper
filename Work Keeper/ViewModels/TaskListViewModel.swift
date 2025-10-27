@@ -422,7 +422,7 @@ final class EditTaskViewModel: ObservableObject {
     @Published var floor: String
     @Published var isPrivateHouse: Bool
   
-    @Published var remoteEdditingBlock = false
+    @Published var remoteEditingBlock = false
     @Published var privateHouseBlock = false
     
     @Published var shouldBlockRemote = false
@@ -507,20 +507,33 @@ final class EditTaskViewModel: ObservableObject {
         }
     }
 
+    func canSaveTask() -> Bool {
+        if isRemote == false {
+            !streetName.isBlank && !firstName.isBlank && !phoneDigits.isBlank && !house.isBlank }
+            else {
+                 !firstName.isBlank && !phoneDigits.isBlank
+            }
+        
+    }
+    
     // MARK: - Public methods
     /// Apply changes and save to Core Data
-    func update() {
-        // Update client
-        guard let client = task.client else {
-            print("❌ Ошибка: у задачи отсутствует клиент")
-            return
+    func update() -> Bool  {
+        
+        guard canSaveTask(), let client = task.client else {
+            if task.client == nil {
+                print("❌ Ошибка, у задачи нет клиента")
+            } else {
+                print("❌ Ошибка, не все обязательные поля заполнены")
+            }
+            return false
         }
-
+        
         // Обновляем клиента и адрес, как и раньше
         client.firstName = firstName
         client.lastName = lastName
         client.phone = phoneDigits.isEmpty ? "" : "+7" + phoneDigits
-
+        
         if let address = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
             address.street?.name = streetName
             address.house = house
@@ -531,7 +544,7 @@ final class EditTaskViewModel: ObservableObject {
             address.entranceType = entranceType
             address.roomType = roomType
         }
-
+        
         // безопасный вызов updateTask
         store.updateTask(
             task,
@@ -546,7 +559,7 @@ final class EditTaskViewModel: ObservableObject {
             paymentType: paymentType ?? .none,
             cost: cost
         )
-        
+    
         print("""
          ✅ Задание успешно изменено:
          📆 Дата: \(scheduledAt)
@@ -561,7 +574,9 @@ final class EditTaskViewModel: ObservableObject {
                  Тип Входа: \(entranceType ?? "")
          🧾 Статус: \(status)
          """)
+    return true
     }
+
     
     private func maskRU(fromDigits s: String) -> String {
         if s.isEmpty { return "" }

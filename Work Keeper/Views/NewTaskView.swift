@@ -631,6 +631,7 @@ struct NewTaskView: View {
                                     .tint(Color.custom(viewModel.canSaveTask() ? .highlightBlue : .inactiveButtonGray))
                                 Text("Cоздать")
                                     .tint(Color.white)
+                                 
                             }
                         }
                         .cornerRadius(16)
