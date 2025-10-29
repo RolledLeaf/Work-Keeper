@@ -32,6 +32,11 @@ struct NewClientView: View {
     enum Field {
         case firstName
         case lastName
+        case street
+        case house
+        case apartment
+        case entrance
+        case floor
         case phoneNumber
     }
     
@@ -93,9 +98,9 @@ struct NewClientView: View {
                                     }
                                 }
                                 .focused($focusedField, equals: .lastName)
-                                .submitLabel(.done)
+                                .submitLabel(.next)
                                 .onSubmit {
-                                    hideKeyboard()
+                                    focusedField = .street
                                 }
                             
                         }
@@ -134,6 +139,7 @@ struct NewClientView: View {
                                 .frame(minHeight: 20, maxHeight: 45)
                                 .lineLimit(2, reservesSpace: false)
                                 .minimumScaleFactor(0.6)
+                                .focused($focusedField, equals: .street)
                                 .multilineTextAlignment(.center)
                             //.onChange(of: street) { oldValue, newValue in
                                 .onChange(of: viewModel.streetName) { newValue in
@@ -145,6 +151,10 @@ struct NewClientView: View {
                                     } else {
                                         maxStreetCharactersTextOpacity = 0
                                     }
+                                }
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .house
                                 }
                             
                             
@@ -194,10 +204,15 @@ struct NewClientView: View {
                             TextField("", text: $viewModel.building)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .focused($focusedField, equals: .house)
                                 .onChange(of: viewModel.building) { newValue in
                                     if newValue.count > maxBuildingCharachtersCount {
                                         viewModel.building = String(newValue.prefix(maxBuildingCharachtersCount))
                                     }
+                                }
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .apartment
                                 }
                         }
                         .cornerRadius(5)
@@ -230,10 +245,15 @@ struct NewClientView: View {
                             TextField("", text: $viewModel.apartment)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .focused($focusedField, equals: .apartment)
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharachtersCount {
                                         viewModel.apartment = String(newValue.prefix(maxApartmentCharachtersCount))
                                     }
+                                }
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .entrance
                                 }
                         }
                         .cornerRadius(5)
@@ -265,10 +285,15 @@ struct NewClientView: View {
                             TextField("", text: $viewModel.entrance)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .focused($focusedField, equals: .entrance)
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharachtersCount {
                                         viewModel.entrance = String(newValue.prefix(maxEntranceCharachtersCount))
                                     }
+                                }
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .floor
                                 }
                         }
                         .cornerRadius(5)
@@ -294,11 +319,15 @@ struct NewClientView: View {
                             Color.white
                             TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
+                                .focused($focusedField, equals: .floor)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                         }
                         .cornerRadius(5)
                         .frame(width: 40, height: 30)
-                        
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focusedField = .phoneNumber
+                        }
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
@@ -339,6 +368,7 @@ struct NewClientView: View {
                                 .foregroundColor(.black)
                                 .padding(.leading, 5)
                                 .keyboardType(.phonePad)
+                                .focused($focusedField, equals: .phoneNumber)
                                 .textContentType(.telephoneNumber)
                                 .onChange(of: phoneMasked) { newValue in
                                     let prevDigits = digitsOnly(previousPhoneMasked)
@@ -363,6 +393,7 @@ struct NewClientView: View {
                                     previousPhoneMasked = phoneMasked
                                     viewModel.phoneDigits = newDigits // в VM храним только цифры
                                 }
+                                .submitLabel(.done)
                         }
                         .cornerRadius(10)
                         .frame(width: 190, height: 40)

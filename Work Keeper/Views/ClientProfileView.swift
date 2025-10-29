@@ -25,15 +25,7 @@ struct ClientProfileView: View {
                     }
                     Spacer()
                     
-                    Button(action: {
-                        
-                    }) {
-                        Image(systemName: "ellipsis")
-                            .resizable()
-                            .frame(width: 25, height: 7)
-                            .foregroundColor(.gray)
-                            .offset(y: -11)
-                    }
+                 
                 }
                 .padding(.horizontal, 22)
                 

@@ -4,7 +4,7 @@ struct CompleteTaskView: View {
     
     @ObservedObject var viewModel: CompleteTaskViewModel
     
-    private let maxCommentCharactersCount: Int = 150
+    private let maxCommentCharactersCount: Int = 300
     @State private var commentTextOpacity: Double = 0
     
     @Environment(\.dismiss)
