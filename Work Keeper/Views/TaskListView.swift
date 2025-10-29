@@ -9,6 +9,47 @@ private func dayKey(_ date: Date) -> Date {
     Calendar.current.startOfDay(for: date)
 }
 
+struct CompleteTaskNotificationView: View {
+    @Binding var taskDescription: String
+    @Binding var finalAmount: Double
+  
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            
+            HStack {
+                
+//            Text("Задание ")
+//                    .font(.custom(SFPro.regular.rawValue, size: 20))
+//                    .foregroundColor(.primary)
+                
+            Text("\(taskDescription)")
+                .font(.custom(SFPro.bold.rawValue, size: 20))
+                .foregroundColor(.primary)
+                
+//               Text(" выполнено")
+//                    .font(.custom(SFPro.regular.rawValue, size: 20))
+//                    .foregroundColor(.primary)
+            
+        }
+
+            Text("+ \(finalAmount.formattedCurrency())")
+                .font(.custom(SFPro.bold.rawValue, size: 25))
+                .foregroundColor(Color(CustomColor.extraPaymentGreen.rawValue))
+        }
+        
+        .padding(16)
+        .background(.white)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(maxWidth: 340)
+    }
+}
+
 struct TasksFilterView: View {
     @Binding var selectedFilters: Set<TaskStatus>
 
@@ -82,13 +123,16 @@ struct TasksFilterView: View {
 
 struct TaskListView: View {
     @StateObject private var viewModel = TaskListViewModel()
-    
+
   
     @State private var selectedDate = Date()
     @State private var showDeleteAlert = false
     @State private var showNewTaskView = false
     @State private var showCompleteTaskView = false
     @State private var showEditTaskView = false
+    @State private var showCompleteTaskNotification = false
+    @State private var lastCompletedTaskDescription: String = ""
+    @State private var lastCompletedFinalAmount: Double = 0.0
     
     @State private var showFilters = false
     @State private var selectedFilters: Set<TaskStatus> = [.all]
@@ -489,12 +533,20 @@ struct TaskListView: View {
                 }
             }
         }
+       
     }
 
     var body: some View {
         NavigationStack {
             mainContent
         }
+        .overlay(alignment: .center) {
+            if showCompleteTaskNotification {
+                CompleteTaskNotificationView(taskDescription: $lastCompletedTaskDescription, finalAmount: $lastCompletedFinalAmount)
+                    .transition(.offset(y: 40).combined(with: .opacity))
+            }
+        }
+        
         .sheet(isPresented: $showNewTaskView, onDismiss: {
             viewModel.loadTasks()
         }) {
@@ -508,7 +560,22 @@ struct TaskListView: View {
         .sheet(item: $selectedTaskForComplete, onDismiss: {
             viewModel.loadTasks()
         }) { task in
-            CompleteTaskView(viewModel: CompleteTaskViewModel(task: task))
+            // Предполагаем, что CompleteTaskView имеет init(viewModel:onComplete:)
+            CompleteTaskView(viewModel: CompleteTaskViewModel(task: task)) { taskDescription, finalAmount in
+                // обновляем данные и запоминаем данные для тоста
+                viewModel.loadTasks()
+                lastCompletedTaskDescription = taskDescription
+                lastCompletedFinalAmount = finalAmount
+
+                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                    showCompleteTaskNotification = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        showCompleteTaskNotification = false
+                    }
+                }
+            }
         }
         .popover(isPresented: $showFilters) {
             NavigationStack {
@@ -548,6 +615,8 @@ struct TaskListView: View {
             }
             .presentationDetents([.fraction(0.45)])
         }
+      
+        
         .onAppear {
             viewModel.loadTasks()
         }

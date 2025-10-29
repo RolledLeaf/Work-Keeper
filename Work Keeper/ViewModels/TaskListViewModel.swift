@@ -354,7 +354,10 @@ final class CompleteTaskViewModel: ObservableObject {
     @Published var cost: Double = 0
     @Published var extraPaymentText: String = ""
     @Published var extraPayment: Double? = 0
+    @Published var taskDescription: String = ""
     @Published var paymentType: PaymentType = .cash
+    @Published var finalAmountText: String = ""
+    
     var finalAmount: Double {
         contractAmount + (extraPayment ?? 0) - cost
     }
@@ -365,12 +368,14 @@ final class CompleteTaskViewModel: ObservableObject {
 
     init(task: TaskEntity) {
         self.task = task
+        self.taskDescription = task.taskDescription ?? "No description"
         self.contractAmount = task.contractAmount
         self.contractAmountText = "\(Int(task.contractAmount))"
         self.comment = task.comment ?? ""
         self.cost = task.cost
         self.costText = "\(Int(task.cost))"
         self.paymentType = PaymentType(rawValue: task.paymentType ?? "") ?? .cash
+        
     }
 
     func complete() {
