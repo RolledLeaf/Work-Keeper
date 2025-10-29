@@ -8,7 +8,7 @@ struct EditTaskView: View {
    
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 8
-    private let maxStreetCharactersCount: Int = 48
+    private let maxStreetCharactersCount: Int = 49
     private let maxDescriptionCharactersCount: Int = 85
     private let maxCommentCharactersCount: Int = 85
     private let maxApartmentCharactersCount: Int = 6

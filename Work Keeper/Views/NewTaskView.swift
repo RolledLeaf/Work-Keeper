@@ -11,7 +11,7 @@ struct NewTaskView: View {
     
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 9
-    private let maxStreetCharactersCount: Int = 44
+    private let maxStreetCharactersCount: Int = 49
     private let maxDescriptionCharactersCount: Int = 85
     private let maxApartmentCharactersCount: Int = 6
     private let maxEntranceCharactersCount: Int = 3

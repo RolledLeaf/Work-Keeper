@@ -7,6 +7,7 @@ import Combine
 final class StreetListViewModel: ObservableObject {
     @Published var streets: [Street] = []
     @Published var selectedStreet: Street?
+    @Published var lastAddedStreetName: String = ""
     @Published var searchText: String = ""
     
     private var cancellables = Set<AnyCancellable>()
@@ -23,6 +24,8 @@ final class StreetListViewModel: ObservableObject {
                 self.applySearch()
             }
             .store(in: &cancellables)
+        
+        
     }
 
     func applySearch() {
@@ -46,10 +49,20 @@ final class StreetListViewModel: ObservableObject {
         selectedStreet = street
     }
     
+    func streetAlreadyExists(_ name: String) -> Bool {
+        let n = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return store.fetchStreets(matching: n).count > 0
+       
+    }
+    
     func addStreet(_ name: String) {
+   
         guard !name.isBlank else { return }
-        store.createStreet(name: name)
+        let street = store.createOrFetchStreet(name: name)
         loadStreets()
+        // можно вернуть или выбрать только что созданную/найденную улицу:
+        selectedStreet = street
+        lastAddedStreetName = street.name ?? "Без названия"
     }
     
     func update(_ street: Street, name: String) {

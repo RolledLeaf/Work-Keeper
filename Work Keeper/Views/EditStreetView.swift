@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct EditStreetView: View {
-    private let maxStreetCharactersCount: Int = 44
+    private let maxStreetCharactersCount: Int = 49
     @State private var streetName: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State var saveButtomOpacity: Double = 0

@@ -1,24 +1,30 @@
 import SwiftUI
 
+
+
 struct AddStreetView: View {
     
-    private let maxStreetCharactersCount: Int = 44
+    private let maxStreetCharactersCount: Int = 49
     @State private var streetName: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State var saveButtomOpacity: Double = 0
+    @State var streetNameAlreadyExists: Bool = false
+
     
     @ObservedObject  var viewModel: StreetListViewModel
     
     @Environment(\.dismiss)
     private var dismiss
     
+
+    
     var body: some View {
-       
+        
         
         VStack {
             HStack {
                 Button(action: {
-                        dismiss()
+                    dismiss()
                 }) {
                     
                     Text("Отмена")
@@ -29,28 +35,33 @@ struct AddStreetView: View {
                 .tint(.black)
                 
                 Spacer()
-            Text("Новая улица")
-                .font(.custom(SFPro.bold.rawValue, size: 20))
-                .padding(.trailing, 30)
-                .offset(y: 30)
-              
+                Text("Новая улица")
+                    .font(.custom(SFPro.bold.rawValue, size: 20))
+                    .padding(.trailing, 30)
+                    .offset(y: 30)
+                
                 Button(action: {
+                    guard !viewModel.streetAlreadyExists(streetName)  else {
+                        return streetNameAlreadyExists = true
+                        
+                    }
                     if !streetName.isBlank {
                         viewModel.addStreet(streetName)
                         dismiss()
+                       
                     }
                 }) {
-                   
-                        Text("Сохранить")
+                    
+                    Text("Сохранить")
                         .font(.custom(SFPro.regular.rawValue, size: 15))
-                            .frame(width: 100, height: 40)
-                            .tint(streetName.isBlank ? .inactiveButtonGray : .black)
-                            
+                        .frame(width: 100, height: 40)
+                        .tint(streetName.isBlank ? .inactiveButtonGray : .black)
+                    
                     
                 }
                 .disabled(streetName.isBlank)
                 .padding(.top, 20)
-        }
+            }
             Spacer()
                 .frame(height: 38)
             
@@ -98,18 +109,22 @@ struct AddStreetView: View {
                 .opacity(maxStreetCharactersTextOpacity)
             Spacer()
             
-          
-          
+            
+            
         }
+        
+        .alert(isPresented: $streetNameAlreadyExists) {
+            Alert(title: Text( "Улица \(streetName) уже добавлена"), message: Text("Попробуйте ввести другую"), dismissButton: .default(Text("Ок"))
+                  )
+        }
+        
         .onTapGesture {
             hideKeyboard()
         }
+    
         
     }
     
-       
 }
-
-
 
 
