@@ -9,46 +9,7 @@ private func dayKey(_ date: Date) -> Date {
     Calendar.current.startOfDay(for: date)
 }
 
-struct CompleteTaskNotificationView: View {
-    @Binding var taskDescription: String
-    @Binding var finalAmount: Double
-  
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            
-            HStack {
-                
-//            Text("Задание ")
-//                    .font(.custom(SFPro.regular.rawValue, size: 20))
-//                    .foregroundColor(.primary)
-                
-            Text("\(taskDescription)")
-                .font(.custom(SFPro.bold.rawValue, size: 20))
-                .foregroundColor(.primary)
-                
-//               Text(" выполнено")
-//                    .font(.custom(SFPro.regular.rawValue, size: 20))
-//                    .foregroundColor(.primary)
-            
-        }
 
-            Text("+ \(finalAmount.formattedCurrency())")
-                .font(.custom(SFPro.bold.rawValue, size: 25))
-                .foregroundColor(Color(CustomColor.extraPaymentGreen.rawValue))
-        }
-        
-        .padding(16)
-        .background(.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
-        )
-        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
-        .frame(maxWidth: 340)
-    }
-}
 
 struct TasksFilterView: View {
     @Binding var selectedFilters: Set<TaskStatus>
@@ -123,6 +84,7 @@ struct TasksFilterView: View {
 
 struct TaskListView: View {
     @StateObject private var viewModel = TaskListViewModel()
+   
 
   
     @State private var selectedDate = Date()
@@ -131,7 +93,11 @@ struct TaskListView: View {
     @State private var showCompleteTaskView = false
     @State private var showEditTaskView = false
     @State private var showCompleteTaskNotification = false
+    @State private var showCancelTaskNotification = false
+    @State private var showScheduleTaskNotification: Bool = false
     @State private var lastCompletedTaskDescription: String = ""
+    @State private var lastCanceletedTaskDescription: String = ""
+    @State private var lastScheduleTaskDescription: String = ""
     @State private var lastCompletedFinalAmount: Double = 0.0
     
     @State private var showFilters = false
@@ -340,6 +306,8 @@ struct TaskListView: View {
                                                         Button(action: {
                                                             viewModel.scheduleTask(task: task)
                                                             viewModel.loadTasks()
+                                                            viewModel.scheduleTask(task)
+
                                                         }) {
                                                             Image("inProgress")
                                                             Text("Запланировать")
@@ -350,6 +318,9 @@ struct TaskListView: View {
                                                         Button(action: {
                                                             viewModel.scheduleTask(task: task)
                                                             viewModel.loadTasks()
+                                                            viewModel.scheduleTask(task)
+
+                                                            
                                                         }) {
                                                             Image("inProgress")
                                                             Text("Запланировать")
@@ -426,113 +397,27 @@ struct TaskListView: View {
             .padding(.trailing, 16)
             .padding(.leading, 16)
 
-            if showPopup {
-                ZStack {
-                    Color.black.opacity(0.3)
-                        .ignoresSafeArea()
+            if showPopup, let task = taskToCancel {
+                CancelTaskPopup(task: task, isPresented: $showPopup) { description in
+                    // callback: обновляем локальные данные и показываем тост
+                    lastCanceletedTaskDescription = description
+                    viewModel.loadTasks() // обновляем список (если нужно)
 
-                    VStack {
-                        VStack(spacing: 16) {
-                            Spacer()
-                                .frame(height: 15)
-                            HStack {
-                                Image(systemName: "exclamationmark.triangle.fill")
-                                    .foregroundColor(.red)
-                                    .font(.system(size: 40))
-
-                                Text("Вы уверены, что хотите отменить задание?")
-                                    .font(.custom(SFPro.regular.rawValue, size: 24))
-                                    .multilineTextAlignment(.center)
-                            }
-
-                            Text("Его статус изменится на отменённый, итоговая сумма обнулится")
-                                .font(.system(size: 20))
-                                .foregroundColor(.gray)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-
-                            VStack(alignment: .leading) {
-                                Text("Комментарий")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-
-                                ZStack {
-                                    Color.white
-                                    TextEditor(text: $viewModel.comment)
-                                        .frame(height: 90)
-                                        .padding(4)
-                                        .lineLimit(1, reservesSpace: false)
-                                        .minimumScaleFactor(0.5)
-                                        .multilineTextAlignment(.leading)
-                                }
-                                .frame(height: 90)
-                                .cornerRadius(10)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                                )
-                            }
-
-                            HStack {
-                                Button(action: {
-                                    showPopup = false
-                                }) {
-                                    ZStack {
-                                        Rectangle()
-                                            .tint(Color.white)
-                                        Text("Нет")
-                                            .tint(Color.black)
-                                    }
-                                }
-                                .cornerRadius(7)
-                                .frame(width: 128)
-                                .frame(height: 42)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 7)
-                                        .stroke(Color(.black), lineWidth: 0.5)
-                                )
-
-                                Button(action: {
-                                    if let task = taskToCancel {
-                                        let cancelVM = CancelTaskViewModel(task: task)
-                                        cancelVM.comment = viewModel.comment
-                                        cancelVM.cancel()
-                                    }
-                                    viewModel.loadTasks()
-                                    withAnimation {
-                                        showPopup = false
-                                    }
-                                }) {
-                                    ZStack {
-                                        Rectangle()
-                                            .tint(Color.custom(.cancelButtonRed))
-                                        Text("Отменить задание")
-                                            .tint(Color.white)
-                                    }
-                                }
-                                .cornerRadius(7)
-                                .frame(height: 42)
-                                .frame(maxWidth: .infinity)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 7)
-                                        .stroke(Color(.black), lineWidth: 0.5)
-                                )
-                            }
-                            Spacer()
-                                .frame(height: 20)
+                    // Показываем тост с анимацией
+                    withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                        showCancelTaskNotification = true
+                    }
+                    // Автоскрытие
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            showCancelTaskNotification = false
                         }
-                        .padding(.horizontal, 24)
-                        .background(RoundedRectangle(cornerRadius: 20).fill(Color.white))
-                        .shadow(radius: 10)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
             }
         }
+        
+
        
     }
 
@@ -540,9 +425,35 @@ struct TaskListView: View {
         NavigationStack {
             mainContent
         }
+        .onChange(of: viewModel.didScheduleTask) { newValue in
+            if newValue {
+                viewModel.loadTasks()
+                lastScheduleTaskDescription = viewModel.lastScheduledTaskDescription ?? "Без названия"
+                withAnimation { showScheduleTaskNotification = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    withAnimation { showScheduleTaskNotification = false }
+                    viewModel.didScheduleTask = false
+                }
+            }
+        }
+        
+        .overlay(alignment: .center) {
+            if showCancelTaskNotification {
+                CancelTaskNotificationView(taskDescription: $lastCanceletedTaskDescription)
+                    .transition(.offset(y: 40).combined(with: .opacity))
+            }
+        }
+        
         .overlay(alignment: .center) {
             if showCompleteTaskNotification {
                 CompleteTaskNotificationView(taskDescription: $lastCompletedTaskDescription, finalAmount: $lastCompletedFinalAmount)
+                    .transition(.offset(y: 40).combined(with: .opacity))
+            }
+        }
+        
+        .overlay(alignment: .center) {
+            if showScheduleTaskNotification {
+                ScheduleTaskNotificationView(taskDescription: $lastScheduleTaskDescription)
                     .transition(.offset(y: 40).combined(with: .opacity))
             }
         }
@@ -552,15 +463,18 @@ struct TaskListView: View {
         }) {
             NewTaskView()
         }
+        
         .sheet(item: $selectedTaskForEdit, onDismiss: {
             viewModel.loadTasks()
         }) { task in
             EditTaskView(viewModel: EditTaskViewModel(task: task))
         }
+        
+        
+        
         .sheet(item: $selectedTaskForComplete, onDismiss: {
             viewModel.loadTasks()
         }) { task in
-            // Предполагаем, что CompleteTaskView имеет init(viewModel:onComplete:)
             CompleteTaskView(viewModel: CompleteTaskViewModel(task: task)) { taskDescription, finalAmount in
                 // обновляем данные и запоминаем данные для тоста
                 viewModel.loadTasks()
@@ -642,6 +556,7 @@ struct TaskListView: View {
         }
     }
 }
+
 
 struct TaskColoredLegend: View {
      var body: some View {

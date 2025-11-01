@@ -19,6 +19,14 @@ final class TaskListViewModel: ObservableObject {
     @Published var tasksCount: Int = 0
     @Published var canceledTasksCount: Int = 0
     @Published var selectedStatuses: [Status]? = nil
+    @Published var lastScheduledTaskDescription: String? = nil
+    @Published var didScheduleTask: Bool = false
+
+    func scheduleTask(_ task: TaskEntity) {
+        store.makeScheduled(task)
+        lastScheduledTaskDescription = task.taskDescription
+        didScheduleTask = true
+    }
     
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
@@ -390,6 +398,7 @@ final class CompleteTaskViewModel: ObservableObject {
 
 final class CancelTaskViewModel: ObservableObject {
     @Published var comment: String = ""
+    @Published var taskDescription: String = ""
 
     private let task: TaskEntity
     private let store = TaskStore()
