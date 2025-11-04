@@ -3,8 +3,13 @@ import SwiftUI
 struct EditTaskView: View {
     
     @ObservedObject var viewModel: EditTaskViewModel
+    var onSave: ((String) -> Void)?
     @StateObject private var clientsListViewModel = ClientsListViewModel()
     @StateObject private var streetListViewModel = StreetListViewModel()
+    
+
+    @Environment(\.dismiss)
+    private var dismiss
    
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 8
@@ -34,13 +39,14 @@ struct EditTaskView: View {
     @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
  
-    @Environment(\.dismiss)
-    private var dismiss
+   
     
-    init(viewModel: EditTaskViewModel) {
-           // Передаём viewModel в свойство @ObservedObject
-           self._viewModel = ObservedObject(wrappedValue: viewModel)
-       }
+    
+    
+    init(viewModel: EditTaskViewModel, onSave: ((String) -> Void)? = nil) {
+        self._viewModel = ObservedObject(wrappedValue: viewModel)
+        self.onSave = onSave
+    }
     var body: some View {
    
         ZStack {
@@ -700,7 +706,7 @@ struct EditTaskView: View {
                         
                         Button(action: {
                             if  viewModel.update() {
-                                
+                                onSave?(viewModel.descriptionText)
                                     dismiss()
                             } else {
                                 

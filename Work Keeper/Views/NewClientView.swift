@@ -26,6 +26,8 @@ struct NewClientView: View {
     @State private var showStreetsView = false
     @FocusState private var focusedField: Field?
     
+    
+    
     @Environment(\.dismiss)
     private var dismiss
     

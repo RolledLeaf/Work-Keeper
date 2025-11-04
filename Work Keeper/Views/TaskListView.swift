@@ -477,21 +477,29 @@ struct TaskListView: View {
                     .transition(.offset(y: 40).combined(with: .opacity))
             }
         }
-        
-       
-        
-        .sheet(item: $selectedTaskForEdit, onDismiss: {
-            viewModel.loadTasks()
-        }) { task in
-            EditTaskView(viewModel: EditTaskViewModel(task: task))
-        }
-        
+     
         .sheet(isPresented: $showNewTaskView, onDismiss: {
             viewModel.loadTasks()
             
         }) {
             NewTaskView()
             
+        }
+        
+        .sheet(item: $selectedTaskForEdit, onDismiss: {
+            viewModel.loadTasks()
+        }) { task in
+            EditTaskView(viewModel: EditTaskViewModel(task: task), onSave: { updatedDescription in
+                lastEditedTaskDescription = updatedDescription
+                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                    showEditTaskNotification = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        showEditTaskNotification = false
+                    }
+                }
+            })
         }
         
         .sheet(item: $selectedTaskForComplete, onDismiss: {

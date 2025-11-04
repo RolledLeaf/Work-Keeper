@@ -31,6 +31,12 @@ final class TaskListViewModel: ObservableObject {
         didScheduleTask = true
     }
     
+    func scheduleTask(task: TaskEntity) {
+        store.makeScheduled(task)
+        loadTasks()
+    }
+    //Дублирование методов scheduleTask - привести к единому виду
+    
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
             let date = task.scheduledAt ?? Date.distantPast
@@ -118,10 +124,7 @@ final class TaskListViewModel: ObservableObject {
         loadTasks()
     }
     
-    func scheduleTask(task: TaskEntity) {
-        store.makeScheduled(task)
-        loadTasks()
-    }
+    
     
     // MARK: - Statistics Methods
     
