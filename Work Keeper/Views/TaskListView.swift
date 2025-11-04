@@ -95,9 +95,13 @@ struct TaskListView: View {
     @State private var showCompleteTaskNotification = false
     @State private var showCancelTaskNotification = false
     @State private var showScheduleTaskNotification: Bool = false
+    @State private var showDeleteTaskNotification: Bool = false
+    @State private var showEditTaskNotification: Bool = false
     @State private var lastCompletedTaskDescription: String = ""
     @State private var lastCanceletedTaskDescription: String = ""
     @State private var lastScheduleTaskDescription: String = ""
+    @State private var lastDeletedTaskDescription: String = ""
+    @State private var lastEditedTaskDescription: String = ""
     @State private var lastCompletedFinalAmount: Double = 0.0
     
     @State private var showFilters = false
@@ -436,10 +440,26 @@ struct TaskListView: View {
                 }
             }
         }
+      
         
         .overlay(alignment: .center) {
             if showCancelTaskNotification {
                 CancelTaskNotificationView(taskDescription: $lastCanceletedTaskDescription)
+                    .transition(.offset(y: 40).combined(with: .opacity))
+            }
+        }
+        
+        
+        .overlay(alignment: .center) {
+            if showDeleteTaskNotification {
+               DeleteTaskNotificationView(taskDescription: $lastDeletedTaskDescription)
+                    .transition(.offset(y: 40).combined(with: .opacity))
+            }
+        }
+        
+        .overlay(alignment: .center) {
+            if showEditTaskNotification {
+               EditTaskNotificationView(taskDescription: $lastEditedTaskDescription)
                     .transition(.offset(y: 40).combined(with: .opacity))
             }
         }
@@ -458,11 +478,7 @@ struct TaskListView: View {
             }
         }
         
-        .sheet(isPresented: $showNewTaskView, onDismiss: {
-            viewModel.loadTasks()
-        }) {
-            NewTaskView()
-        }
+       
         
         .sheet(item: $selectedTaskForEdit, onDismiss: {
             viewModel.loadTasks()
@@ -470,7 +486,13 @@ struct TaskListView: View {
             EditTaskView(viewModel: EditTaskViewModel(task: task))
         }
         
-        
+        .sheet(isPresented: $showNewTaskView, onDismiss: {
+            viewModel.loadTasks()
+            
+        }) {
+            NewTaskView()
+            
+        }
         
         .sheet(item: $selectedTaskForComplete, onDismiss: {
             viewModel.loadTasks()
@@ -548,7 +570,22 @@ struct TaskListView: View {
                presenting: taskToDelete
         ) { task in
             Button("Удалить", role: .destructive) {
+                let desc = task.taskDescription ?? "Без названия"
+           
+                
+                lastDeletedTaskDescription = desc
                 viewModel.delete(task)
+                
+                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                    showDeleteTaskNotification = true
+                }
+                // Автоскрытие
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        showDeleteTaskNotification = false
+                    }
+                }
+                
             }
             Button("Отмена", role: .cancel) { }
         } message: { task in

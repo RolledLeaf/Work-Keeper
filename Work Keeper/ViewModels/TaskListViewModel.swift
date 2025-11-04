@@ -21,6 +21,9 @@ final class TaskListViewModel: ObservableObject {
     @Published var selectedStatuses: [Status]? = nil
     @Published var lastScheduledTaskDescription: String? = nil
     @Published var didScheduleTask: Bool = false
+    
+    private let store = TaskStore()
+    private var cancellables = Set<AnyCancellable>()
 
     func scheduleTask(_ task: TaskEntity) {
         store.makeScheduled(task)
@@ -34,12 +37,7 @@ final class TaskListViewModel: ObservableObject {
             return Calendar.current.startOfDay(for: date) // normalize to day
         }
     }
-    
-    private let store = TaskStore()
-    private var cancellables = Set<AnyCancellable>()
-    
-    
-    
+ 
     init() {
         // initial load
         loadTasks()
@@ -75,9 +73,6 @@ final class TaskListViewModel: ObservableObject {
     }
 
 
-    
-    /// Собрать предикат по текущим фильтрам и выполнить fetch через TaskStore.
-    /// Если `selectedStatuses` == nil => не добавляем предикат по статусу (показываем всё).
     func applyCurrentFiltersUsingDB(debug: Bool = false) {
         print("[TaskListViewModel] applyCurrentFiltersUsingDB called with searchText:", searchText)
         
@@ -118,15 +113,10 @@ final class TaskListViewModel: ObservableObject {
         self.tasks = results
     }
     
-    
-    
-    
     func delete(_ task: TaskEntity) {
         store.deleteTask(task)
         loadTasks()
     }
-    
-   
     
     func scheduleTask(task: TaskEntity) {
         store.makeScheduled(task)
@@ -226,7 +216,7 @@ final class CreateTaskViewModel: ObservableObject {
     
     @Published var shouldBlockRemote = false
     @Published var shouldBlockPrivate = false
-    
+    @Published var didCreateTask: Bool = false
     
     @Published  var roomType: String?
     @Published  var entranceType: String?
@@ -308,6 +298,7 @@ final class CreateTaskViewModel: ObservableObject {
             contractAmount: contractAmount,
             cost: cost
         )
+        didCreateTask = true
         print("""
          ✅ Задание успешно создано:
          📆 Дата: \(scheduledAt)

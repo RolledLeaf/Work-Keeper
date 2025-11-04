@@ -40,20 +40,14 @@ struct ClientRow: View {
                 .padding(.leading, 8)
                 
                 VStack {
-                    Text(highlighted(client.firstName ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                    Text(highlighted(client.firstName?.uppercased() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                         .font(.custom(SFPro.bold.rawValue, size: 24))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 25, alignment: .center)
+                  
+                        
                     Spacer()
-                    Text(highlighted(client.phone?.formattedAsPhone() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
-                        .font(.custom(SFPro.regular.rawValue, size: 16))
-                        .frame(maxWidth: 230, alignment: .leading)
-                        .frame(maxHeight: 20, alignment: .center)
-                        .multilineTextAlignment(.leading)
-                        .foregroundColor(.custom(.taskTextGray))
-                        .offset(y: 4)
-                    Spacer()
-//                    Text("\(client.primaryAddress?.street?.name ?? "Адрес не указан")
+                    
                     HStack {
                         Text(highlighted(client.primaryAddress?.street?.name ?? "Адрес не указан", query: viewModel.searchText, highlightColor: .highlightBlue))
                         
@@ -65,6 +59,17 @@ struct ClientRow: View {
                         .lineLimit(2, reservesSpace: false)
                         .minimumScaleFactor(0.8)
                         .multilineTextAlignment(.leading)
+                    
+                  
+                    Spacer()
+          
+                    Text(highlighted(client.phone?.formattedAsPhone() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                        .font(.custom(SFPro.regular.rawValue, size: 16))
+                        .frame(maxWidth: 230, alignment: .leading)
+                        .frame(maxHeight: 20, alignment: .center)
+                        .multilineTextAlignment(.leading)
+                        .foregroundColor(.custom(.taskTextGray))
+                      
                     
                 }
                 .padding(.leading, 17)
