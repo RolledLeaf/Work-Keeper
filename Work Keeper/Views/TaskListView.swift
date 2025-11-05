@@ -445,19 +445,19 @@ struct TaskListView: View {
         .overlay(alignment: .center) {
             Group {
                 if showCancelTaskNotification {
-                    CancelTaskNotificationView(taskDescription: $lastCanceletedTaskDescription)
+                    CancelTaskConfirmationView(taskDescription: $lastCanceletedTaskDescription)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 } else if showDeleteTaskNotification {
-                    DeleteTaskNotificationView(taskDescription: $lastDeletedTaskDescription)
+                    DeleteTaskConfirmationView(taskDescription: $lastDeletedTaskDescription)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 } else if showEditTaskNotification {
-                    EditTaskNotificationView(taskDescription: $lastEditedTaskDescription)
+                    EditTaskConfirmationView(taskDescription: $lastEditedTaskDescription)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 } else if showCompleteTaskNotification {
-                    CompleteTaskNotificationView(taskDescription: $lastCompletedTaskDescription, finalAmount: $lastCompletedFinalAmount)
+                    CompleteTaskConfirmationView(taskDescription: $lastCompletedTaskDescription, finalAmount: $lastCompletedFinalAmount)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 } else if showScheduleTaskNotification {
-                    ScheduleTaskNotificationView(taskDescription: $lastScheduleTaskDescription)
+                    ScheduleTaskConfirmationView(taskDescription: $lastScheduleTaskDescription)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 }
             }

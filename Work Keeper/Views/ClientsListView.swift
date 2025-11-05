@@ -249,13 +249,13 @@ struct ClientsListView: View {
         .overlay(alignment: .center) {
             Group {
                 if showAddClientNotification {
-                    AddClientNotificationView(name: $lastAddedClientName)
+                    AddClientConfirmationView(name: $lastAddedClientName)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 } else if showEditClientNotification {
-                        EditClientNotificationView(name: $lastEditedClientName)
+                        EditClientConfirmationView(name: $lastEditedClientName)
                         .transition(.offset(y: 40).combined(with: .opacity))
                     } else if showDeleteClientNotification {
-                            DeleteClientNotificationView(name: $lastDeletedClientName)
+                            DeleteClientConfirmationView(name: $lastDeletedClientName)
                             .transition(.offset(y: 40).combined(with: .opacity))
                         }
                     }

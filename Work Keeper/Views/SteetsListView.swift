@@ -154,13 +154,13 @@ struct StreetsListView: View {
         .overlay(alignment: .center) {
             Group {
                 if showAddConfirmation {
-                    AddStreetNotificationView(streetName: $viewModel.lastAddedStreetName)
+                    AddStreetConfirmationView(streetName: $viewModel.lastAddedStreetName)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 } else if viewModel.streetWasDeleted {
-                    DeleteStreetNotificationView(name: $viewModel.lastDeletedStreetName)
+                    DeleteStreetConfirmationView(name: $viewModel.lastDeletedStreetName)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 } else if viewModel.streetWasEdited {
-                    EditStreetNotificationView(oldStreetName: $viewModel.previousStreetName, streetName: $viewModel.lastEditedStreetName)
+                    EditStreetConfirmationView(oldStreetName: $viewModel.previousStreetName, streetName: $viewModel.lastEditedStreetName)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 }
                 

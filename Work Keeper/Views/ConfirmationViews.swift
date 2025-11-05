@@ -1,7 +1,7 @@
 import SwiftUI
 
 
-struct ScheduleTaskNotificationView: View {
+struct ScheduleTaskConfirmationView: View {
     @Binding var taskDescription: String
   
     var body: some View {
@@ -31,7 +31,7 @@ struct ScheduleTaskNotificationView: View {
     }
 }
 
-struct CancelTaskNotificationView: View {
+struct CancelTaskConfirmationView: View {
     @Binding var taskDescription: String
   
     var body: some View {
@@ -62,7 +62,7 @@ struct CancelTaskNotificationView: View {
 }
 
 
-struct DeleteTaskNotificationView: View {
+struct DeleteTaskConfirmationView: View {
     @Binding var taskDescription: String
   
     var body: some View {
@@ -100,7 +100,7 @@ struct DeleteTaskNotificationView: View {
     }
 }
 
-struct EditTaskNotificationView: View {
+struct EditTaskConfirmationView: View {
     @Binding var taskDescription: String
   
     var body: some View {
@@ -130,7 +130,7 @@ struct EditTaskNotificationView: View {
     }
 }
 
-struct CompleteTaskNotificationView: View {
+struct CompleteTaskConfirmationView: View {
     @Binding var taskDescription: String
     @Binding var finalAmount: Double
   
@@ -168,7 +168,7 @@ struct CompleteTaskNotificationView: View {
 
 
 
-struct AddClientNotificationView: View {
+struct AddClientConfirmationView: View {
     @Binding var name: String
     
   
@@ -204,7 +204,7 @@ struct AddClientNotificationView: View {
     }
 }
 
-struct EditClientNotificationView: View {
+struct EditClientConfirmationView: View {
     @Binding var name: String
   
     var body: some View {
@@ -238,7 +238,7 @@ struct EditClientNotificationView: View {
     }
 }
 
-struct DeleteClientNotificationView: View {
+struct DeleteClientConfirmationView: View {
     @Binding var name: String
   
     var body: some View {
@@ -282,7 +282,7 @@ struct DeleteClientNotificationView: View {
 }
 
 
-struct AddStreetNotificationView: View {
+struct AddStreetConfirmationView: View {
     @Binding var streetName: String
 
     var body: some View {
@@ -315,7 +315,7 @@ struct AddStreetNotificationView: View {
     }
 }
 
-struct DeleteStreetNotificationView: View {
+struct DeleteStreetConfirmationView: View {
     @Binding var name: String
   
     var body: some View {
@@ -358,7 +358,7 @@ struct DeleteStreetNotificationView: View {
     }
 }
 
-struct EditStreetNotificationView: View {
+struct EditStreetConfirmationView: View {
     @Binding var oldStreetName: String
     @Binding var streetName: String
     
