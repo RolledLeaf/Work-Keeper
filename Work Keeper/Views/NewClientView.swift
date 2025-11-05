@@ -26,7 +26,7 @@ struct NewClientView: View {
     @State private var showStreetsView = false
     @FocusState private var focusedField: Field?
     
-    
+    var onCreation: ((String) -> Void)? = nil
     
     @Environment(\.dismiss)
     private var dismiss
@@ -40,6 +40,10 @@ struct NewClientView: View {
         case entrance
         case floor
         case phoneNumber
+    }
+    
+    init(onCreation: ((String) -> Void)? = nil) {
+        self.onCreation = onCreation
     }
     
     var body: some View {
@@ -432,6 +436,7 @@ struct NewClientView: View {
                         
                         Button(action: {
                             if viewModel.canCreateClient() {
+                                onCreation?(viewModel.firstName)
                                 viewModel.createClient()
                                 dismiss()
                             } else {

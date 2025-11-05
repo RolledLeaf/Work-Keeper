@@ -26,13 +26,14 @@ struct EditClientView: View {
     @State private var showStreetsView = false
     @FocusState private var focusedField: Field?
     
-    
+    private var onEdit: ((String) -> Void)?
     
     @Environment(\.dismiss)
     private var dismiss
     
-    init(viewModel: EditClientViewModel) {
+    init(viewModel: EditClientViewModel, onEdit: ((String) -> Void)? = nil) {
         self._viewModel = ObservedObject(wrappedValue: viewModel)
+        self.onEdit = onEdit
       }
     
     enum Field {
@@ -405,6 +406,7 @@ struct EditClientView: View {
                         
                         Button(action: {
                             if viewModel.canUpdateClient() {
+                                onEdit?(viewModel.firstName)
                                 viewModel.update()
                                 dismiss()
                             } else {

@@ -168,3 +168,119 @@ struct CompleteTaskNotificationView: View {
 
 
 
+struct AddClientNotificationView: View {
+    @Binding var name: String
+    
+  
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            
+            Text("Клиент ")
+                .font(.custom(SFPro.regular.rawValue, size: 20))
+            
+            HStack {
+              
+            Text("\(name)")
+                .font(.custom(SFPro.bold.rawValue, size: 20))
+                .foregroundColor(.primary)
+                .multilineTextAlignment(.center)
+        }
+            
+            Text("Добавлен")
+                 .font(.custom(SFPro.regular.rawValue, size: 20))
+                 .foregroundColor(.primary)
+
+        }
+        .padding(16)
+        .background(.white)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(maxWidth: 340)
+    }
+}
+
+struct EditClientNotificationView: View {
+    @Binding var name: String
+  
+    var body: some View {
+        VStack(spacing: 8) {
+            
+            
+            Text("Клиент ")
+                .font(.custom(SFPro.regular.rawValue, size: 20))
+            
+            HStack {
+                
+            Text("\(name)")
+                    .font(.custom(SFPro.bold.rawValue, size: 20))
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+        }
+            
+            Text("Отредактирован")
+                 .font(.custom(SFPro.regular.rawValue, size: 20))
+                 .foregroundColor(Color.custom(.textTitleGray))
+        }
+        .padding(16)
+        .background(.white)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(maxWidth: 340)
+    }
+}
+
+struct DeleteClientNotificationView: View {
+    @Binding var name: String
+  
+    var body: some View {
+        VStack(spacing: 8) {
+            
+            
+            
+            Text("Клиент ")
+                .font(.custom(SFPro.regular.rawValue, size: 20))
+            
+            HStack {
+                
+            Text("\(name)")
+                    .font(.custom(SFPro.bold.rawValue, size: 20))
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+        }
+            
+            HStack {
+                Text("Удалён")
+                    .font(.custom(SFPro.regular.rawValue, size: 20))
+                    .foregroundColor(Color.custom(.costPaymentRed))
+                Image(systemName: "xmark.bin")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .padding(.leading, 5)
+                    .foregroundStyle(.costPaymentRed)
+            }
+            
+        }
+        .padding(16)
+        .background(.white)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(maxWidth: 340)
+    }
+}
+
+
+
+

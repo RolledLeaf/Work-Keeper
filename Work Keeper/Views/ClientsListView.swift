@@ -102,6 +102,13 @@ struct ClientsListView: View {
     @State private var showDeleteAlert = false
     @State private var showSortOrderMenu = false
     @State private var showEditClientView = false
+    @State private var showAddClientNotification = false
+    @State private var showDeleteClientNotification = false
+    @State private var showEditClientNotification = false
+    @State private var lastAddedClientName = ""
+    @State private var lastDeletedClientName = ""
+    @State private var lastEditedClientName = ""
+    
     @StateObject private var viewModel = ClientsListViewModel()
 
     @State private var selectedClient: Client?
@@ -237,17 +244,57 @@ struct ClientsListView: View {
             .padding(.trailing, 15)
             .padding(.leading, 20)
         }
+        
+        
+        .overlay(alignment: .center) {
+            Group {
+                if showAddClientNotification {
+                    AddClientNotificationView(name: $lastAddedClientName)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                } else if showEditClientNotification {
+                        EditClientNotificationView(name: $lastEditedClientName)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                    } else if showDeleteClientNotification {
+                            DeleteClientNotificationView(name: $lastDeletedClientName)
+                            .transition(.offset(y: 40).combined(with: .opacity))
+                        }
+                    }
+                }
+       
+        
         .sheet(isPresented: $showNewClientView, onDismiss: {
             viewModel.loadUserDefaultsAndSort()
             print("clients list reloaded (onDismiss)")
         }) {
-            NewClientView()
+            NewClientView(onCreation: { name in
+                lastAddedClientName = name
+                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                    showAddClientNotification = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        showAddClientNotification = false
+                    }
+                }
+                viewModel.loadUserDefaultsAndSort()
+            })
         }
         
         .sheet(item: $clientToEdit, onDismiss: {
             viewModel.loadUserDefaultsAndSort()
         }) { client in
-            EditClientView(viewModel: EditClientViewModel(client: client))
+            EditClientView(viewModel: EditClientViewModel(client: client),
+                           onEdit: { editedName in
+                lastEditedClientName = editedName
+                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                    showEditClientNotification = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        showEditClientNotification = false
+                    }
+                }
+            })
         }
         
         .sheet(isPresented: $showSortOrderMenu) {
@@ -265,8 +312,21 @@ struct ClientsListView: View {
                presenting: clientToDelete) {
             client in
             Button("Да", role: .destructive) {
+                
+                let name = client.firstName ?? "имя не указано"
+                lastDeletedClientName = name
                 viewModel.delete(client)
+                
+                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                    showDeleteClientNotification = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        showDeleteClientNotification = false
+                    }
+                }
             }
+                
             Button("Нет", role: .cancel) {}
         } message: { client in
             Text("Клиент \(client.firstName ?? "имя не указано") будет удалён")
