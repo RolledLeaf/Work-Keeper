@@ -23,7 +23,7 @@ final class TaskListViewModel: ObservableObject {
     @Published var didScheduleTask: Bool = false
     
     private let store = TaskStore()
-    private var cancellables = Set<AnyCancellable>()
+    private var cancelables = Set<AnyCancellable>()
 
     func scheduleTask(_ task: TaskEntity) {
         store.makeScheduled(task)
@@ -54,14 +54,14 @@ final class TaskListViewModel: ObservableObject {
             .sink { [weak self] _ in
                 self?.applyFiltersAsync()
             }
-            .store(in: &cancellables)
+            .store(in: &cancelables)
 
         // React to status selection changes immediately
         $selectedStatuses
             .sink { [weak self] _ in
                 self?.applyFiltersAsync()
             }
-            .store(in: &cancellables)
+            .store(in: &cancelables)
     }
 
     private func applyFiltersAsync() {
@@ -143,7 +143,7 @@ final class TaskListViewModel: ObservableObject {
         return tasksCount
     }
     
-    func loadAlltasksCount(debug: Bool = false) {
+    func loadAllTasksCount(debug: Bool = false) {
         tasksCount = store.totalTasksCount(debug: debug)
         print("loaded all tasks count: \(tasksCount)")
     }
@@ -214,7 +214,7 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var costText: String = ""
     @Published var selectedPayment: PaymentType = .none
     
-    @Published var remoteEdditingBlock = false
+    @Published var remoteEditingBlock = false
     @Published var privateHouseBlock = false
     
     @Published var shouldBlockRemote = false

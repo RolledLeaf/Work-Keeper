@@ -440,51 +440,50 @@ struct TaskListView: View {
                 }
             }
         }
-      
-        
-        .overlay(alignment: .center) {
-            if showCancelTaskNotification {
-                CancelTaskNotificationView(taskDescription: $lastCanceletedTaskDescription)
-                    .transition(.offset(y: 40).combined(with: .opacity))
-            }
-        }
         
         
         .overlay(alignment: .center) {
-            if showDeleteTaskNotification {
-               DeleteTaskNotificationView(taskDescription: $lastDeletedTaskDescription)
-                    .transition(.offset(y: 40).combined(with: .opacity))
+            Group {
+                if showCancelTaskNotification {
+                    CancelTaskNotificationView(taskDescription: $lastCanceletedTaskDescription)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                } else if showDeleteTaskNotification {
+                    DeleteTaskNotificationView(taskDescription: $lastDeletedTaskDescription)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                } else if showEditTaskNotification {
+                    EditTaskNotificationView(taskDescription: $lastEditedTaskDescription)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                } else if showCompleteTaskNotification {
+                    CompleteTaskNotificationView(taskDescription: $lastCompletedTaskDescription, finalAmount: $lastCompletedFinalAmount)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                } else if showScheduleTaskNotification {
+                    ScheduleTaskNotificationView(taskDescription: $lastScheduleTaskDescription)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                }
             }
         }
         
-        .overlay(alignment: .center) {
-            if showEditTaskNotification {
-               EditTaskNotificationView(taskDescription: $lastEditedTaskDescription)
-                    .transition(.offset(y: 40).combined(with: .opacity))
-            }
-        }
-        
-        .overlay(alignment: .center) {
-            if showCompleteTaskNotification {
-                CompleteTaskNotificationView(taskDescription: $lastCompletedTaskDescription, finalAmount: $lastCompletedFinalAmount)
-                    .transition(.offset(y: 40).combined(with: .opacity))
-            }
-        }
-        
-        .overlay(alignment: .center) {
-            if showScheduleTaskNotification {
-                ScheduleTaskNotificationView(taskDescription: $lastScheduleTaskDescription)
-                    .transition(.offset(y: 40).combined(with: .opacity))
-            }
-        }
-     
         .sheet(isPresented: $showNewTaskView, onDismiss: {
             viewModel.loadTasks()
-            
         }) {
-            NewTaskView()
-            
+            NewTaskView(onComplete: { description in
+                // тут получаем объект новой задачи
+                lastScheduleTaskDescription = description
+                
+                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                    showScheduleTaskNotification = true
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        showScheduleTaskNotification = false
+                    }
+                }
+                
+                viewModel.loadTasks()
+            })
         }
+    
         
         .sheet(item: $selectedTaskForEdit, onDismiss: {
             viewModel.loadTasks()

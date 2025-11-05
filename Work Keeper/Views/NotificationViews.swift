@@ -12,6 +12,7 @@ struct ScheduleTaskNotificationView: View {
             Text("\(taskDescription)")
                     .font(.custom(SFPro.bold.rawValue, size: 20))
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
         }
             
             Text("Запланировано")
@@ -41,6 +42,7 @@ struct CancelTaskNotificationView: View {
             Text("\(taskDescription)")
                     .font(.custom(SFPro.bold.rawValue, size: 20))
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
         }
             
             Text("Отменено")
@@ -71,11 +73,20 @@ struct DeleteTaskNotificationView: View {
             Text("\(taskDescription)")
                     .font(.custom(SFPro.bold.rawValue, size: 20))
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
         }
             
-            Text("Удалено")
-                 .font(.custom(SFPro.regular.rawValue, size: 20))
-                 .foregroundColor(Color.custom(.costPaymentRed))
+            HStack {
+                Text("Удалено")
+                    .font(.custom(SFPro.regular.rawValue, size: 20))
+                    .foregroundColor(Color.custom(.costPaymentRed))
+                Image(systemName: "xmark.bin")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                    .padding(.leading, 5)
+                    .foregroundStyle(.costPaymentRed)
+            }
+            
         }
         .padding(16)
         .background(.white)
@@ -100,11 +111,12 @@ struct EditTaskNotificationView: View {
             Text("\(taskDescription)")
                     .font(.custom(SFPro.bold.rawValue, size: 20))
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
         }
             
             Text("Отредактировано")
                  .font(.custom(SFPro.regular.rawValue, size: 20))
-                 .foregroundColor(Color.custom(.taskCanceledOrange))
+                 .foregroundColor(Color.custom(.textTitleGray))
         }
         .padding(16)
         .background(.white)
@@ -131,6 +143,7 @@ struct CompleteTaskNotificationView: View {
             Text("\(taskDescription)")
                 .font(.custom(SFPro.bold.rawValue, size: 20))
                 .foregroundColor(.primary)
+                .multilineTextAlignment(.center)
         }
             
             Text("Выполнено")

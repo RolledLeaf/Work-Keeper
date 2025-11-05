@@ -8,6 +8,8 @@ struct NewTaskView: View {
     @StateObject private var viewModel = CreateTaskViewModel()
     @StateObject private var clientsListViewModel = ClientsListViewModel()
     @StateObject private var streetListViewModel = StreetListViewModel()
+    var onComplete: ((String) -> Void)? = nil
+    
     
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 9
@@ -38,6 +40,11 @@ struct NewTaskView: View {
     
     @State private var showNewTaskAlert = false
     
+    init(onComplete: ((String) -> Void)? = nil) {
+     
+        self.onComplete = onComplete
+    }
+     
     
     
     @Environment(\.dismiss)
@@ -265,7 +272,7 @@ struct NewTaskView: View {
                             .disabled(viewModel.shouldBlockRemote)
                             .onChange(of: viewModel.isRemote) { _, newValue in
                                 if newValue == true {
-                                    viewModel.remoteEdditingBlock = true
+                                    viewModel.remoteEditingBlock = true
                                     viewModel.privateHouseBlock = true
                                     viewModel.shouldBlockPrivate = true
                                     hideScrollContentBackground = true
@@ -275,7 +282,7 @@ struct NewTaskView: View {
                                     textFieldColor = CustomColor.inactiveFiledGray
                                 } else {
                                     streetChevronOpacity = 1
-                                    viewModel.remoteEdditingBlock = false
+                                    viewModel.remoteEditingBlock = false
                                     viewModel.privateHouseBlock = false
                                     viewModel.shouldBlockPrivate = false
                                     hideScrollContentBackground = false
@@ -297,7 +304,7 @@ struct NewTaskView: View {
                                 .lineLimit(1, reservesSpace: false)
                                 .minimumScaleFactor(0.5)
                                 .multilineTextAlignment(.leading)
-                                .disabled(viewModel.remoteEdditingBlock)
+                                .disabled(viewModel.remoteEditingBlock)
                                 .background(Color.custom(streetTextFieldColor))
                                 .scrollContentBackground(hideScrollContentBackground ? .hidden : .visible)
                             //.onChange(of: street) { oldValue, newValue in
@@ -356,7 +363,7 @@ struct NewTaskView: View {
                             TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.remoteEdditingBlock)
+                                .disabled(viewModel.remoteEditingBlock)
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -617,7 +624,7 @@ struct NewTaskView: View {
                         
                         Button(action: {
                             if  viewModel.saveTask() {
-                                
+                                onComplete?(viewModel.description)
                                     dismiss()
                         } else {
                             
