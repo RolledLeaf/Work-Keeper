@@ -1,37 +1,6 @@
 import SwiftUI
 
-struct AddStreetConfirmationView: View {
-    @Binding var streetName: String
 
-    var body: some View {
-        VStack(spacing: 8) {
-            Text("Улица")
-                .font(.headline)
-                .foregroundColor(.primary)
-
-            Text(streetName)
-                .font(.title3)
-                .bold()
-                .foregroundColor(.primary)
-                .multilineTextAlignment(.center)
-                .lineLimit(3)
-
-            Text("Успешно добавлена")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
-        
-        .padding(16)
-        .background(.regularMaterial)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
-        )
-        .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
-        .frame(maxWidth: 340)
-    }
-}
 
 struct StreetsListView: View {
     @State private var showAddStreetView = false
@@ -183,17 +152,23 @@ struct StreetsListView: View {
         }
             
         .overlay(alignment: .center) {
-            if showAddConfirmation {
-               
-                AddStreetConfirmationView(streetName: $viewModel.lastAddedStreetName)
-                    .transition(.offset(y: 40).combined(with: .opacity))
-                    
+            Group {
+                if showAddConfirmation {
+                    AddStreetNotificationView(streetName: $viewModel.lastAddedStreetName)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                } else if viewModel.streetWasDeleted {
+                    DeleteStreetNotificationView(name: $viewModel.lastDeletedStreetName)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                } else if viewModel.streetWasEdited {
+                    EditStreetNotificationView(oldStreetName: $viewModel.previousStreetName, streetName: $viewModel.lastEditedStreetName)
+                        .transition(.offset(y: 40).combined(with: .opacity))
+                }
+                
             }
-            
         }
         
         .onAppear {
-//            viewModel.loadStreets()
+//
             loadUserDefaults()
         }
         

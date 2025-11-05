@@ -8,7 +8,12 @@ final class StreetListViewModel: ObservableObject {
     @Published var streets: [Street] = []
     @Published var selectedStreet: Street?
     @Published var lastAddedStreetName: String = ""
+    @Published var lastDeletedStreetName: String = ""
+    @Published var lastEditedStreetName: String = ""
+    @Published var previousStreetName: String = ""
     @Published var searchText: String = ""
+    @Published var streetWasDeleted = false
+    @Published var streetWasEdited = false
     
     private var cancellables = Set<AnyCancellable>()
     private let store = StreetStore()
@@ -69,11 +74,14 @@ final class StreetListViewModel: ObservableObject {
         guard !name.isBlank else { return }
         store.updateStreet(street: street, name: name)
         loadStreets()
+        lastEditedStreetName = name
+       
     }
     
-    func delete(_ street: Street) {
+    func delete(_ street: Street, name: String) {
         store.deleteStreet(street: street)
         loadStreets()
+        lastDeletedStreetName = name
     }
     
     

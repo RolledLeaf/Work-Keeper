@@ -3,8 +3,10 @@ import SwiftUI
 struct StreetRow: View {
     @State private var showEditStreetView = false
     @State private var showDeleteStreetAlert = false
+  
     @State private var streetForEdit: Street?
-    
+    @State private var lastDeletedStreet = ""
+    @State private var lastEditedStreet = ""
     
     @ObservedObject var viewModel: StreetListViewModel
     
@@ -39,6 +41,8 @@ struct StreetRow: View {
             Button(action: {
                 streetForEdit = street
                 showEditStreetView = true
+                viewModel.previousStreetName = street.name ?? ""
+       
             }) {
                 Label {
                     Text("Редактировать")
@@ -61,9 +65,23 @@ struct StreetRow: View {
         }
         .confirmationDialog("Удалить эту улицу?", isPresented: $showDeleteStreetAlert, titleVisibility: .visible) {
             Button("Удалить", role: .destructive) {
-                viewModel.delete(street)
+                let streetName = street.name ?? "без названия"
+                lastDeletedStreet = streetName
+                viewModel.delete(street, name: streetName)
+                
+                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                    viewModel.streetWasDeleted = true
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        viewModel.streetWasDeleted = false
+                    }
+                }
+                
                 viewModel.loadStreets()
                 
+           
                 UINotificationFeedbackGenerator().notificationOccurred(.warning)
             }
             Button("Отмена", role: .cancel) { }
@@ -75,7 +93,18 @@ struct StreetRow: View {
         .sheet(item: $streetForEdit, onDismiss: {
             viewModel.loadStreets()
         }) { street in
-            EditStreetView(viewModel: viewModel, street: street)
+            EditStreetView(onEdit: { updatedStreetName in
+                lastEditedStreet = updatedStreetName
+                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                    viewModel.streetWasEdited = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        viewModel.streetWasEdited = false
+                    }
+                }
+                    
+            }, viewModel: viewModel, street: street)
         }
     }
 }

@@ -5,6 +5,7 @@ struct EditStreetView: View {
     @State private var streetName: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State var saveButtomOpacity: Double = 0
+    var onEdit: ((String) -> Void)?
     
     @ObservedObject var viewModel: StreetListViewModel
     
@@ -32,6 +33,7 @@ struct EditStreetView: View {
                 
                 Button(action: {
                     viewModel.update(street, name: streetName)
+                    onEdit?(streetName)
                     dismiss()
                     print("Street updated with name: \(streetName)")
                 }) {
