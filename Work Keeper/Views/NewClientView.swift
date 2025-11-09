@@ -247,10 +247,11 @@ struct NewClientView: View {
                                 .foregroundColor(.black)
                         }
                         ZStack {
-                            Color.white
+                            viewModel.isPrivateHouse == true ? Color.custom(.inactiveFiledGray) : Color.white 
                             TextField("", text: $viewModel.apartment)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .disabled(viewModel.isPrivateHouse == true ? true : false)
                                 .focused($focusedField, equals: .apartment)
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharachtersCount {
@@ -287,10 +288,11 @@ struct NewClientView: View {
                                 .foregroundColor(.black)
                         }
                         ZStack {
-                            Color.white
+                            viewModel.isPrivateHouse == true ? Color.custom(.inactiveFiledGray) : Color.white
                             TextField("", text: $viewModel.entrance)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .disabled(viewModel.isPrivateHouse == true ? true : false)
                                 .focused($focusedField, equals: .entrance)
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharachtersCount {
@@ -322,9 +324,10 @@ struct NewClientView: View {
                             .foregroundColor(.black)
                         
                         ZStack {
-                            Color.white
+                            viewModel.isPrivateHouse == true ? Color.custom(.inactiveFiledGray) : Color.white
                             TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
+                                .disabled(viewModel.isPrivateHouse == true ? true : false)
                                 .focused($focusedField, equals: .floor)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                         }

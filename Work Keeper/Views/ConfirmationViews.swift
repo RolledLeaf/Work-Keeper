@@ -298,7 +298,7 @@ struct AddStreetConfirmationView: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(3)
 
-            Text("Успешно добавлена")
+            Text("Успешно добавлен")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
