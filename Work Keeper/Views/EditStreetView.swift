@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct EditStreetView: View {
-    private let maxStreetCharactersCount: Int = 44
+    private let maxStreetCharactersCount: Int = 49
     @State private var streetName: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
-    @State var saveColor: Color = .gray
     @State var saveButtomOpacity: Double = 0
+    var onEdit: ((String) -> Void)?
     
     @ObservedObject var viewModel: StreetListViewModel
     
@@ -19,40 +19,46 @@ struct EditStreetView: View {
         
         VStack {
             HStack {
+                Button(action: {
+                  
+                    dismiss()
+                }) {
+                    Text("Отмена")
+                        .font(.custom(SFPro.regular.rawValue, size: 15))
+                        .tint(.black)
+                }
+                
                 Spacer()
-                Text("Изменение названия")
-                    .font(.custom(SFPro.bold.rawValue, size: 20))
-                    .padding(.trailing, 30)
-                    .offset(y: 30)
+              
                 
                 Button(action: {
                     viewModel.update(street, name: streetName)
+                    onEdit?(streetName)
                     dismiss()
+                    print("Street updated with name: \(streetName)")
                 }) {
                     Text("Сохранить")
+                        
                         .font(.custom(SFPro.regular.rawValue, size: 15))
-                        .frame(height: 60)
-                        .opacity(saveButtomOpacity)
                         .frame(width: 100, height: 40)
-                        .tint(saveColor)
-                        .onChange(of: streetName) {
-                            if !streetName.isBlank {
-                                saveButtomOpacity = 1
-                                saveColor = .black
-                                
-                            } else {
-                                
-                                saveButtomOpacity = 0
-                            }
-                        }
-                    
-                    
+                        .tint(streetName.isBlank ? .inactiveButtonGray : .black)
                 }
-                .padding(.top, 20)
+                .disabled(streetName.isBlank)
+                
             }
+            .padding(.leading, 10)
+            .padding(.top, 5)
+            
+            Text("Изменение названия")
+                .font(.custom(SFPro.bold.rawValue, size: 20))
+
+                .padding(.top, 10)
+                
+            
             Spacer()
                 .frame(height: 38)
             
+            HStack {
             TextField("Введите название улицы", text: $streetName)
                 .font(.system(size: 24, weight: .medium, design: .default))
                 .onSubmit {
@@ -77,6 +83,18 @@ struct EditStreetView: View {
                         .fill(Color.custom(.searchFieldGray))
                         .padding(.horizontal, 15)
                 )
+            if !streetName.isEmpty {
+                Button(action:  {
+                    streetName = ""
+                }) {
+                    Image(systemName: "xmark.circle")
+                        .resizable()
+                        .frame(width: 35, height: 35)
+                        .offset(x: -10)
+                }
+                
+            }
+        }
             
             Text("максимум символов \(maxStreetCharactersCount)")
                 .font(.system(size: 12, weight: .medium))

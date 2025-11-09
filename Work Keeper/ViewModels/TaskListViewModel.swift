@@ -19,6 +19,23 @@ final class TaskListViewModel: ObservableObject {
     @Published var tasksCount: Int = 0
     @Published var canceledTasksCount: Int = 0
     @Published var selectedStatuses: [Status]? = nil
+    @Published var lastScheduledTaskDescription: String? = nil
+    @Published var didScheduleTask: Bool = false
+    
+    private let store = TaskStore()
+    private var cancelables = Set<AnyCancellable>()
+
+    func scheduleTask(_ task: TaskEntity) {
+        store.makeScheduled(task)
+        lastScheduledTaskDescription = task.taskDescription
+        didScheduleTask = true
+    }
+    
+    func scheduleTask(task: TaskEntity) {
+        store.makeScheduled(task)
+        loadTasks()
+    }
+    //Дублирование методов scheduleTask - привести к единому виду
     
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
@@ -26,12 +43,7 @@ final class TaskListViewModel: ObservableObject {
             return Calendar.current.startOfDay(for: date) // normalize to day
         }
     }
-    
-    private let store = TaskStore()
-    private var cancellables = Set<AnyCancellable>()
-    
-    
-    
+ 
     init() {
         // initial load
         loadTasks()
@@ -42,14 +54,14 @@ final class TaskListViewModel: ObservableObject {
             .sink { [weak self] _ in
                 self?.applyFiltersAsync()
             }
-            .store(in: &cancellables)
+            .store(in: &cancelables)
 
         // React to status selection changes immediately
         $selectedStatuses
             .sink { [weak self] _ in
                 self?.applyFiltersAsync()
             }
-            .store(in: &cancellables)
+            .store(in: &cancelables)
     }
 
     private func applyFiltersAsync() {
@@ -67,9 +79,6 @@ final class TaskListViewModel: ObservableObject {
     }
 
 
-    
-    /// Собрать предикат по текущим фильтрам и выполнить fetch через TaskStore.
-    /// Если `selectedStatuses` == nil => не добавляем предикат по статусу (показываем всё).
     func applyCurrentFiltersUsingDB(debug: Bool = false) {
         print("[TaskListViewModel] applyCurrentFiltersUsingDB called with searchText:", searchText)
         
@@ -110,20 +119,12 @@ final class TaskListViewModel: ObservableObject {
         self.tasks = results
     }
     
-    
-    
-    
     func delete(_ task: TaskEntity) {
         store.deleteTask(task)
         loadTasks()
     }
     
-   
     
-    func scheduleTask(task: TaskEntity) {
-        store.makeScheduled(task)
-        loadTasks()
-    }
     
     // MARK: - Statistics Methods
     
@@ -142,7 +143,7 @@ final class TaskListViewModel: ObservableObject {
         return tasksCount
     }
     
-    func loadAlltasksCount(debug: Bool = false) {
+    func loadAllTasksCount(debug: Bool = false) {
         tasksCount = store.totalTasksCount(debug: debug)
         print("loaded all tasks count: \(tasksCount)")
     }
@@ -201,7 +202,7 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var isPrivateHouse: Bool = false
     @Published var firstName: String = ""
     @Published var lastName: String = ""
-    // Храним только цифры (10-значный российский NSN)
+  
     @Published var phoneDigits: String = ""
     @Published var comment: String = ""
     @Published var description: String = ""
@@ -213,12 +214,12 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var costText: String = ""
     @Published var selectedPayment: PaymentType = .none
     
-    @Published var remoteEdditingBlock = false
+    @Published var remoteEditingBlock = false
     @Published var privateHouseBlock = false
     
     @Published var shouldBlockRemote = false
     @Published var shouldBlockPrivate = false
-    
+    @Published var didCreateTask: Bool = false
     
     @Published  var roomType: String?
     @Published  var entranceType: String?
@@ -242,8 +243,26 @@ final class CreateTaskViewModel: ObservableObject {
     private let taskStore = TaskStore()
     
   
+    func canSaveTask() -> Bool {
+        if isRemote == false {
+            !streetName.isBlank && !firstName.isBlank && !phoneDigits.isBlank && !house.isBlank }
+            else {
+                 !firstName.isBlank && !phoneDigits.isBlank
+            }
+        
+    }
+    
+    func updateCreateButtonColor(color: CustomColor) -> CustomColor {
+        canSaveTask() ? .highlightBlue
+        : .inactiveFiledGray
+    }
 
-    func saveTask() {
+    func saveTask() -> Bool {
+        guard canSaveTask() else {
+            print("❌ Не все поля заполнены ")
+            return false
+        }
+        
         let street = streetStore.createOrFetchStreet(name: streetName)
 
         let normalizedPhone = phoneDigits.isEmpty ? nil : "+7" + phoneDigits
@@ -282,6 +301,7 @@ final class CreateTaskViewModel: ObservableObject {
             contractAmount: contractAmount,
             cost: cost
         )
+        didCreateTask = true
         print("""
          ✅ Задание успешно создано:
          📆 Дата: \(scheduledAt)
@@ -296,6 +316,7 @@ final class CreateTaskViewModel: ObservableObject {
          Тип Входа: \(entranceType ?? "")
          🧾 Статус: \(status.rawValue)
          """)
+        return true
     }
     
     private func maskRU(fromDigits s: String) -> String {
@@ -335,7 +356,10 @@ final class CompleteTaskViewModel: ObservableObject {
     @Published var cost: Double = 0
     @Published var extraPaymentText: String = ""
     @Published var extraPayment: Double? = 0
+    @Published var taskDescription: String = ""
     @Published var paymentType: PaymentType = .cash
+    @Published var finalAmountText: String = ""
+    
     var finalAmount: Double {
         contractAmount + (extraPayment ?? 0) - cost
     }
@@ -346,12 +370,14 @@ final class CompleteTaskViewModel: ObservableObject {
 
     init(task: TaskEntity) {
         self.task = task
+        self.taskDescription = task.taskDescription ?? "No description"
         self.contractAmount = task.contractAmount
         self.contractAmountText = "\(Int(task.contractAmount))"
         self.comment = task.comment ?? ""
         self.cost = task.cost
         self.costText = "\(Int(task.cost))"
         self.paymentType = PaymentType(rawValue: task.paymentType ?? "") ?? .cash
+        
     }
 
     func complete() {
@@ -366,6 +392,7 @@ final class CompleteTaskViewModel: ObservableObject {
 
 final class CancelTaskViewModel: ObservableObject {
     @Published var comment: String = ""
+    @Published var taskDescription: String = ""
 
     private let task: TaskEntity
     private let store = TaskStore()
@@ -403,7 +430,7 @@ final class EditTaskViewModel: ObservableObject {
     @Published var floor: String
     @Published var isPrivateHouse: Bool
   
-    @Published var remoteEdditingBlock = false
+    @Published var remoteEditingBlock = false
     @Published var privateHouseBlock = false
     
     @Published var shouldBlockRemote = false
@@ -488,20 +515,33 @@ final class EditTaskViewModel: ObservableObject {
         }
     }
 
+    func canSaveTask() -> Bool {
+        if isRemote == false {
+            !streetName.isBlank && !firstName.isBlank && !phoneDigits.isBlank && !house.isBlank }
+            else {
+                 !firstName.isBlank && !phoneDigits.isBlank
+            }
+        
+    }
+    
     // MARK: - Public methods
     /// Apply changes and save to Core Data
-    func update() {
-        // Update client
-        guard let client = task.client else {
-            print("❌ Ошибка: у задачи отсутствует клиент")
-            return
+    func update() -> Bool  {
+        
+        guard canSaveTask(), let client = task.client else {
+            if task.client == nil {
+                print("❌ Ошибка, у задачи нет клиента")
+            } else {
+                print("❌ Ошибка, не все обязательные поля заполнены")
+            }
+            return false
         }
-
+        
         // Обновляем клиента и адрес, как и раньше
         client.firstName = firstName
         client.lastName = lastName
         client.phone = phoneDigits.isEmpty ? "" : "+7" + phoneDigits
-
+        
         if let address = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
             address.street?.name = streetName
             address.house = house
@@ -512,7 +552,7 @@ final class EditTaskViewModel: ObservableObject {
             address.entranceType = entranceType
             address.roomType = roomType
         }
-
+        
         // безопасный вызов updateTask
         store.updateTask(
             task,
@@ -527,7 +567,7 @@ final class EditTaskViewModel: ObservableObject {
             paymentType: paymentType ?? .none,
             cost: cost
         )
-        
+    
         print("""
          ✅ Задание успешно изменено:
          📆 Дата: \(scheduledAt)
@@ -542,7 +582,9 @@ final class EditTaskViewModel: ObservableObject {
                  Тип Входа: \(entranceType ?? "")
          🧾 Статус: \(status)
          """)
+    return true
     }
+
     
     private func maskRU(fromDigits s: String) -> String {
         if s.isEmpty { return "" }

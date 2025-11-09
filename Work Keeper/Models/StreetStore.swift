@@ -11,11 +11,12 @@ final class StreetStore: NSObject, ObservableObject {
     
     func createOrFetchStreet(name: String) -> Street {
         let request: NSFetchRequest<Street> = Street.fetchRequest()
-        request.predicate = NSPredicate(format: "name == %@", name)
+        request.predicate = NSPredicate(format: "name ==[c] %@", name)
         request.fetchLimit = 1
         
         do {
             if let existing = try context.fetch(request).first {
+                print("The street \(name) already exists.")
                 return existing
             } else {
                 let street = Street(context: context)

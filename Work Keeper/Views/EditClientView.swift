@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct NewClientView: View {
+struct EditClientView: View {
     
-    @StateObject private var viewModel = CreateClientViewModel()
-    @StateObject private var streetListViewModel = StreetListViewModel()
+    @ObservedObject var viewModel: EditClientViewModel
+    @StateObject var streetListViewModel = StreetListViewModel()
    
     @State private var roomType = "кв"
     @State private var entranceType = "под"
@@ -26,24 +26,20 @@ struct NewClientView: View {
     @State private var showStreetsView = false
     @FocusState private var focusedField: Field?
     
-    var onCreation: ((String) -> Void)? = nil
+    private var onEdit: ((String) -> Void)?
     
     @Environment(\.dismiss)
     private var dismiss
     
+    init(viewModel: EditClientViewModel, onEdit: ((String) -> Void)? = nil) {
+        self._viewModel = ObservedObject(wrappedValue: viewModel)
+        self.onEdit = onEdit
+      }
+    
     enum Field {
         case firstName
         case lastName
-        case street
-        case house
-        case apartment
-        case entrance
-        case floor
         case phoneNumber
-    }
-    
-    init(onCreation: ((String) -> Void)? = nil) {
-        self.onCreation = onCreation
     }
     
     var body: some View {
@@ -58,7 +54,7 @@ struct NewClientView: View {
            
                 VStack {
                     
-                    Text("Новый клиент")
+                    Text("Редактирование клиента")
                         .font(.system(size: 24, weight: .bold, design: .default))
                         .foregroundColor(Color.black)
                         .offset(y: 30)
@@ -104,9 +100,9 @@ struct NewClientView: View {
                                     }
                                 }
                                 .focused($focusedField, equals: .lastName)
-                                .submitLabel(.next)
+                                .submitLabel(.done)
                                 .onSubmit {
-                                    focusedField = .street
+                                    hideKeyboard()
                                 }
                             
                         }
@@ -145,7 +141,6 @@ struct NewClientView: View {
                                 .frame(minHeight: 20, maxHeight: 45)
                                 .lineLimit(2, reservesSpace: false)
                                 .minimumScaleFactor(0.6)
-                                .focused($focusedField, equals: .street)
                                 .multilineTextAlignment(.center)
                             //.onChange(of: street) { oldValue, newValue in
                                 .onChange(of: viewModel.streetName) { newValue in
@@ -157,10 +152,6 @@ struct NewClientView: View {
                                     } else {
                                         maxStreetCharactersTextOpacity = 0
                                     }
-                                }
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .house
                                 }
                             
                             
@@ -207,18 +198,13 @@ struct NewClientView: View {
                         
                         ZStack {
                             Color.white
-                            TextField("", text: $viewModel.building)
+                            TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .focused($focusedField, equals: .house)
-                                .onChange(of: viewModel.building) { newValue in
+                                .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharachtersCount {
-                                        viewModel.building = String(newValue.prefix(maxBuildingCharachtersCount))
+                                        viewModel.house = String(newValue.prefix(maxBuildingCharachtersCount))
                                     }
-                                }
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .apartment
                                 }
                         }
                         .cornerRadius(5)
@@ -247,20 +233,14 @@ struct NewClientView: View {
                                 .foregroundColor(.black)
                         }
                         ZStack {
-                            viewModel.isPrivateHouse == true ? Color.custom(.inactiveFiledGray) : Color.white 
+                            Color.white
                             TextField("", text: $viewModel.apartment)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.isPrivateHouse == true ? true : false)
-                                .focused($focusedField, equals: .apartment)
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharachtersCount {
                                         viewModel.apartment = String(newValue.prefix(maxApartmentCharachtersCount))
                                     }
-                                }
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .entrance
                                 }
                         }
                         .cornerRadius(5)
@@ -288,20 +268,14 @@ struct NewClientView: View {
                                 .foregroundColor(.black)
                         }
                         ZStack {
-                            viewModel.isPrivateHouse == true ? Color.custom(.inactiveFiledGray) : Color.white
+                            Color.white
                             TextField("", text: $viewModel.entrance)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.isPrivateHouse == true ? true : false)
-                                .focused($focusedField, equals: .entrance)
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharachtersCount {
                                         viewModel.entrance = String(newValue.prefix(maxEntranceCharachtersCount))
                                     }
-                                }
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .floor
                                 }
                         }
                         .cornerRadius(5)
@@ -324,19 +298,14 @@ struct NewClientView: View {
                             .foregroundColor(.black)
                         
                         ZStack {
-                            viewModel.isPrivateHouse == true ? Color.custom(.inactiveFiledGray) : Color.white
+                            Color.white
                             TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.isPrivateHouse == true ? true : false)
-                                .focused($focusedField, equals: .floor)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                         }
                         .cornerRadius(5)
                         .frame(width: 40, height: 30)
-                        .submitLabel(.next)
-                        .onSubmit {
-                            focusedField = .phoneNumber
-                        }
+                        
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
                                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
@@ -377,7 +346,6 @@ struct NewClientView: View {
                                 .foregroundColor(.black)
                                 .padding(.leading, 5)
                                 .keyboardType(.phonePad)
-                                .focused($focusedField, equals: .phoneNumber)
                                 .textContentType(.telephoneNumber)
                                 .onChange(of: phoneMasked) { newValue in
                                     let prevDigits = digitsOnly(previousPhoneMasked)
@@ -402,7 +370,6 @@ struct NewClientView: View {
                                     previousPhoneMasked = phoneMasked
                                     viewModel.phoneDigits = newDigits // в VM храним только цифры
                                 }
-                                .submitLabel(.done)
                         }
                         .cornerRadius(10)
                         .frame(width: 190, height: 40)
@@ -438,9 +405,9 @@ struct NewClientView: View {
                         )
                         
                         Button(action: {
-                            if viewModel.canCreateClient() {
-                                onCreation?(viewModel.firstName)
-                                viewModel.createClient()
+                            if viewModel.canUpdateClient() {
+                                onEdit?(viewModel.firstName)
+                                viewModel.update()
                                 dismiss()
                             } else {
                                 showCreateClientAlert = true
@@ -448,8 +415,8 @@ struct NewClientView: View {
                         }) {
                             ZStack {
                                 Rectangle()
-                                    .tint(Color.custom(viewModel.canCreateClient() ? .highlightBlue : .inactiveButtonGray))
-                                Text("Cоздать")
+                                    .tint(Color.custom(viewModel.canUpdateClient() ? .highlightBlue : .inactiveButtonGray))
+                                Text("Сохранить")
                                     .tint(Color.white)
                             }
                         }

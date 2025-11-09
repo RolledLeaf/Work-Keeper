@@ -50,14 +50,13 @@ struct IncomeView: View {
                         y: .value("Доход", item.amount)
                     )
                     .foregroundStyle(by: .value("Месяц", item.month))
-                    
                 }
+                .chartLegend(.hidden)
                 .frame(height: 220)
                 .padding(.horizontal)
                 
     
                 List {
-                    
                     ForEach(0..<IncomeRow.months.count, id: \.self) { idx in
                         IncomeRow( viewModel: viewModel, year: year, monthIndex: idx)
                     }

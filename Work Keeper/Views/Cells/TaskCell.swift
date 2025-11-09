@@ -388,10 +388,6 @@ struct TaskRow: View {
 }
 
 
-#Preview {
-    TaskListView()
-}
-
 
 
 // MARK: - Payment Icon Logic

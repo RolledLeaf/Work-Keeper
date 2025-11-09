@@ -4,9 +4,9 @@ struct CompleteTaskView: View {
     
     @ObservedObject var viewModel: CompleteTaskViewModel
     
-    private let maxCommentCharactersCount: Int = 150
+    private let maxCommentCharactersCount: Int = 300
     @State private var commentTextOpacity: Double = 0
-    
+    var onComplete: ((String, Double) -> Void)? = nil
     @Environment(\.dismiss)
     private var dismiss
     
@@ -209,6 +209,7 @@ struct CompleteTaskView: View {
                     
                     Button(action: {
                         viewModel.complete()
+                        onComplete?(viewModel.taskDescription, viewModel.finalAmount)
                         dismiss()
                     }) {
                         ZStack {

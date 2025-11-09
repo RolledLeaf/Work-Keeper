@@ -8,10 +8,12 @@ struct NewTaskView: View {
     @StateObject private var viewModel = CreateTaskViewModel()
     @StateObject private var clientsListViewModel = ClientsListViewModel()
     @StateObject private var streetListViewModel = StreetListViewModel()
+    var onComplete: ((String) -> Void)? = nil
+    
     
     private var maxFirstNameCharactersCount: Int = 13
     private let maxBuildingCharactersCount: Int = 9
-    private let maxStreetCharactersCount: Int = 44
+    private let maxStreetCharactersCount: Int = 49
     private let maxDescriptionCharactersCount: Int = 85
     private let maxApartmentCharactersCount: Int = 6
     private let maxEntranceCharactersCount: Int = 3
@@ -23,7 +25,7 @@ struct NewTaskView: View {
     private let maxFloorCharacters: Int = 3
     
     @State private var phoneMasked: String = ""
-    @State private var previousPhoneMasked: String = "" // у тебя уже есть — оставь
+    @State private var previousPhoneMasked: String = ""
     
     @State private var StreetCharactersTextOpacity: Double = 0
     @State private var DescriptionCharactersTextOpacity: Double = 0
@@ -34,7 +36,15 @@ struct NewTaskView: View {
     @State private var streetTextFieldColor: CustomColor = .pureWhite
     @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
+   
     
+    @State private var showNewTaskAlert = false
+    
+    init(onComplete: ((String) -> Void)? = nil) {
+     
+        self.onComplete = onComplete
+    }
+     
     
     
     @Environment(\.dismiss)
@@ -242,7 +252,7 @@ struct NewTaskView: View {
                     
                     //address section
                     HStack {
-                        Text("Адрес")
+                        Text("Улица")
                             .padding(.leading, 21)
                             .foregroundColor(Color.custom(.textTitleGray))
                             .font(.system(size: 19, weight: .regular, design: .default))
@@ -262,7 +272,7 @@ struct NewTaskView: View {
                             .disabled(viewModel.shouldBlockRemote)
                             .onChange(of: viewModel.isRemote) { _, newValue in
                                 if newValue == true {
-                                    viewModel.remoteEdditingBlock = true
+                                    viewModel.remoteEditingBlock = true
                                     viewModel.privateHouseBlock = true
                                     viewModel.shouldBlockPrivate = true
                                     hideScrollContentBackground = true
@@ -272,7 +282,7 @@ struct NewTaskView: View {
                                     textFieldColor = CustomColor.inactiveFiledGray
                                 } else {
                                     streetChevronOpacity = 1
-                                    viewModel.remoteEdditingBlock = false
+                                    viewModel.remoteEditingBlock = false
                                     viewModel.privateHouseBlock = false
                                     viewModel.shouldBlockPrivate = false
                                     hideScrollContentBackground = false
@@ -294,7 +304,7 @@ struct NewTaskView: View {
                                 .lineLimit(1, reservesSpace: false)
                                 .minimumScaleFactor(0.5)
                                 .multilineTextAlignment(.leading)
-                                .disabled(viewModel.remoteEdditingBlock)
+                                .disabled(viewModel.remoteEditingBlock)
                                 .background(Color.custom(streetTextFieldColor))
                                 .scrollContentBackground(hideScrollContentBackground ? .hidden : .visible)
                             //.onChange(of: street) { oldValue, newValue in
@@ -353,7 +363,7 @@ struct NewTaskView: View {
                             TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
-                                .disabled(viewModel.remoteEdditingBlock)
+                                .disabled(viewModel.remoteEditingBlock)
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -593,11 +603,7 @@ struct NewTaskView: View {
                     
                     Spacer()
                         .frame(height: 20)
-                    
-                    
-                    
-                    
-                    
+      
                     HStack {
                         Button(action: {
                             dismiss()
@@ -617,15 +623,22 @@ struct NewTaskView: View {
                         )
                         
                         Button(action: {
-                            viewModel.saveTask()
-                            dismiss()
+                            if  viewModel.saveTask() {
+                                onComplete?(viewModel.description)
+                                    dismiss()
+                        } else {
                             
+                            showNewTaskAlert = true
+                            
+                        }
+                    
                         }) {
                             ZStack {
                                 Rectangle()
-                                    .tint(Color.custom(.inactiveButtonGray))
+                                    .tint(Color.custom(viewModel.canSaveTask() ? .highlightBlue : .inactiveButtonGray))
                                 Text("Cоздать")
                                     .tint(Color.white)
+                                 
                             }
                         }
                         .cornerRadius(16)
@@ -642,6 +655,12 @@ struct NewTaskView: View {
             .onTapGesture {
                 hideKeyboard()
             }
+        }
+        .alert(isPresented: $showNewTaskAlert) {
+            if viewModel.isRemote == false {
+                Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя, номер телефона, название улицы и номер дома "), dismissButton: .default(Text("OK"))) } else {
+                    Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя и номер телефона"), dismissButton: .default(Text("OK")))
+                }
         }
         
         .onAppear {
