@@ -11,7 +11,8 @@ struct StreetRow: View {
     @ObservedObject var viewModel: StreetListViewModel
     
     let street: Street
-     
+    let isFirst: Bool
+    let isLast: Bool
     
     var body: some View {
         
@@ -24,19 +25,22 @@ struct StreetRow: View {
                         .padding(.leading, 15)
                     Spacer()
                 }
+                
                 Spacer()
-                Rectangle()
+                
+                if !isLast {
+                    Rectangle()
+                      .frame(height: 1)
+                      .padding(.horizontal, 15)
+                      .foregroundColor(.custom(.separatorLineGray))
+                }
                     
-                    .frame(height: 1)
-                    .padding(.leading, 15)
-                    .foregroundColor(.custom(.separatorLineGray))
             }
         }
         
-        .listRowInsets(EdgeInsets())
-        .cornerRadius(7)
-        .listRowSeparator(.hidden)
-        .contentShape(Rectangle())
+      .listRowInsets(EdgeInsets())
+        .cornerRadius(10,corners: isFirst ? [.topLeft, .topRight] : isLast ? [.bottomLeft, .bottomRight] : [])
+
         .contextMenu {
             Button(action: {
                 streetForEdit = street

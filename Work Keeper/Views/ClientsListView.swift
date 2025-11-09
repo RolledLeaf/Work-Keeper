@@ -124,7 +124,7 @@ struct ClientsListView: View {
         NavigationStack {
             ZStack {
                 
-                Color(.white).ignoresSafeArea()
+                Color(.white).edgesIgnoringSafeArea(.all)
                     .onTapGesture {
                         hideKeyboard()
                     }
@@ -226,13 +226,12 @@ struct ClientsListView: View {
                                     }
                                     .tint(Color.custom(.editButtonGray))
                                 }
-                            
+                                .listRowSeparator(.hidden)
                         }
-                        .listRowSeparator(.hidden)
+                       
                         .listStyle(PlainListStyle())
                         .padding(.leading, -20)
                         .padding(.trailing, -20)
-                        
                         .navigationDestination(item: $selectedClient) { client in
                             ClientProfileView(client: client)
                         }

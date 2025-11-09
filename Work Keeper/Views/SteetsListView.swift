@@ -134,8 +134,11 @@ struct StreetsListView: View {
                 Spacer()
                     .frame(height: 40)
                 List(viewModel.streets) { street in
+                    let isFirst = street == viewModel.streets.first
+                    let isLast = street == viewModel.streets.last
                     StreetRow(
-                        viewModel: viewModel, street: street
+                        viewModel: viewModel, street: street, isFirst: isFirst,
+                        isLast: isLast
                     )
                     
                     .onTapGesture {
@@ -143,8 +146,8 @@ struct StreetsListView: View {
                         dismiss()
                         print("selected street: \(street)")
                     }
+                    .listRowSeparator(.hidden)
                 }
-                
                 .listStyle(PlainListStyle())
                 .padding(.horizontal, 10)
                 Spacer()
