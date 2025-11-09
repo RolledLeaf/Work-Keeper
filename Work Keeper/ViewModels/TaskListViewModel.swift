@@ -470,6 +470,7 @@ final class EditTaskViewModel: ObservableObject {
         self.task = task
         // Populate from existing Task
         self.scheduledAt = task.scheduledAt ?? Date()
+        self.paymentType = PaymentType(rawValue: task.paymentType ?? "")
         self.descriptionText = task.taskDescription ?? ""
         self.comment = task.comment ?? ""
         self.isRemote = task.isRemote
