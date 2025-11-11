@@ -1,7 +1,7 @@
 import Foundation
 
 enum TaskStatus: String, Identifiable, CaseIterable {
-    case all = "Все"
+//    case all = "Все"
     case scheduled = "Запланированные"
     case completed = "Выполненные"
     case canceled = "Отменённые"
@@ -47,7 +47,7 @@ let userDefaults = UserDefaults.standard
 
 enum UserDefaultsKeys: String, CaseIterable {
     case streetsSorting = "streetsSorting"
-    
+    case tasksFilter = "tasksFilter"
     case clientsSorting = "clientsSorting"
   
 }

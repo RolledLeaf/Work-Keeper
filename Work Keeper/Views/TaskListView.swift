@@ -14,71 +14,73 @@ private func dayKey(_ date: Date) -> Date {
 struct TasksFilterView: View {
     @Binding var selectedFilters: Set<TaskStatus>
 
-    let allFilters: [TaskStatus] = [.all, .scheduled, .completed, .canceled]
+    let allFilters: [TaskStatus] = [.scheduled, .completed, .canceled]
 
     var body: some View {
-        List {
-            ForEach(allFilters, id: \.self) { status in
-                HStack {
-                    Text(status.rawValue)
-                    Spacer()
-
-                    
-                    let statusColor: Color = {
-                        switch status {
-                        case .scheduled: return Color.custom(.taskViewYellow)
-                        case .completed: return Color.custom(.taskCompleteGreen)
-                        case .canceled: return Color.custom(.taskCanceledOrange)
-                        case .all: return Color.black
-                        }
-                    }()
-
-                    if selectedFilters.contains(status) {
-                        Image(systemName: "checkmark.square")
-                            .resizable()
-                            .foregroundColor(statusColor)
-                            .frame(width: 22, height: 22)
-                            .padding(.trailing, 8)
-                    } else {
-                        Image(systemName: "square")
-                            .resizable()
-                            .foregroundColor(statusColor.opacity(0.5))
-                            .frame(width: 22, height: 22)
-                            .padding(.trailing, 8)
-                    }
+        VStack {
+            HStack {
+                Spacer()
+                Button(action: {
+                    selectedFilters = [.scheduled, .completed, .canceled]
+                }) {
+                    Text("Выбрать все")
+                        .padding(.trailing, 6)
                 }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    // Ensure .all behaves as a pseudo-status: when .all is selected,
-                    // no other statuses can be combined. When any real status is selected,
-                    // .all is removed.
-                    if status == .all {
-                        // Tapping "Все" selects only it
-                        selectedFilters = [.all]
-                        return
+            }
+            
+            
+            List {
+                ForEach(allFilters, id: \.self) { status in
+                    HStack {
+                        Text(status.rawValue)
+                        Spacer()
+                        
+                        
+                        let statusColor: Color = {
+                            switch status {
+                            case .scheduled: return Color.custom(.taskViewYellow)
+                            case .completed: return Color.custom(.taskCompleteGreen)
+                            case .canceled: return Color.custom(.taskCanceledOrange)
+                                
+                            }
+                        }()
+                        
+                        if selectedFilters.contains(status) {
+                            Image(systemName: "checkmark.square")
+                                .resizable()
+                                .foregroundColor(statusColor)
+                                .frame(width: 22, height: 22)
+                                .padding(.trailing, 8)
+                        } else {
+                            Image(systemName: "square")
+                                .resizable()
+                                .foregroundColor(statusColor.opacity(0.5))
+                                .frame(width: 22, height: 22)
+                                .padding(.trailing, 8)
+                        }
                     }
-
-                    // For real statuses: remove .all if present
-                    if selectedFilters.contains(.all) {
-                        selectedFilters.remove(.all)
-                    }
-
-                    // Toggle the tapped status
-                    if selectedFilters.contains(status) {
-                        selectedFilters.remove(status)
-                    } else {
-                        selectedFilters.insert(status)
-                    }
-
-                    // If nothing remains selected, fall back to .all
-                    if selectedFilters.isEmpty {
-                        selectedFilters = [.all]
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        
+                        
+                        // Toggle the tapped status
+                        if selectedFilters.contains(status) {
+                            selectedFilters.remove(status)
+                        } else {
+                            selectedFilters.insert(status)
+                        }
+                        
+                        // If nothing remains selected, fall back to .all
+                        if selectedFilters.isEmpty {
+                            selectedFilters = [.scheduled, .completed, .canceled]
+                        }
                     }
                 }
             }
+            .listStyle(.insetGrouped)
+            .navigationTitle("Фильтры")
+            .padding(.top, 8)
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Фильтры")
     }
 }
 
@@ -97,6 +99,7 @@ struct TaskListView: View {
     @State private var showScheduleTaskNotification: Bool = false
     @State private var showDeleteTaskNotification: Bool = false
     @State private var showEditTaskNotification: Bool = false
+    @State private var showSchedulePicker = false
     @State private var lastCompletedTaskDescription: String = ""
     @State private var lastCanceletedTaskDescription: String = ""
     @State private var lastScheduleTaskDescription: String = ""
@@ -105,19 +108,38 @@ struct TaskListView: View {
     @State private var lastCompletedFinalAmount: Double = 0.0
     
     @State private var showFilters = false
-    @State private var selectedFilters: Set<TaskStatus> = [.all]
+    
     
     @State private var showPopup = false
     @State private var selectedTask: TaskEntity?
     @State private var taskToCancel: TaskEntity?
     @State private var taskToDelete: TaskEntity?
+    @State private var selectedTaskForSchedule: TaskEntity?
     @State private var navigateToTaskView = false
 
     @State private var selectedTaskForComplete: TaskEntity?
     @State private var selectedTaskForEdit: TaskEntity?
     @State private var listScrollPosition: Date?
     
+    func saveSelectedStatusesToUserDefaults(key: String) {
+        // Конвертируем UI-множество TaskStatus -> [Status]
+        let statuses = viewModel.selectedFilters.flatMap { viewModel.taskStatusToStatus($0) }
+        let raw = statuses.map { $0.rawValue }
+        UserDefaults.standard.set(raw, forKey: key)
+        
+    }
+    
+    func loadSavedStatuses() {
+        if let saved = viewModel.loadSavedStatusesFromUserDefaults(key: UserDefaultsKeys.tasksFilter.rawValue) {
+             viewModel.selectedStatuses = saved
 
+             // Обновляем UI-множетсво TaskStatus для чекбоксов
+            viewModel.selectedFilters = Set(saved.map { viewModel.statusToTaskStatus($0) })
+         } else {
+             viewModel.selectedFilters = [.scheduled, .completed, .canceled]
+             viewModel.selectedStatuses = nil
+         }
+    }
     
     @ViewBuilder
     private var mainContent: some View {
@@ -308,10 +330,8 @@ struct TaskListView: View {
                                                         .tint(Color.custom(.taskCanceledOrange))
                                                         
                                                         Button(action: {
-                                                            viewModel.scheduleTask(task: task)
-                                                            viewModel.loadTasks()
-                                                            viewModel.scheduleTask(task)
-
+                                                            selectedTaskForSchedule = task
+                                                            showSchedulePicker = true
                                                         }) {
                                                             Image("inProgress")
                                                             Text("Запланировать")
@@ -320,11 +340,8 @@ struct TaskListView: View {
                                                         
                                                     case .canceled:
                                                         Button(action: {
-                                                            viewModel.scheduleTask(task: task)
-                                                            viewModel.loadTasks()
-                                                            viewModel.scheduleTask(task)
-
-                                                            
+                                                            selectedTaskForSchedule = task
+                                                                showSchedulePicker = true
                                                         }) {
                                                             Image("inProgress")
                                                             Text("Запланировать")
@@ -403,15 +420,16 @@ struct TaskListView: View {
 
             if showPopup, let task = taskToCancel {
                 CancelTaskPopup(task: task, isPresented: $showPopup) { description in
-                    // callback: обновляем локальные данные и показываем тост
+                
                     lastCanceletedTaskDescription = description
-                    viewModel.loadTasks() // обновляем список (если нужно)
+                    viewModel.loadTasks()
+                    loadSavedStatuses()
 
-                    // Показываем тост с анимацией
+             
                     withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                         showCancelTaskNotification = true
                     }
-                    // Автоскрытие
+
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         withAnimation(.easeOut(duration: 0.25)) {
                             showCancelTaskNotification = false
@@ -463,8 +481,10 @@ struct TaskListView: View {
             }
         }
         
+      
+        
         .sheet(isPresented: $showNewTaskView, onDismiss: {
-            viewModel.loadTasks()
+            loadSavedStatuses()
         }) {
             NewTaskView(onComplete: { description in
                 // тут получаем объект новой задачи
@@ -486,7 +506,7 @@ struct TaskListView: View {
     
         
         .sheet(item: $selectedTaskForEdit, onDismiss: {
-            viewModel.loadTasks()
+            loadSavedStatuses()
         }) { task in
             EditTaskView(viewModel: EditTaskViewModel(task: task), onSave: { updatedDescription in
                 lastEditedTaskDescription = updatedDescription
@@ -501,12 +521,24 @@ struct TaskListView: View {
             })
         }
         
+        .sheet(item: $selectedTaskForSchedule, onDismiss: {
+            loadSavedStatuses()
+        }) { task in
+            SchedulePickerView(isPresented: .constant(true),
+                               initialDate: task.scheduledAt ?? Date(),
+                               minimumDate: Date()) { chosenDate in
+                viewModel.scheduleTask(task, at: chosenDate)
+            }
+                               .presentationDetents([.fraction(0.25)])
+        }
+        
         .sheet(item: $selectedTaskForComplete, onDismiss: {
-            viewModel.loadTasks()
+            loadSavedStatuses()
         }) { task in
             CompleteTaskView(viewModel: CompleteTaskViewModel(task: task)) { taskDescription, finalAmount in
                 // обновляем данные и запоминаем данные для тоста
                 viewModel.loadTasks()
+//                loadSavedStatuses()
                 lastCompletedTaskDescription = taskDescription
                 lastCompletedFinalAmount = finalAmount
 
@@ -522,36 +554,30 @@ struct TaskListView: View {
         }
         .popover(isPresented: $showFilters) {
             NavigationStack {
-                TasksFilterView(selectedFilters: $selectedFilters)
+                TasksFilterView(selectedFilters: $viewModel.selectedFilters)
                     .navigationTitle("Фильтры")
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Готово") {
-                                // Build array of Status (or nil) from selectedFilters and apply to VM
-                                let statuses: [Status]? = {
-                                    // If .all is selected -> no status filter (nil)
-                                    if selectedFilters.contains(.all) {
-                                        return nil
-                                    }
-                                    var arr: [Status] = []
-                                    for ts in selectedFilters {
-                                        switch ts {
-                                        case .scheduled:
-                                            arr.append(.scheduled)
-                                        case .completed:
-                                            arr.append(.completed)
-                                        case .canceled:
-                                            arr.append(.canceled)
-                                        case .all:
-                                            break
-                                        }
-                                    }
-                                    return arr.isEmpty ? nil : arr
-                                }()
+                                let collected = viewModel.selectedFilters.flatMap { viewModel.taskStatusToStatus($0) }
+                                  // Убираем дубликаты
+                                  let unique = Array(Set(collected))
+                                  print("[Filters] Выбраны статусы (raw):", unique.map { $0.rawValue })
 
-                                // Apply filter and close
-                                viewModel.selectedStatuses = statuses
-                                showFilters = false
+                                  UserDefaults.standard.set(unique.map { $0.rawValue }, forKey: UserDefaultsKeys.tasksFilter.rawValue)
+                                  if let saved = UserDefaults.standard.array(forKey: UserDefaultsKeys.tasksFilter.rawValue) as? [String] {
+                                      print("[Filters] Сохранено в UserDefaults:", saved)
+                                  }
+
+                                let allSet: Set<TaskStatus> = [.scheduled, .completed, .canceled]
+                                let isAllSelected = viewModel.selectedFilters == allSet
+
+                                // Для VM: если пользователь явно выбрал все — ставим nil (нет фильтра)
+                                let statusesForVM: [Status]? = isAllSelected ? nil : (unique.isEmpty ? nil : unique)
+
+                                  // Apply filter and close
+                                  viewModel.selectedStatuses = statusesForVM
+                                  showFilters = false
                             }
                         }
                     }
@@ -561,17 +587,19 @@ struct TaskListView: View {
       
         
         .onAppear {
-            viewModel.loadTasks()
+
+         loadSavedStatuses()
+
+               // Скролл к сегодняшнему (оставляем как есть)
+               let today = dayKey(Date())
+               let keys = Array(viewModel.groupedTasksByDate.keys)
+               if keys.contains(today) {
+                   listScrollPosition = today
+               }
         }
         
-        .onAppear {
-            // При первом открытии — проскроллим к сегодняшнему дню, если есть секция
-            let today = dayKey(Date())
-            let keys = Array(viewModel.groupedTasksByDate.keys)
-            if keys.contains(today) {
-                listScrollPosition = today
-            }
-        }
+      
+        
         .alert("Вы уверены?",
                isPresented: $showDeleteAlert,
                presenting: taskToDelete
@@ -582,6 +610,7 @@ struct TaskListView: View {
                 
                 lastDeletedTaskDescription = desc
                 viewModel.delete(task)
+                
                 
                 withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                     showDeleteTaskNotification = true

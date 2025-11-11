@@ -21,21 +21,20 @@ final class TaskListViewModel: ObservableObject {
     @Published var selectedStatuses: [Status]? = nil
     @Published var lastScheduledTaskDescription: String? = nil
     @Published var didScheduleTask: Bool = false
+    @Published var selectedFilters: Set<TaskStatus> = []
     
     private let store = TaskStore()
     private var cancelables = Set<AnyCancellable>()
 
-    func scheduleTask(_ task: TaskEntity) {
+    func scheduleTask(_ task: TaskEntity, at date: Date) {
+        task.scheduledAt = date
         store.makeScheduled(task)
         lastScheduledTaskDescription = task.taskDescription
         didScheduleTask = true
+        print("Task \(String(describing: task.taskDescription)) rescheduled to \(date)")
     }
     
-    func scheduleTask(task: TaskEntity) {
-        store.makeScheduled(task)
-        loadTasks()
-    }
-    //Дублирование методов scheduleTask - привести к единому виду
+
     
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
@@ -64,20 +63,85 @@ final class TaskListViewModel: ObservableObject {
             .store(in: &cancelables)
     }
 
-    private func applyFiltersAsync() {
-        print("[TaskListViewModel] applyFiltersAsync called with searchText:", searchText)
-        Task { // без [weak self]
-            
-            applyCurrentFiltersUsingDB()
-        }
+  
+    func saveUserDefaults(filters: [TaskStatus], key: String) {
+        let rawValues = filters.map { $0.rawValue }
+        userDefaults.set(rawValues, forKey: key)
+        print("[UserDefaults] Сохранены фильтры:", rawValues)
     }
     
+    
+    
+    
+    func applySavedTaskStatusSelection(_ saved: [TaskStatus]) {
+        self.selectedStatuses = {
+//            if saved.contains(.all) { return nil }
+            let arr = saved.compactMap { Status(rawValue: $0.rawValue) }
+            return arr.isEmpty ? nil : arr
+        }()
+    }
+    
+    func loadSavedStatusesFromUserDefaults(key: String) -> [Status]? {
+        guard let raw = UserDefaults.standard.array(forKey: key) as? [String] else { return nil }
+        let statuses = raw.compactMap { Status(rawValue: $0) }
+        return statuses.isEmpty ? nil : statuses
+    }
+    
+    func restoreSavedFilters(from key: String = UserDefaultsKeys.tasksFilter.rawValue) -> [TaskStatus] {
+        guard let saved = UserDefaults.standard.array(forKey: key) as? [String] else {
+            print("[Filters] Saved filters not found")
+            return []
+        }
+        print("[Filters] Restored raw values:", saved)
+        
+        // Конвертируем строки обратно в TaskStatus (через Status)
+        let restoredStatuses: [TaskStatus] = saved.compactMap { raw in
+            if let s = Status(rawValue: raw) {
+                switch s {
+                case .scheduled: return .scheduled
+                case .completed: return .completed
+                case .canceled:  return .canceled
+                }
+            }
+            return nil
+        }
+        
+        print("[Filters] Restored as TaskStatus:", restoredStatuses.map { "\($0)" })
+        return restoredStatuses
+    }
+    // Преобразование между типами
+    func statusToTaskStatus(_ s: Status) -> TaskStatus {
+        switch s {
+        case .scheduled: return .scheduled
+        case .completed: return .completed
+        case .canceled:  return .canceled
+        }
+    }
+    func taskStatusToStatus(_ t: TaskStatus) -> [Status] {
+        print("TaskStatusToStatus called. Task status \(t) converted to array")
+        switch t {
+        case .scheduled:
+            return [.scheduled]
+              case .completed:
+                  return [.completed]
+              case .canceled:
+                  return [.canceled]
+     
+        }
+    }
     
     func loadTasks() {
         // load all tasks (no status filter)
         tasks = store.fetchTasks()
     }
 
+     func applyFiltersAsync() {
+        print("[TaskListViewModel] applyFiltersAsync called with searchText:", searchText)
+        Task { // без [weak self]
+            
+            applyCurrentFiltersUsingDB()
+        }
+    }
 
     func applyCurrentFiltersUsingDB(debug: Bool = false) {
         print("[TaskListViewModel] applyCurrentFiltersUsingDB called with searchText:", searchText)
