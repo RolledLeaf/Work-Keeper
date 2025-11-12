@@ -18,6 +18,7 @@ struct ScheduleTaskConfirmationView: View {
             Text("Запланировано")
                  .font(.custom(SFPro.regular.rawValue, size: 20))
                  .foregroundColor(Color.custom(.taskViewYellow))
+                 .multilineTextAlignment(.center)
         }
         .padding(16)
         .background(.white)
@@ -48,6 +49,7 @@ struct CancelTaskConfirmationView: View {
             Text("Отменено")
                  .font(.custom(SFPro.regular.rawValue, size: 20))
                  .foregroundColor(Color.custom(.taskCanceledOrange))
+                 .multilineTextAlignment(.center)
         }
         .padding(16)
         .background(.white)
@@ -117,6 +119,7 @@ struct EditTaskConfirmationView: View {
             Text("Отредактировано")
                  .font(.custom(SFPro.regular.rawValue, size: 20))
                  .foregroundColor(Color.custom(.textTitleGray))
+                 .multilineTextAlignment(.center)
         }
         .padding(16)
         .background(.white)
@@ -150,9 +153,9 @@ struct CompleteTaskConfirmationView: View {
                  .font(.custom(SFPro.regular.rawValue, size: 20))
                  .foregroundColor(.primary)
 
-            Text("+ \(finalAmount.formattedCurrency())")
+            Text("\(finalAmount > 0 ? "+" : "") \(finalAmount.formattedCurrency())")
                 .font(.custom(SFPro.bold.rawValue, size: 25))
-                .foregroundColor(Color(CustomColor.extraPaymentGreen.rawValue))
+                .foregroundColor(finalAmount > 0 ? Color(CustomColor.extraPaymentGreen.rawValue) : Color(CustomColor.costPaymentRed.rawValue))
         }
         .padding(16)
         .background(.white)

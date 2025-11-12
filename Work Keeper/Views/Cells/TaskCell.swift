@@ -361,6 +361,7 @@ struct TaskRow: View {
                     
                     Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(SFPro.bold.rawValue, size: 16))
+                        .foregroundStyle(task.totalAmount >= 0 ? Color.black : Color.custom(.costPaymentRed))
                     Image("cash")
                         .opacity(cashOpacity)
                         .onAppear {

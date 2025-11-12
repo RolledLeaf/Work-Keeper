@@ -610,6 +610,7 @@ struct TaskListView: View {
                 
                 lastDeletedTaskDescription = desc
                 viewModel.delete(task)
+                loadSavedStatuses()
                 
                 
                 withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
@@ -623,7 +624,9 @@ struct TaskListView: View {
                 }
                 
             }
-            Button("Отмена", role: .cancel) { }
+            Button("Отмена", role: .cancel) {
+                loadSavedStatuses()
+            }
         } message: { task in
             Text("Задание «\(task.taskDescription ?? "Без названия")» будет удалено безвозвратно.")
         }
