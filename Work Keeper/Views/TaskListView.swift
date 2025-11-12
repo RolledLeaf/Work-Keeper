@@ -121,13 +121,6 @@ struct TaskListView: View {
     @State private var selectedTaskForEdit: TaskEntity?
     @State private var listScrollPosition: Date?
     
-    func saveSelectedStatusesToUserDefaults(key: String) {
-        // Конвертируем UI-множество TaskStatus -> [Status]
-        let statuses = viewModel.selectedFilters.flatMap { viewModel.taskStatusToStatus($0) }
-        let raw = statuses.map { $0.rawValue }
-        UserDefaults.standard.set(raw, forKey: key)
-        
-    }
     
     func loadSavedStatuses() {
         if let saved = viewModel.loadSavedStatusesFromUserDefaults(key: UserDefaultsKeys.tasksFilter.rawValue) {

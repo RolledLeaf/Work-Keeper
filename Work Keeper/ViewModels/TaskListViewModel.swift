@@ -34,12 +34,10 @@ final class TaskListViewModel: ObservableObject {
         print("Task \(String(describing: task.taskDescription)) rescheduled to \(date)")
     }
     
-
-    
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
             let date = task.scheduledAt ?? Date.distantPast
-            return Calendar.current.startOfDay(for: date) // normalize to day
+            return Calendar.current.startOfDay(for: date)
         }
     }
  
@@ -69,46 +67,13 @@ final class TaskListViewModel: ObservableObject {
         userDefaults.set(rawValues, forKey: key)
         print("[UserDefaults] Сохранены фильтры:", rawValues)
     }
-    
-    
-    
-    
-    func applySavedTaskStatusSelection(_ saved: [TaskStatus]) {
-        self.selectedStatuses = {
-//            if saved.contains(.all) { return nil }
-            let arr = saved.compactMap { Status(rawValue: $0.rawValue) }
-            return arr.isEmpty ? nil : arr
-        }()
-    }
-    
+   
     func loadSavedStatusesFromUserDefaults(key: String) -> [Status]? {
         guard let raw = UserDefaults.standard.array(forKey: key) as? [String] else { return nil }
         let statuses = raw.compactMap { Status(rawValue: $0) }
         return statuses.isEmpty ? nil : statuses
     }
     
-    func restoreSavedFilters(from key: String = UserDefaultsKeys.tasksFilter.rawValue) -> [TaskStatus] {
-        guard let saved = UserDefaults.standard.array(forKey: key) as? [String] else {
-            print("[Filters] Saved filters not found")
-            return []
-        }
-        print("[Filters] Restored raw values:", saved)
-        
-        // Конвертируем строки обратно в TaskStatus (через Status)
-        let restoredStatuses: [TaskStatus] = saved.compactMap { raw in
-            if let s = Status(rawValue: raw) {
-                switch s {
-                case .scheduled: return .scheduled
-                case .completed: return .completed
-                case .canceled:  return .canceled
-                }
-            }
-            return nil
-        }
-        
-        print("[Filters] Restored as TaskStatus:", restoredStatuses.map { "\($0)" })
-        return restoredStatuses
-    }
     // Преобразование между типами
     func statusToTaskStatus(_ s: Status) -> TaskStatus {
         switch s {
@@ -117,6 +82,7 @@ final class TaskListViewModel: ObservableObject {
         case .canceled:  return .canceled
         }
     }
+    
     func taskStatusToStatus(_ t: TaskStatus) -> [Status] {
         print("TaskStatusToStatus called. Task status \(t) converted to array")
         switch t {
@@ -131,7 +97,6 @@ final class TaskListViewModel: ObservableObject {
     }
     
     func loadTasks() {
-        // load all tasks (no status filter)
         tasks = store.fetchTasks()
     }
 
@@ -421,7 +386,7 @@ final class CompleteTaskViewModel: ObservableObject {
     @Published var extraPaymentText: String = ""
     @Published var extraPayment: Double? = 0
     @Published var taskDescription: String = ""
-    @Published var paymentType: PaymentType = .cash
+    @Published var paymentType: PaymentType = .none
     @Published var finalAmountText: String = ""
     
     var finalAmount: Double {

@@ -136,8 +136,7 @@ struct EditTaskConfirmationView: View {
 struct CompleteTaskConfirmationView: View {
     @Binding var taskDescription: String
     @Binding var finalAmount: Double
-  
-    
+   
     var body: some View {
         VStack(spacing: 8) {
             
@@ -153,9 +152,11 @@ struct CompleteTaskConfirmationView: View {
                  .font(.custom(SFPro.regular.rawValue, size: 20))
                  .foregroundColor(.primary)
 
-            Text("\(finalAmount > 0 ? "+" : "") \(finalAmount.formattedCurrency())")
-                .font(.custom(SFPro.bold.rawValue, size: 25))
-                .foregroundColor(finalAmount > 0 ? Color(CustomColor.extraPaymentGreen.rawValue) : Color(CustomColor.costPaymentRed.rawValue))
+                
+                Text("\(finalAmount > 0 ? "+" : "") \(finalAmount.formattedCurrency())")
+                    .font(.custom(SFPro.bold.rawValue, size: 25))
+                    .foregroundColor(finalAmount > 0 ? Color(CustomColor.extraPaymentGreen.rawValue) : Color(CustomColor.costPaymentRed.rawValue))
+           
         }
         .padding(16)
         .background(.white)
