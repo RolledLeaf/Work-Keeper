@@ -61,6 +61,39 @@ final class TaskListViewModel: ObservableObject {
             .store(in: &cancelables)
     }
 
+    func calculateDailyIncome(for date: Date, debug: Bool = false) -> Double {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else {
+            return 0
+        }
+
+        // фильтруем только завершённые задания за день
+        let dailyTasks = tasks.filter { task in
+            guard
+                task.status == .completed,
+                let taskDate = task.scheduledAt
+            else { return false }
+
+            return taskDate >= startOfDay && taskDate < endOfDay
+        }
+
+        // суммируем доход
+        let total = dailyTasks.reduce(0.0) { partial, task in
+            let income = task.contractAmount + task.extraPayment - task.cost
+            return partial + income
+        }
+
+        if debug {
+            print("[DailyIncome] Tasks found: \(dailyTasks.count)")
+            for t in dailyTasks {
+                print("• \(t.taskDescription ?? "Без описания"): \(t.contractAmount)+\(t.extraPayment)-\(t.cost)")
+            }
+            print("[DailyIncome] Total income for \(startOfDay): \(total)")
+        }
+
+        return total
+    }
   
     func saveUserDefaults(filters: [TaskStatus], key: String) {
         let rawValues = filters.map { $0.rawValue }

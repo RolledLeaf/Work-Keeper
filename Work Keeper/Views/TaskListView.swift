@@ -276,7 +276,15 @@ struct TaskListView: View {
                         ScrollViewReader { proxy in
                             List {
                                 ForEach(viewModel.groupedTasksByDate.keys.sorted(by: >), id: \.self) { dateKey in
-                                    Section(header: Text(customDateFormatter.string(from: dateKey)).font(.headline)) {
+                                    Section(header:
+                                                HStack {
+                                        Text(customDateFormatter.string(from: dateKey)).font(.headline)
+                                        Spacer()
+                                        Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrency())")
+                                            .font(.custom(SFPro.bold.rawValue, size: 17))
+                                            .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? .black : .gray)
+                                    }
+                                    ) {
                                         ForEach(
                                             (viewModel.groupedTasksByDate[dateKey] ?? [])
                                                 .sorted { $0.scheduledAt ?? Date.distantPast < $1.scheduledAt ?? Date.distantPast }
