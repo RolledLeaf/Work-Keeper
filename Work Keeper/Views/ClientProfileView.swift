@@ -20,7 +20,7 @@ struct ClientProfileView: View {
                             .font(.custom(SFPro.bold.rawValue, size: 32))
                         
                         Text(client.phone?.formattedAsPhone() ?? "Телефон не указан")
-                            .font(.custom(SFPro.regular.rawValue, size: 16))
+                            .font(.custom(SFPro.regular.rawValue, size: 19))
                             .foregroundColor(.custom(.taskTextGray))
                     }
                     Spacer()

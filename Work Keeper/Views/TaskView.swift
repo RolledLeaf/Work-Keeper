@@ -9,6 +9,8 @@ struct TaskView: View {
   
     @State private var didCopyTaskDescription = false
     @State private var didCopyTaskComment = false
+    @State private var didCopyPhoneNumber = false
+    @State private var didCopyAddress = false
     
     var body: some View {
         
@@ -43,9 +45,24 @@ struct TaskView: View {
                         Spacer()
                             .frame(height: 6)
                         
-                        Text(task.client?.phone ?? "")
-                            .font(.custom(SFPro.regular.rawValue, size: 16))
-                            .foregroundColor(.custom(.taskTextGray))
+                        
+                        Button(action: {
+                            let text = (task.client?.phone ?? "")
+                          
+                            UIPasteboard.general.string = text
+                            // Show a quick HUD
+                            withAnimation { didCopyPhoneNumber = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                                withAnimation { didCopyPhoneNumber = false
+                                }
+                            }
+                        }) {
+                            Text(task.client?.phone ?? "")
+                                .font(.custom(SFPro.regular.rawValue, size: 19))
+                                .foregroundColor(.custom(.taskTextGray))
+                        }
+                        
+                        
                     }
                     
                     Spacer()
@@ -101,15 +118,26 @@ struct TaskView: View {
                                     .offset(x: -7, y: 7)
                                     
                             } else {
-                                Text("\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")")
-                                    .font(.custom(SFPro.regular.rawValue, size: 24))
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                    .minimumScaleFactor(0.8)
-                                    .frame(width: 270)
-                                    .offset(y: 8)
+                                
+                                Button(action: {
+                                    let text = (task.client?.primaryAddress?.street?.name)
+                                    UIPasteboard.general.string = text
+                                    withAnimation { didCopyAddress = true }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2 ) {
+                                        withAnimation { didCopyAddress = false
+                                        }
+                                    }
+                                    
+                                }) {
+                                    Text("\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")")
+                                        .font(.custom(SFPro.regular.rawValue, size: 24))
+                                        .multilineTextAlignment(.center)
+                                        .lineLimit(2)
+                                        .minimumScaleFactor(0.8)
+                                        .frame(width: 270)
+                                        .offset(y: 8)
+                                }
                             }
-                            
                             
                             Spacer()
                                 
@@ -361,7 +389,7 @@ struct TaskView: View {
             if didCopyTaskDescription {
                 
                 Text("Текст задания скопирован")
-                    .font(.custom(SFPro.regular.rawValue, size: 16))
+                    .font(.custom(SFPro.regular.rawValue, size: 18))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial)
@@ -372,7 +400,7 @@ struct TaskView: View {
         .overlay(alignment: .center) {
             if didCopyTaskComment {
                 Text("Комментарий скопирован")
-                    .font(.custom(SFPro.regular.rawValue, size: 16))
+                    .font(.custom(SFPro.regular.rawValue, size: 18))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial)
@@ -381,6 +409,34 @@ struct TaskView: View {
             
             }
         }
+        
+        .overlay(alignment: .center) {
+            if didCopyPhoneNumber {
+                Text("Номер клиента скопирован")
+                    .font(.custom(SFPro.regular.rawValue, size: 18))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .padding(.top, 20)
+            
+            }
+        }
+            
+        .overlay(alignment: .center) {
+            if didCopyAddress {
+                Text("Адрес клиента скопирован")
+                    .font(.custom(SFPro.regular.rawValue, size: 18))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .padding(.top, 20)
+                    
+            
+            }
+        }
+        
     }
     
 }
