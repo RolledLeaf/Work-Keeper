@@ -11,7 +11,7 @@ struct NewClientView: View {
     private var maxFirstNameCharachtersCount: Int = 12
     private var maxLastNameCharachtersCount: Int = 12
     private let maxBuildingCharachtersCount: Int = 8
-    private let maxStreetCharachtersCount: Int = 44
+    private let maxStreetCharachtersCount: Int = 49
     private let maxCommentCharachtersCount: Int = 91
     private let maxApartmentCharachtersCount: Int = 6
     private let maxEntranceCharachtersCount: Int = 3
