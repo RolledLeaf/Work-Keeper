@@ -34,7 +34,6 @@ struct NewClientView: View {
     enum Field {
         case firstName
         case lastName
-        case street
         case house
         case apartment
         case entrance
@@ -104,10 +103,7 @@ struct NewClientView: View {
                                     }
                                 }
                                 .focused($focusedField, equals: .lastName)
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .street
-                                }
+                              
                             
                         }
                     }
@@ -145,7 +141,7 @@ struct NewClientView: View {
                                 .frame(minHeight: 20, maxHeight: 45)
                                 .lineLimit(2, reservesSpace: false)
                                 .minimumScaleFactor(0.6)
-                                .focused($focusedField, equals: .street)
+                              
                                 .multilineTextAlignment(.center)
                             //.onChange(of: street) { oldValue, newValue in
                                 .onChange(of: viewModel.streetName) { newValue in
