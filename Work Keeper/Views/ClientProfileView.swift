@@ -92,7 +92,7 @@ struct ClientProfileView: View {
                     }
                     .padding(.horizontal, 80)
                 } else {
-                    Text("Частный дом")
+                    Text("Только дом")
                         .font(.custom(SFPro.italic.rawValue, size: 20))
                         .foregroundColor(.custom(.taskTextGray))
                         .padding(.top, -10)

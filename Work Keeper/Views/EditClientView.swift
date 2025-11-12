@@ -311,7 +311,7 @@ struct EditClientView: View {
                                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         
-                        Text("Частный дом")
+                        Text("Только дом")
                             .font(.custom(SFPro.italic.rawValue, size: 20))
                             .padding(.horizontal)
                             .frame(width: 150)

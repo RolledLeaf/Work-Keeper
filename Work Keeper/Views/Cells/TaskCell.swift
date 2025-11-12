@@ -171,7 +171,7 @@ struct TaskRow: View {
                                     .offset(y: -9)
                                 
                                 Spacer()
-                                Text("(Частный дом)")
+                                Text("(Только дом)")
                                     .font(.custom(SFPro.italic.rawValue, size: 20))
                                     .foregroundColor(.custom(.taskTextGray))
                                     .offset(x: -19)
