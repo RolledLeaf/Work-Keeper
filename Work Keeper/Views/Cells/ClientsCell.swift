@@ -132,8 +132,7 @@ struct ClientRow: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
         )
-        .padding(.vertical, 8)
-        
+       
         
     }
 }

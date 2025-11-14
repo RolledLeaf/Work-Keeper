@@ -406,7 +406,6 @@ struct TaskView: View {
                     .background(.ultraThinMaterial)
                     .clipShape(Capsule())
                     .padding(.top, 20)
-            
             }
         }
         
@@ -419,7 +418,6 @@ struct TaskView: View {
                     .background(.ultraThinMaterial)
                     .clipShape(Capsule())
                     .padding(.top, 20)
-            
             }
         }
             
@@ -432,13 +430,9 @@ struct TaskView: View {
                     .background(.ultraThinMaterial)
                     .clipShape(Capsule())
                     .padding(.top, 20)
-                    
-            
             }
         }
-        
     }
-    
 }
 
 
