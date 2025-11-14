@@ -120,7 +120,7 @@ struct TaskView: View {
                             } else {
                                 
                                 Button(action: {
-                                    let text = (task.client?.primaryAddress?.street?.name)
+                                    let text = ("\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")")
                                     UIPasteboard.general.string = text
                                     withAnimation { didCopyAddress = true }
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.2 ) {
