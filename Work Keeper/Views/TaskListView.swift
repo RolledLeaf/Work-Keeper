@@ -83,10 +83,9 @@ struct TasksFilterView: View {
 
 struct TaskListView: View {
     @StateObject private var viewModel = TaskListViewModel()
-    
-    
-    
+  
     @State private var selectedDate = Date()
+    @State private var listScrollPosition: Date?
     @State private var showDeleteAlert = false
     @State private var showNewTaskView = false
     @State private var showCompleteTaskView = false
@@ -98,6 +97,9 @@ struct TaskListView: View {
     @State private var showEditTaskNotification = false
     @State private var showSchedulePicker = false
     @State private var showScrollToTopButton = false
+    @State private var showFilters = false
+    @State private var showPopup = false
+    @State private var navigateToTaskView = false
     @State private var headerBaselineMinY: CGFloat? = nil
     @State private var lastCompletedTaskDescription: String = ""
     @State private var lastCanceletedTaskDescription: String = ""
@@ -105,29 +107,22 @@ struct TaskListView: View {
     @State private var lastDeletedTaskDescription: String = ""
     @State private var lastEditedTaskDescription: String = ""
     @State private var lastCompletedFinalAmount: Double = 0.0
-    
-    @State private var showFilters = false
-    
-    
-    @State private var showPopup = false
     @State private var selectedTask: TaskEntity?
     @State private var taskToCancel: TaskEntity?
     @State private var taskToDelete: TaskEntity?
     @State private var selectedTaskForSchedule: TaskEntity?
-    @State private var navigateToTaskView = false
-    
     @State private var selectedTaskForComplete: TaskEntity?
     @State private var selectedTaskForEdit: TaskEntity?
-    @State private var listScrollPosition: Date?
-    
+    // Keep a reference to the ScrollViewProxy for scroll actions
+    @State private var scrollProxy: ScrollViewProxy? = nil
+   
     let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
     
     private func dayKey(_ date: Date) -> Date {
         Calendar.current.startOfDay(for: date)
     }
     
-    
-    func loadSavedStatuses() {
+    private func loadSavedStatuses() {
         if let saved = viewModel.loadSavedStatusesFromUserDefaults(key: UserDefaultsKeys.tasksFilter.rawValue) {
             viewModel.selectedStatuses = saved
             
@@ -138,15 +133,16 @@ struct TaskListView: View {
             viewModel.selectedStatuses = nil
         }
     }
-    
-    // Keep a reference to the ScrollViewProxy for scroll actions
-    @State private var scrollProxy: ScrollViewProxy? = nil
 
     func scrollToTop() {
         guard let proxy = scrollProxy else { return }
         withAnimation {
             proxy.scrollTo(Date.distantFuture, anchor: .top)
         }
+    }
+    
+    func scrollToToday() {
+       selectedDate = Date()
     }
     
     @ViewBuilder
@@ -235,31 +231,37 @@ struct TaskListView: View {
                     }
                 }
                 
-                Text("Статусы заданий")
+                Text("Активные фильтры")
                 
                 HStack(spacing: 8) {
                     Rectangle()
                         .frame(width: 15, height: 15)
                         .foregroundColor(Color.custom(.taskCompleteGreen))
+                        .opacity(viewModel.selectedFilters.contains(.completed) ? 1 : 0.3)
                     
                     Text("- выполнено")
                         .font(.custom(SFPro.regular.rawValue, size: 14))
+                        .opacity(viewModel.selectedFilters.contains(.completed) ? 1 : 0.3)
                     
                     
                     Rectangle()
                         .frame(width: 15, height: 15)
                         .foregroundColor(Color.custom(.taskViewYellow))
+                        .opacity(viewModel.selectedFilters.contains(.scheduled) ? 1 : 0.3)
                     
                     Text("- запланировано")
                         .font(.custom(SFPro.regular.rawValue, size: 14))
+                        .opacity(viewModel.selectedFilters.contains(.scheduled) ? 1 : 0.3)
                     
                     
                     Rectangle()
                         .frame(width: 15, height: 15)
                         .foregroundColor(Color.custom(.taskCanceledOrange))
+                        .opacity(viewModel.selectedFilters.contains(.canceled) ? 1 : 0.3)
                     
                     Text("- отменено")
                         .font(.custom(SFPro.regular.rawValue, size: 14))
+                        .opacity(viewModel.selectedFilters.contains(.canceled) ? 1 : 0.3)
                 }
                 
                 if viewModel.groupedTasksByDate.isEmpty {
@@ -417,7 +419,6 @@ struct TaskListView: View {
                         .coordinateSpace(name: "taskList")
                         .scrollPosition(id: $listScrollPosition)
                         .onPreferenceChange(SectionHeaderOffsetKey.self) { minY in
-                            // Debug
                             print("[TaskListView] topAnchor minY:", minY)
 
                             // Initialize baseline on first measurement
@@ -519,7 +520,8 @@ struct TaskListView: View {
         .overlay(alignment: .bottomTrailing) {
             if showScrollToTopButton {
                 Button(action: {
-                    scrollToTop()
+//                    scrollToTop()
+                    scrollToToday()
                 }) {
                     Image(systemName: "arrow.up")
                         .resizable()
@@ -701,41 +703,6 @@ struct TaskListView: View {
             }
         } message: { task in
             Text("Задание «\(task.taskDescription ?? "Без названия")» будет удалено безвозвратно.")
-        }
-    }
-}
-
-
-struct TaskColoredLegend: View {
-    var body: some View {
-        VStack {
-            
-            Text("Статусы заданий")
-            
-            HStack(spacing: 8) {
-                Rectangle()
-                    .frame(width: 15, height: 15)
-                    .foregroundColor(Color.custom(.taskCompleteGreen))
-                
-                Text("- выполнено")
-                    .font(.custom(SFPro.regular.rawValue, size: 14))
-                
-                
-                Rectangle()
-                    .frame(width: 15, height: 15)
-                    .foregroundColor(Color.custom(.taskViewYellow))
-                
-                Text("- назначено")
-                    .font(.custom(SFPro.regular.rawValue, size: 14))
-                
-                
-                Rectangle()
-                    .frame(width: 15, height: 15)
-                    .foregroundColor(Color.custom(.taskCanceledOrange))
-                
-                Text("- отменено")
-                    .font(.custom(SFPro.regular.rawValue, size: 14))
-            }
         }
     }
 }
