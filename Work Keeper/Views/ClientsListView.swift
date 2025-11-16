@@ -146,9 +146,9 @@ struct ClientsListView: View {
                         Button(action: {
                             showNewClientView = true
                         }) {
-                            Image("addClientButton")
+                            Image(systemName: "plus")
                                 .resizable()
-                                .frame(width: 40, height: 40)
+                                .frame(width: 30, height: 30)
                         }
                         .padding(.trailing, 5)
                     }

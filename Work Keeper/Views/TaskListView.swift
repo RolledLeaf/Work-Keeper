@@ -159,16 +159,14 @@ struct TaskListView: View {
                         showFilters = true
                     }) {
                         Image("filters")
-                            .resizable()
-                            .frame(width: 35, height: 35)
+                         
                     }
                     .padding(.leading, 8)
                     .padding(.trailing, 10)
                     
                     ZStack {
                         Image("calendar")
-                            .resizable()
-                            .frame(width: 35, height: 35)
+                
                         
                         DatePicker("",
                                    selection: $selectedDate,
@@ -186,10 +184,11 @@ struct TaskListView: View {
                     Button(action: {
                         showNewTaskView = true
                     }) {
-                        Image("addTaskButton")
+                        Image(systemName: "plus")
                             .resizable()
-                            .frame(width: 40, height: 40)
+                            .frame(width: 30, height: 30)
                             .padding(.trailing, 5)
+                            .ifAvailableButtonStyleGlass()
                     }
                 }
                 .padding(.leading, 3)
