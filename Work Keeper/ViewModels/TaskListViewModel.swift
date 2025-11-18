@@ -289,16 +289,10 @@ final class CreateTaskViewModel: ObservableObject {
     var totalAmount: Double {
         contractAmount - (cost ?? 0)
     }
-    
- 
-    
-   
-    
+  
     let roomTypes = ["кв.", "оф.", "каб."]
     let entranceTypes = ["под.", "вход."]
     
-    
-
     private let streetStore = StreetStore()
     private let addressStore = AddressStore()
     private let clientStore = ClientStore()
@@ -311,7 +305,6 @@ final class CreateTaskViewModel: ObservableObject {
             else {
                  !firstName.isBlank && !phoneDigits.isBlank
             }
-        
     }
     
     func updateCreateButtonColor(color: CustomColor) -> CustomColor {
@@ -321,11 +314,9 @@ final class CreateTaskViewModel: ObservableObject {
 
     func saveTask() -> Bool {
         guard canSaveTask() else {
-            print("❌ Не все поля заполнены ")
+            print("❌ Не все обязательные поля заполнены ")
             return false
         }
-        
-        let street = streetStore.createOrFetchStreet(name: streetName)
 
         let normalizedPhone = phoneDigits.isEmpty ? nil : "+7" + phoneDigits
         let client = clientStore.createOrFetchClient(
@@ -336,24 +327,28 @@ final class CreateTaskViewModel: ObservableObject {
             comment: comment.isEmpty ? nil : comment
         )
 
-        // Теперь создаём или подтягиваем адрес, уже зная client и isPrimary
-        let address = addressStore.createOrFetchAddress(
-            house: house,
-            apartment: apartment,
-            entrance: entrance,
-            floor: floor,
-            isPrivateHouse: isPrivateHouse,
-            street: street,
-            client: client,
-            isPrimary: true,
-            roomType: roomType ?? "кв.",
-            entranceType: entranceType ?? "под."
-        )
+        // Если задание не удалённое, создаём/подтягиваем улицу и адрес
+        if !isRemote {
+            let street = streetStore.createOrFetchStreet(name: streetName)
 
-        // link the address with the client
-        client.addToAddress(address)
+            let address = addressStore.createOrFetchAddress(
+                house: house,
+                apartment: apartment,
+                entrance: entrance,
+                floor: floor,
+                isPrivateHouse: isPrivateHouse,
+                street: street,
+                client: client,
+                isPrimary: true,
+                roomType: roomType ?? "кв.",
+                entranceType: entranceType ?? "под."
+            )
 
-        // Create  task
+            // link the address with the client
+            client.addToAddress(address)
+        }
+
+        // Создаём задачу
         taskStore.createTask(
             scheduledAt: scheduledAt,
             client: client,
@@ -364,20 +359,36 @@ final class CreateTaskViewModel: ObservableObject {
             cost: cost
         )
         didCreateTask = true
-        print("""
-         ✅ Задание успешно создано:
-         📆 Дата: \(scheduledAt)
-         👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
-         🏠 Адрес: \(streetName), дом: \(house), \(roomType ?? "") \(apartment), \(entranceType ?? "") \(entrance), этаж \(floor)
-         📝 Описание: \(description)
-         💬 Комментарий: \(comment)
-         🌍 Удалённо: \(isRemote ? "Да" : "Нет")
-         💵 Сумма по договору: \(contractAmount)
-         💸 Издержки: \(cost ?? 0)
-         Тип помещения: \(roomType ?? "")
-         Тип Входа: \(entranceType ?? "")
-         🧾 Статус: \(status.rawValue)
-         """)
+
+        if isRemote {
+            print("""
+             ✅ Удалённое задание успешно создано:
+             📆 Дата: \(scheduledAt)
+             👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
+             📝 Описание: \(description)
+             💬 Комментарий: \(comment)
+             🌍 Удалённо: Да
+             💵 Сумма по договору: \(contractAmount)
+             💸 Издержки: \(cost ?? 0)
+             🧾 Статус: \(status.rawValue)
+             """)
+        } else {
+            print("""
+             ✅ Задание успешно создано:
+             📆 Дата: \(scheduledAt)
+             👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
+             🏠 Адрес: \(streetName), дом: \(house), \(roomType ?? "") \(apartment), \(entranceType ?? "") \(entrance), этаж \(floor)
+             📝 Описание: \(description)
+             💬 Комментарий: \(comment)
+             🌍 Удалённо: Нет
+             💵 Сумма по договору: \(contractAmount)
+             💸 Издержки: \(cost ?? 0)
+             Тип помещения: \(roomType ?? "")
+             Тип входа: \(entranceType ?? "")
+             🧾 Статус: \(status.rawValue)
+             """)
+        }
+
         return true
     }
     

@@ -136,8 +136,9 @@ struct TaskListView: View {
 
     func scrollToTop() {
         guard let proxy = scrollProxy else { return }
+        let today = dayKey(Date())
         withAnimation {
-            proxy.scrollTo(Date.distantFuture, anchor: .top)
+            proxy.scrollTo(today, anchor: .top)
         }
     }
     
@@ -284,10 +285,17 @@ struct TaskListView: View {
                         .frame(height: 20)
                     NavigationStack {
                         List {
-                            // Top invisible anchor: use this stable anchor to track overall scroll offset
-                            Section {
-                                Color.clear
-                                    .frame(height: 1)
+                            ForEach(viewModel.groupedTasksByDate.keys.sorted(by: >), id: \.self) { dateKey in
+                                Section(header:
+                                    ZStack {
+                                        HStack {
+                                            Text(customDateFormatter.string(from: dateKey)).font(.headline)
+                                            Spacer()
+                                            Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrency())")
+                                                .font(.custom(SFPro.bold.rawValue, size: 17))
+                                                .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? .black : .gray)
+                                        }
+                                    }
                                     .background(
                                         GeometryReader { geo in
                                             Color.clear
@@ -295,21 +303,6 @@ struct TaskListView: View {
                                                             value: geo.frame(in: .named("taskList")).minY)
                                         }
                                     )
-                            }
-                            .id(Date.distantFuture)
-                            .listRowSeparator(.hidden)
-                            ForEach(viewModel.groupedTasksByDate.keys.sorted(by: >), id: \.self) { dateKey in
-                                Section(header:
-                                            ZStack {
-                                    HStack {
-                                        Text(customDateFormatter.string(from: dateKey)).font(.headline)
-                                        Spacer()
-                                        Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrency())")
-                                            .font(.custom(SFPro.bold.rawValue, size: 17))
-                                            .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? .black : .gray)
-                                    }
-                                }
-                                        
                                 ) {
                                     ForEach(
                                         (viewModel.groupedTasksByDate[dateKey] ?? [])
@@ -320,6 +313,7 @@ struct TaskListView: View {
                                         .contentShape(Rectangle())
                                         .onTapGesture {
                                             selectedTask = task
+                                            showScrollToTopButton = false
                                         }
                                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                             switch task.status {
@@ -407,6 +401,7 @@ struct TaskListView: View {
                                         }
                                     }
                                 }
+                                
                                 .id(dateKey)
                                 .listRowSeparator(.hidden)
                                 .background(
@@ -429,17 +424,19 @@ struct TaskListView: View {
                             let baseline = headerBaselineMinY ?? minY
                             let delta = baseline - minY // >0 when user scrolled down
 
-                            // threshold in points — tune empirically
-                            let threshold: CGFloat = 80
+                          
+                            let todayKey = dayKey(Date())
+                            let selectedKey = dayKey(selectedDate)
+                            let isSelectedToday = selectedKey == todayKey
 
-                            if delta > threshold {
-                                withAnimation(.easeInOut) {
-                                    showScrollToTopButton = false
-                                }
+                            // threshold in points — tune empirically
+                            let threshold: CGFloat = 400
+                            let scrolledDownEnough = delta > threshold
+
+                            if !isSelectedToday || scrolledDownEnough {
+                                withAnimation(.easeInOut) { showScrollToTopButton = true }
                             } else {
-                                    withAnimation(.easeInOut) {
-                                        showScrollToTopButton = true
-                                }
+                                withAnimation(.easeInOut) { showScrollToTopButton = false }
                             }
                         }
                         .onChange(of: selectedDate) { newValue in
@@ -519,8 +516,7 @@ struct TaskListView: View {
         .overlay(alignment: .bottomTrailing) {
             if showScrollToTopButton {
                 Button(action: {
-//                    scrollToTop()
-                    scrollToToday()
+                    selectedDate = Date()
                 }) {
                     Image(systemName: "arrow.up")
                         .resizable()

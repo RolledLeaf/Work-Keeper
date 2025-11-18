@@ -134,37 +134,41 @@ struct TaskRow: View {
                         .frame(maxHeight: 35)
                         
                         HStack {
-                            Text(highlighted(task.client?.primaryAddress?.street?.name ?? "", query: viewModel.searchText, highlightColor: .highlightBlue)
-                        )
+                            Text(highlighted(task.client?.primaryAddress?.street?.name ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2, reservesSpace: false)
+                                .minimumScaleFactor(1)
                             
                             Text("\(task.client?.primaryAddress?.house ?? "")")
+                               
                             
                         }
-                            .font(.custom(SFPro.regular.rawValue, size: 27))
+                        .font(.custom(SFPro.regular.rawValue, size: 22))
                             .foregroundColor(.custom(.taskTextGray))
-                            .frame(maxHeight: 46)
-                            .padding(.leading, 0)
+                            .frame(height: 25)
+                            
                             .frame(width: 320, alignment: .center)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(2, reservesSpace: false)
-                            .minimumScaleFactor(0.7)
+                           
+                        
                         if task.client?.primaryAddress?.isPrivateHouse == false {
                             HStack {
                                 
-                                Image("location")
-                                    .offset(x: -9, y: -9)
-                                Spacer()
+                             
                                 Text("\(task.client?.primaryAddress?.roomType ?? "кв.") \(task.client?.primaryAddress?.apartment ?? defaultNumber)")
+                                  
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
                                 Text("\(task.client?.primaryAddress?.entranceType ?? "под.") \(task.client?.primaryAddress?.entrance ?? defaultNumber)")
+                                   
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
                                 Text("эт. \(task.client?.primaryAddress?.floor ?? "")")
+                                    
                                     .foregroundColor(.custom(.taskTextGray))
                             }
-                            .padding(.trailing, 90)
-                            .padding(.leading, 15)
+                            .font(.custom(SFPro.regular.rawValue, size: 18))
+                            .offset(y: -4)
+                            .padding(.horizontal, 40)
                             } else {
                                 HStack {
                                 Image("location")
@@ -295,8 +299,7 @@ struct TaskRow: View {
                                Text("Удалёнка")
                                    .font(.custom(SFPro.regular.rawValue, size: 27))
                                    .foregroundColor(.custom(.taskTextGray))
-                                   .offset(x: 10)
-                           }
+                                                              }
                         .frame(height: 23)
                         .padding(.trailing, 125)
                         .padding(.leading, 8)
