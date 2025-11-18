@@ -130,7 +130,7 @@ struct TaskView: View {
                                             .padding(.top, 8)
                                     }
                                     
-                               
+                                    if task.client?.primaryAddress?.isPrivateHouse == false {
                                     HStack {
                                         Text("\(task.client?.primaryAddress?.roomType ?? "кв.") \(task.client?.primaryAddress?.apartment ?? "")")
                                             .foregroundColor(.custom(.taskTextGray))
@@ -150,6 +150,14 @@ struct TaskView: View {
                                     }
                                     .padding(.horizontal, 50)
                                     
+                                } else {
+                                    HStack {
+ 
+                                                Text("(Только дом)")
+                                                    .font(.custom(SFPro.italic.rawValue, size: 20))
+                                                    .foregroundColor(.custom(.taskTextGray))
+                                    }
+                                }
                                     
                                 }
                                 

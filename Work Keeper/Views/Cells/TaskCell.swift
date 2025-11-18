@@ -146,8 +146,8 @@ struct TaskRow: View {
                         .font(.custom(SFPro.regular.rawValue, size: 22))
                             .foregroundColor(.custom(.taskTextGray))
                             .frame(height: 25)
-                            
                             .frame(width: 320, alignment: .center)
+                            .offset(y: -3)
                            
                         
                         if task.client?.primaryAddress?.isPrivateHouse == false {
@@ -171,17 +171,13 @@ struct TaskRow: View {
                             .padding(.horizontal, 40)
                             } else {
                                 HStack {
-                                Image("location")
-                                    .offset(y: -9)
-                                
-                                Spacer()
+                        
                                 Text("(Только дом)")
                                     .font(.custom(SFPro.italic.rawValue, size: 20))
                                     .foregroundColor(.custom(.taskTextGray))
-                                    .offset(x: -19)
+                                    
                             }
-                                .padding(.trailing, 90)
-                                .padding(.leading, 10)
+                                
                         }
                        
                         
@@ -212,8 +208,8 @@ struct TaskRow: View {
                             Text(task.scheduledAt?.formattedAsTime() ?? "\(Date())")
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
-                            
-                          
+
+                            HStack {
                                 ZStack {
                                     Image("repeatClientCloud")
 
@@ -227,9 +223,7 @@ struct TaskRow: View {
                                 .offset(x: -8, y: 2)
                                 .opacity(showRepeatClientBubbleLocal ? 1 : 0)
                                 .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleLocal)
-                            
-                               
-                            
+                                
                                 Button(action: {
                                     showRepeatClientBubbleLocal = true
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -249,9 +243,12 @@ struct TaskRow: View {
                                 .onAppear {
                                     repeatBadgeOpacity = clientTasksCount > 1 ? 1 : 0
                                 }
-                            
-                            Text(highlighted(task.client?.firstName ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                                
+                                Text(highlighted(task.client?.firstName ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
+                                
+                            }
+                            .frame(maxWidth: 200, alignment: .center)
                             
                             Spacer()
                             
