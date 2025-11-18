@@ -5,6 +5,8 @@ struct ClientProfileView: View {
     @ObservedObject var viewModel = ClientsListViewModel()
     var client: Client
     @State private var selectedTaskForDetails: TaskEntity?
+    @State private var didCopyPhoneNumber = false
+    @State private var didCopyAddress = false
     
         var body: some View {
             
@@ -19,9 +21,22 @@ struct ClientProfileView: View {
                         Text(client.firstName ?? "имя не указано")
                             .font(.custom(SFPro.bold.rawValue, size: 32))
                         
-                        Text(client.phone?.formattedAsPhone() ?? "Телефон не указан")
-                            .font(.custom(SFPro.regular.rawValue, size: 16))
-                            .foregroundColor(.custom(.taskTextGray))
+                        
+                        Button(action: {
+                            let text =
+                            client.phone
+                            UIPasteboard.general.string = text
+                            withAnimation { didCopyPhoneNumber = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2 ) {
+                                withAnimation { didCopyPhoneNumber = false
+                                }
+                            }
+                            
+                        }) {
+                            Text(client.phone?.formattedAsPhone() ?? "Телефон не указан")
+                                .font(.custom(SFPro.regular.rawValue, size: 19))
+                                .foregroundColor(.custom(.taskTextGray))
+                        }
                     }
                     Spacer()
                     
@@ -60,14 +75,26 @@ struct ClientProfileView: View {
                     
                     Spacer()
                     
-                    Text(client.formattedAddress)
-                        .frame(height: 48)
-                        .font(.custom(SFPro.regular.rawValue, size: 24))
-                        .lineLimit(2, reservesSpace: false)
-                        .frame(width: 300, alignment: .center)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.7)
-                    Spacer()
+                    Button(action: {
+                        let text =
+                        client.formattedAddress
+                        UIPasteboard.general.string = text
+                        withAnimation { didCopyAddress = true }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2 ) {
+                            withAnimation { didCopyAddress = false
+                            }
+                        }
+                        
+                    }) {
+                        Text(client.formattedAddress)
+                            .frame(height: 48)
+                            .font(.custom(SFPro.regular.rawValue, size: 24))
+                            .lineLimit(2, reservesSpace: false)
+                            .frame(width: 300, alignment: .center)
+                            .multilineTextAlignment(.center)
+                            .minimumScaleFactor(0.7)
+                        Spacer()
+                    }
                 }
                 .padding(.horizontal, 30)
                 
@@ -92,7 +119,7 @@ struct ClientProfileView: View {
                     }
                     .padding(.horizontal, 80)
                 } else {
-                    Text("Частный дом")
+                    Text("Только дом")
                         .font(.custom(SFPro.italic.rawValue, size: 20))
                         .foregroundColor(.custom(.taskTextGray))
                         .padding(.top, -10)
@@ -194,6 +221,34 @@ struct ClientProfileView: View {
             .navigationDestination(item: $selectedTaskForDetails) { task in
                 TaskView(task: task)
             }
+            
+            .overlay(alignment: .center) {
+                if didCopyPhoneNumber {
+                    Text("Номер клиента скопирован")
+                        .font(.custom(SFPro.regular.rawValue, size: 18))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                        .padding(.top, 20)
+                
+                }
+            }
+                
+            .overlay(alignment: .center) {
+                if didCopyAddress {
+                    Text("Адрес клиента скопирован")
+                        .font(.custom(SFPro.regular.rawValue, size: 18))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                        .padding(.top, 20)
+                        
+                
+                }
+            }
+            
     }
 }
 

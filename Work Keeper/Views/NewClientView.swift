@@ -11,7 +11,7 @@ struct NewClientView: View {
     private var maxFirstNameCharachtersCount: Int = 12
     private var maxLastNameCharachtersCount: Int = 12
     private let maxBuildingCharachtersCount: Int = 8
-    private let maxStreetCharachtersCount: Int = 44
+    private let maxStreetCharachtersCount: Int = 49
     private let maxCommentCharachtersCount: Int = 91
     private let maxApartmentCharachtersCount: Int = 6
     private let maxEntranceCharachtersCount: Int = 3
@@ -34,7 +34,6 @@ struct NewClientView: View {
     enum Field {
         case firstName
         case lastName
-        case street
         case house
         case apartment
         case entrance
@@ -104,10 +103,7 @@ struct NewClientView: View {
                                     }
                                 }
                                 .focused($focusedField, equals: .lastName)
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .street
-                                }
+                              
                             
                         }
                     }
@@ -145,7 +141,7 @@ struct NewClientView: View {
                                 .frame(minHeight: 20, maxHeight: 45)
                                 .lineLimit(2, reservesSpace: false)
                                 .minimumScaleFactor(0.6)
-                                .focused($focusedField, equals: .street)
+                              
                                 .multilineTextAlignment(.center)
                             //.onChange(of: street) { oldValue, newValue in
                                 .onChange(of: viewModel.streetName) { newValue in
@@ -342,7 +338,7 @@ struct NewClientView: View {
                                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         
-                        Text("Частный дом")
+                        Text("Только дом")
                             .font(.custom(SFPro.italic.rawValue, size: 20))
                             .padding(.horizontal)
                             .frame(width: 150)

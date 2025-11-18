@@ -44,22 +44,40 @@ struct ClientRow: View {
                         .font(.custom(SFPro.bold.rawValue, size: 24))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 25, alignment: .center)
-                  
+                        .padding(.top, 7)
                         
                     Spacer()
                     
-                    HStack {
-                        Text(highlighted(client.primaryAddress?.street?.name ?? "Адрес не указан", query: viewModel.searchText, highlightColor: .highlightBlue))
+                    if !client.hasAddress {
+                        HStack {
+                            
+                            Text("Клиент не давал адрес")
+                                .font(.custom(SFPro.regular.rawValue, size: 19))
+                        }
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: 230, alignment: .leading)
+                            .frame(height: 34, alignment: .center)
+                            
+                            
+                    } else {
                         
-                        Text("\(client.primaryAddress?.house ?? "")")
-                    }
-                        .font(.custom(SFPro.regular.rawValue, size: 17))
+                        HStack {
+                            
+                            
+                            Text(highlighted(client.primaryAddress?.street?.name ?? "Адрес не указан", query: viewModel.searchText, highlightColor: .highlightBlue))
+                                .font(.custom(SFPro.regular.rawValue, size: 19))
+                                .lineLimit(2, reservesSpace: false)
+                            
+                            Text("\(client.primaryAddress?.house ?? "")")
+                                .font(.custom(SFPro.regular.rawValue, size: 19))
+                        }
+                        
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(height: 34, alignment: .center)
-                        .lineLimit(2, reservesSpace: false)
+                        
                         .minimumScaleFactor(0.8)
                         .multilineTextAlignment(.leading)
-                    
+                    }
                   
                     Spacer()
           
@@ -69,7 +87,7 @@ struct ClientRow: View {
                         .frame(maxHeight: 20, alignment: .center)
                         .multilineTextAlignment(.leading)
                         .foregroundColor(.custom(.taskTextGray))
-                      
+                        .padding(.bottom, 4)
                     
                 }
                 .padding(.leading, 17)
@@ -114,8 +132,7 @@ struct ClientRow: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
         )
-        .padding(.vertical, 8)
-        
+       
         
     }
 }

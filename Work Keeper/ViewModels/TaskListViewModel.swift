@@ -21,26 +21,23 @@ final class TaskListViewModel: ObservableObject {
     @Published var selectedStatuses: [Status]? = nil
     @Published var lastScheduledTaskDescription: String? = nil
     @Published var didScheduleTask: Bool = false
+    @Published var selectedFilters: Set<TaskStatus> = []
     
     private let store = TaskStore()
     private var cancelables = Set<AnyCancellable>()
 
-    func scheduleTask(_ task: TaskEntity) {
+    func scheduleTask(_ task: TaskEntity, at date: Date) {
+        task.scheduledAt = date
         store.makeScheduled(task)
         lastScheduledTaskDescription = task.taskDescription
         didScheduleTask = true
+        print("Task \(String(describing: task.taskDescription)) rescheduled to \(date)")
     }
-    
-    func scheduleTask(task: TaskEntity) {
-        store.makeScheduled(task)
-        loadTasks()
-    }
-    //Дублирование методов scheduleTask - привести к единому виду
     
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
             let date = task.scheduledAt ?? Date.distantPast
-            return Calendar.current.startOfDay(for: date) // normalize to day
+            return Calendar.current.startOfDay(for: date)
         }
     }
  
@@ -64,20 +61,85 @@ final class TaskListViewModel: ObservableObject {
             .store(in: &cancelables)
     }
 
-    private func applyFiltersAsync() {
+    func calculateDailyIncome(for date: Date, debug: Bool = false) -> Double {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else {
+            return 0
+        }
+
+        // фильтруем только завершённые задания за день
+        let dailyTasks = tasks.filter { task in
+            guard
+                task.status == .completed,
+                let taskDate = task.scheduledAt
+            else { return false }
+
+            return taskDate >= startOfDay && taskDate < endOfDay
+        }
+
+        // суммируем доход
+        let total = dailyTasks.reduce(0.0) { partial, task in
+            let income = task.contractAmount + task.extraPayment - task.cost
+            return partial + income
+        }
+
+        if debug {
+            print("[DailyIncome] Tasks found: \(dailyTasks.count)")
+            for t in dailyTasks {
+                print("• \(t.taskDescription ?? "Без описания"): \(t.contractAmount)+\(t.extraPayment)-\(t.cost)")
+            }
+            print("[DailyIncome] Total income for \(startOfDay): \(total)")
+        }
+
+        return total
+    }
+  
+    func saveUserDefaults(filters: [TaskStatus], key: String) {
+        let rawValues = filters.map { $0.rawValue }
+        userDefaults.set(rawValues, forKey: key)
+        print("[UserDefaults] Сохранены фильтры:", rawValues)
+    }
+   
+    func loadSavedStatusesFromUserDefaults(key: String) -> [Status]? {
+        guard let raw = UserDefaults.standard.array(forKey: key) as? [String] else { return nil }
+        let statuses = raw.compactMap { Status(rawValue: $0) }
+        return statuses.isEmpty ? nil : statuses
+    }
+    
+    // Преобразование между типами
+    func statusToTaskStatus(_ s: Status) -> TaskStatus {
+        switch s {
+        case .scheduled: return .scheduled
+        case .completed: return .completed
+        case .canceled:  return .canceled
+        }
+    }
+    
+    func taskStatusToStatus(_ t: TaskStatus) -> [Status] {
+        print("TaskStatusToStatus called. Task status \(t) converted to array")
+        switch t {
+        case .scheduled:
+            return [.scheduled]
+              case .completed:
+                  return [.completed]
+              case .canceled:
+                  return [.canceled]
+     
+        }
+    }
+    
+    func loadTasks() {
+        tasks = store.fetchTasks()
+    }
+
+     func applyFiltersAsync() {
         print("[TaskListViewModel] applyFiltersAsync called with searchText:", searchText)
         Task { // без [weak self]
             
             applyCurrentFiltersUsingDB()
         }
     }
-    
-    
-    func loadTasks() {
-        // load all tasks (no status filter)
-        tasks = store.fetchTasks()
-    }
-
 
     func applyCurrentFiltersUsingDB(debug: Bool = false) {
         print("[TaskListViewModel] applyCurrentFiltersUsingDB called with searchText:", searchText)
@@ -227,16 +289,10 @@ final class CreateTaskViewModel: ObservableObject {
     var totalAmount: Double {
         contractAmount - (cost ?? 0)
     }
-    
- 
-    
-   
-    
+  
     let roomTypes = ["кв.", "оф.", "каб."]
     let entranceTypes = ["под.", "вход."]
     
-    
-
     private let streetStore = StreetStore()
     private let addressStore = AddressStore()
     private let clientStore = ClientStore()
@@ -249,7 +305,6 @@ final class CreateTaskViewModel: ObservableObject {
             else {
                  !firstName.isBlank && !phoneDigits.isBlank
             }
-        
     }
     
     func updateCreateButtonColor(color: CustomColor) -> CustomColor {
@@ -259,11 +314,9 @@ final class CreateTaskViewModel: ObservableObject {
 
     func saveTask() -> Bool {
         guard canSaveTask() else {
-            print("❌ Не все поля заполнены ")
+            print("❌ Не все обязательные поля заполнены ")
             return false
         }
-        
-        let street = streetStore.createOrFetchStreet(name: streetName)
 
         let normalizedPhone = phoneDigits.isEmpty ? nil : "+7" + phoneDigits
         let client = clientStore.createOrFetchClient(
@@ -274,24 +327,28 @@ final class CreateTaskViewModel: ObservableObject {
             comment: comment.isEmpty ? nil : comment
         )
 
-        // Теперь создаём или подтягиваем адрес, уже зная client и isPrimary
-        let address = addressStore.createOrFetchAddress(
-            house: house,
-            apartment: apartment,
-            entrance: entrance,
-            floor: floor,
-            isPrivateHouse: isPrivateHouse,
-            street: street,
-            client: client,
-            isPrimary: true,
-            roomType: roomType ?? "кв.",
-            entranceType: entranceType ?? "под."
-        )
+        // Если задание не удалённое, создаём/подтягиваем улицу и адрес
+        if !isRemote {
+            let street = streetStore.createOrFetchStreet(name: streetName)
 
-        // link the address with the client
-        client.addToAddress(address)
+            let address = addressStore.createOrFetchAddress(
+                house: house,
+                apartment: apartment,
+                entrance: entrance,
+                floor: floor,
+                isPrivateHouse: isPrivateHouse,
+                street: street,
+                client: client,
+                isPrimary: true,
+                roomType: roomType ?? "кв.",
+                entranceType: entranceType ?? "под."
+            )
 
-        // Create  task
+            // link the address with the client
+            client.addToAddress(address)
+        }
+
+        // Создаём задачу
         taskStore.createTask(
             scheduledAt: scheduledAt,
             client: client,
@@ -302,20 +359,36 @@ final class CreateTaskViewModel: ObservableObject {
             cost: cost
         )
         didCreateTask = true
-        print("""
-         ✅ Задание успешно создано:
-         📆 Дата: \(scheduledAt)
-         👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
-         🏠 Адрес: \(streetName), дом: \(house), \(roomType ?? "") \(apartment), \(entranceType ?? "") \(entrance), этаж \(floor)
-         📝 Описание: \(description)
-         💬 Комментарий: \(comment)
-         🌍 Удалённо: \(isRemote ? "Да" : "Нет")
-         💵 Сумма по договору: \(contractAmount)
-         💸 Издержки: \(cost ?? 0)
-         Тип помещения: \(roomType ?? "")
-         Тип Входа: \(entranceType ?? "")
-         🧾 Статус: \(status.rawValue)
-         """)
+
+        if isRemote {
+            print("""
+             ✅ Удалённое задание успешно создано:
+             📆 Дата: \(scheduledAt)
+             👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
+             📝 Описание: \(description)
+             💬 Комментарий: \(comment)
+             🌍 Удалённо: Да
+             💵 Сумма по договору: \(contractAmount)
+             💸 Издержки: \(cost ?? 0)
+             🧾 Статус: \(status.rawValue)
+             """)
+        } else {
+            print("""
+             ✅ Задание успешно создано:
+             📆 Дата: \(scheduledAt)
+             👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
+             🏠 Адрес: \(streetName), дом: \(house), \(roomType ?? "") \(apartment), \(entranceType ?? "") \(entrance), этаж \(floor)
+             📝 Описание: \(description)
+             💬 Комментарий: \(comment)
+             🌍 Удалённо: Нет
+             💵 Сумма по договору: \(contractAmount)
+             💸 Издержки: \(cost ?? 0)
+             Тип помещения: \(roomType ?? "")
+             Тип входа: \(entranceType ?? "")
+             🧾 Статус: \(status.rawValue)
+             """)
+        }
+
         return true
     }
     
@@ -357,7 +430,7 @@ final class CompleteTaskViewModel: ObservableObject {
     @Published var extraPaymentText: String = ""
     @Published var extraPayment: Double? = 0
     @Published var taskDescription: String = ""
-    @Published var paymentType: PaymentType = .cash
+    @Published var paymentType: PaymentType = .none
     @Published var finalAmountText: String = ""
     
     var finalAmount: Double {
@@ -470,6 +543,7 @@ final class EditTaskViewModel: ObservableObject {
         self.task = task
         // Populate from existing Task
         self.scheduledAt = task.scheduledAt ?? Date()
+        self.paymentType = PaymentType(rawValue: task.paymentType ?? "")
         self.descriptionText = task.taskDescription ?? ""
         self.comment = task.comment ?? ""
         self.isRemote = task.isRemote

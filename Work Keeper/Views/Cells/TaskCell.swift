@@ -134,50 +134,50 @@ struct TaskRow: View {
                         .frame(maxHeight: 35)
                         
                         HStack {
-                            Text(highlighted(task.client?.primaryAddress?.street?.name ?? "", query: viewModel.searchText, highlightColor: .highlightBlue)
-                        )
+                            Text(highlighted(task.client?.primaryAddress?.street?.name ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2, reservesSpace: false)
+                                .minimumScaleFactor(1)
                             
                             Text("\(task.client?.primaryAddress?.house ?? "")")
+                               
                             
                         }
-                            .font(.custom(SFPro.regular.rawValue, size: 27))
+                        .font(.custom(SFPro.regular.rawValue, size: 22))
                             .foregroundColor(.custom(.taskTextGray))
-                            .frame(maxHeight: 46)
-                            .padding(.leading, 0)
+                            .frame(height: 25)
                             .frame(width: 320, alignment: .center)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(2, reservesSpace: false)
-                            .minimumScaleFactor(0.7)
+                            .offset(y: -3)
+                           
+                        
                         if task.client?.primaryAddress?.isPrivateHouse == false {
                             HStack {
                                 
-                                Image("location")
-                                    .offset(x: -9, y: -9)
-                                Spacer()
+                             
                                 Text("\(task.client?.primaryAddress?.roomType ?? "кв.") \(task.client?.primaryAddress?.apartment ?? defaultNumber)")
+                                  
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
                                 Text("\(task.client?.primaryAddress?.entranceType ?? "под.") \(task.client?.primaryAddress?.entrance ?? defaultNumber)")
+                                   
                                     .foregroundColor(.custom(.taskTextGray))
                                 Spacer()
                                 Text("эт. \(task.client?.primaryAddress?.floor ?? "")")
+                                    
                                     .foregroundColor(.custom(.taskTextGray))
                             }
-                            .padding(.trailing, 90)
-                            .padding(.leading, 15)
+                            .font(.custom(SFPro.regular.rawValue, size: 18))
+                            .offset(y: -4)
+                            .padding(.horizontal, 40)
                             } else {
                                 HStack {
-                                Image("location")
-                                    .offset(y: -9)
-                                
-                                Spacer()
-                                Text("(Частный дом)")
+                        
+                                Text("(Только дом)")
                                     .font(.custom(SFPro.italic.rawValue, size: 20))
                                     .foregroundColor(.custom(.taskTextGray))
-                                    .offset(x: -19)
+                                    
                             }
-                                .padding(.trailing, 90)
-                                .padding(.leading, 10)
+                                
                         }
                        
                         
@@ -208,8 +208,8 @@ struct TaskRow: View {
                             Text(task.scheduledAt?.formattedAsTime() ?? "\(Date())")
                                 .font(.custom(SFPro.regular.rawValue, size: 16))
                                 .offset(x: 5)
-                            
-                          
+
+                            HStack {
                                 ZStack {
                                     Image("repeatClientCloud")
 
@@ -223,9 +223,7 @@ struct TaskRow: View {
                                 .offset(x: -8, y: 2)
                                 .opacity(showRepeatClientBubbleLocal ? 1 : 0)
                                 .animation(.easeInOut(duration: 0.3), value: showRepeatClientBubbleLocal)
-                            
-                               
-                            
+                                
                                 Button(action: {
                                     showRepeatClientBubbleLocal = true
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
@@ -245,9 +243,12 @@ struct TaskRow: View {
                                 .onAppear {
                                     repeatBadgeOpacity = clientTasksCount > 1 ? 1 : 0
                                 }
-                            
-                            Text(highlighted(task.client?.firstName ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                                
+                                Text(highlighted(task.client?.firstName ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                                     .font(.custom(SFPro.bold.rawValue, size: 25))
+                                
+                            }
+                            .frame(maxWidth: 200, alignment: .center)
                             
                             Spacer()
                             
@@ -295,8 +296,7 @@ struct TaskRow: View {
                                Text("Удалёнка")
                                    .font(.custom(SFPro.regular.rawValue, size: 27))
                                    .foregroundColor(.custom(.taskTextGray))
-                                   .offset(x: 10)
-                           }
+                                                              }
                         .frame(height: 23)
                         .padding(.trailing, 125)
                         .padding(.leading, 8)
@@ -361,6 +361,7 @@ struct TaskRow: View {
                     
                     Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(SFPro.bold.rawValue, size: 16))
+                        .foregroundStyle(task.totalAmount >= 0 ? Color.black : Color.custom(.costPaymentRed))
                     Image("cash")
                         .opacity(cashOpacity)
                         .onAppear {

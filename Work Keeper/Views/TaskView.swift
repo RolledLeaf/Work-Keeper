@@ -2,13 +2,15 @@ import SwiftUI
 import UIKit
 
 struct TaskView: View {
- 
+    
     @ObservedObject var viewModel = TaskListViewModel()
-  
+    
     let task: TaskEntity
-  
+    
     @State private var didCopyTaskDescription = false
     @State private var didCopyTaskComment = false
+    @State private var didCopyPhoneNumber = false
+    @State private var didCopyAddress = false
     
     var body: some View {
         
@@ -43,9 +45,24 @@ struct TaskView: View {
                         Spacer()
                             .frame(height: 6)
                         
-                        Text(task.client?.phone ?? "")
-                            .font(.custom(SFPro.regular.rawValue, size: 16))
-                            .foregroundColor(.custom(.taskTextGray))
+                        
+                        Button(action: {
+                            let text = (task.client?.phone ?? "")
+                            
+                            UIPasteboard.general.string = text
+                            // Show a quick HUD
+                            withAnimation { didCopyPhoneNumber = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                                withAnimation { didCopyPhoneNumber = false
+                                }
+                            }
+                        }) {
+                            Text(task.client?.phone ?? "")
+                                .font(.custom(SFPro.regular.rawValue, size: 19))
+                                .foregroundColor(.custom(.taskTextGray))
+                        }
+                        
+                        
                     }
                     
                     Spacer()
@@ -73,22 +90,13 @@ struct TaskView: View {
                 
                 Spacer()
                     .frame(height: 28)
-           
+                
                 ZStack {
                     Color.custom(.inactiveFiledGray)
-                      
+                    
                     VStack {
                         HStack {
-                            
-                            if task.isRemote {
-                                Image("remote")
-                                    .offset(x: 20)
-                                    .offset(y: 5)
-                            } else {
-                                Image("mapPinBlack")
-                                    .offset(x: 20)
-                                    .offset(y: 5)
-                            }
+                         
                             
                             Spacer()
                             
@@ -99,22 +107,66 @@ struct TaskView: View {
                                     .lineLimit(2)
                                     .frame(maxWidth: 306)
                                     .offset(x: -7, y: 7)
-                                    
+                                
                             } else {
-                                Text("\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")")
-                                    .font(.custom(SFPro.regular.rawValue, size: 24))
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(2)
-                                    .minimumScaleFactor(0.8)
-                                    .frame(width: 270)
-                                    .offset(y: 8)
+                                
+                                VStack {
+                                    
+                                    let addressText = "\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")"
+                                    Button(action: {
+                                        UIPasteboard.general.string = addressText
+                                        withAnimation { didCopyAddress = true }
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                                            withAnimation { didCopyAddress = false }
+                                        }
+                                    }) {
+                                        Text(addressText)
+                                            .font(.custom(SFPro.regular.rawValue, size: 22))
+                                            .multilineTextAlignment(.center)
+                                            .lineLimit(2)
+                                            .minimumScaleFactor(0.7)
+                                            .frame(width: 320)
+                                            .frame(height: 37)
+                                            .padding(.top, 8)
+                                    }
+                                    
+                                    if task.client?.primaryAddress?.isPrivateHouse == false {
+                                    HStack {
+                                        Text("\(task.client?.primaryAddress?.roomType ?? "кв.") \(task.client?.primaryAddress?.apartment ?? "")")
+                                            .foregroundColor(.custom(.taskTextGray))
+                                            .font(.custom(SFPro.regular.rawValue, size: 17))
+                                        
+                                        Spacer()
+                                        
+                                        Text("\(task.client?.primaryAddress?.entranceType ?? "" ) \(task.client?.primaryAddress?.entrance ?? "") ")
+                                            .foregroundColor(.custom(.taskTextGray))
+                                            .font(.custom(SFPro.regular.rawValue, size: 17))
+                                        
+                                        Spacer()
+                                        
+                                        Text("эт. \(task.client?.primaryAddress?.floor ?? "")")
+                                            .foregroundColor(.custom(.taskTextGray))
+                                            .font(.custom(SFPro.regular.rawValue, size: 17))
+                                    }
+                                    .padding(.horizontal, 50)
+                                    
+                                } else {
+                                    HStack {
+ 
+                                                Text("(Только дом)")
+                                                    .font(.custom(SFPro.italic.rawValue, size: 20))
+                                                    .foregroundColor(.custom(.taskTextGray))
+                                    }
+                                }
+                                    
+                                }
+                                
                             }
                             
-                            
                             Spacer()
-                                
-                            
+                     
                         }
+                        
                         Spacer()
                         
                         HStack{
@@ -141,14 +193,14 @@ struct TaskView: View {
                             
                             Text(task.scheduledAt?.formattedAsTime() ?? "")
                                 .font(.custom(SFPro.regular.rawValue, size: 20))
-         
+                            
                         }
                         .padding(.leading, 21)
                         .padding(.trailing, 21)
                         
                         Spacer()
                     }
-                 
+                    
                 }
                 .cornerRadius(8)
                 .overlay(
@@ -167,7 +219,7 @@ struct TaskView: View {
                         .font(.custom(SFPro.regular.rawValue, size: 19))
                         .foregroundColor(.custom(.taskTextGray))
                     
-                     Spacer()
+                    Spacer()
                     
                     Button(action: {
                         let text = (task.taskDescription ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
@@ -188,6 +240,7 @@ struct TaskView: View {
                 }
                 .padding(.leading, 30)
                 .padding(.trailing, 45)
+                .offset(y: 5)
                 
                 ZStack {
                     Color.custom(.inactiveFiledGray)
@@ -215,7 +268,7 @@ struct TaskView: View {
                         .font(.custom(SFPro.regular.rawValue, size: 19))
                         .foregroundColor(.custom(.taskTextGray))
                     
-                     Spacer()
+                    Spacer()
                     
                     Button(action: {
                         let text = (task.comment ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
@@ -233,11 +286,12 @@ struct TaskView: View {
                             .foregroundColor(.black)
                             .frame(width: 18, height: 25)
                     }
-                   
+                    
                     
                 }
                 .padding(.leading, 30)
                 .padding(.trailing, 45)
+                .offset(y: 5)
                 
                 ZStack {
                     Color.custom(.inactiveFiledGray)
@@ -246,7 +300,7 @@ struct TaskView: View {
                         Text(task.comment ?? "")
                             .font(.custom(SFPro.regular.rawValue, size: 20))
                             .multilineTextAlignment(.center)
-
+                        
                             .frame(height: 96, alignment: .center)
                             .padding(.horizontal, 16)
                     }
@@ -303,7 +357,7 @@ struct TaskView: View {
                         }
                         .padding(.leading, 29)
                         .padding(.trailing, 18)
-                       
+                        
                         
                         HStack {
                             Spacer()
@@ -321,7 +375,7 @@ struct TaskView: View {
                         }
                         .padding(.leading, 29)
                         .padding(.trailing, 18)
-                       
+                        
                         
                         HStack {
                             Spacer()
@@ -341,7 +395,7 @@ struct TaskView: View {
                         .padding(.trailing, 18)
                         Spacer()
                     }
-    
+                    
                 }
                 .cornerRadius(8)
                 .frame(height: 190)
@@ -361,7 +415,7 @@ struct TaskView: View {
             if didCopyTaskDescription {
                 
                 Text("Текст задания скопирован")
-                    .font(.custom(SFPro.regular.rawValue, size: 16))
+                    .font(.custom(SFPro.regular.rawValue, size: 18))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial)
@@ -372,17 +426,39 @@ struct TaskView: View {
         .overlay(alignment: .center) {
             if didCopyTaskComment {
                 Text("Комментарий скопирован")
-                    .font(.custom(SFPro.regular.rawValue, size: 16))
+                    .font(.custom(SFPro.regular.rawValue, size: 18))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial)
                     .clipShape(Capsule())
                     .padding(.top, 20)
-            
+            }
+        }
+        
+        .overlay(alignment: .center) {
+            if didCopyPhoneNumber {
+                Text("Номер клиента скопирован")
+                    .font(.custom(SFPro.regular.rawValue, size: 18))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .padding(.top, 20)
+            }
+        }
+        
+        .overlay(alignment: .center) {
+            if didCopyAddress {
+                Text("Адрес клиента скопирован")
+                    .font(.custom(SFPro.regular.rawValue, size: 18))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    .padding(.top, 20)
             }
         }
     }
-    
 }
 
 

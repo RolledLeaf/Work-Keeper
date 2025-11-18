@@ -36,19 +36,24 @@ struct NewTaskView: View {
     @State private var streetTextFieldColor: CustomColor = .pureWhite
     @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
-   
-    
     @State private var showNewTaskAlert = false
+    @FocusState private var focusedField: Field?
     
     init(onComplete: ((String) -> Void)? = nil) {
      
         self.onComplete = onComplete
     }
-     
-    
-    
+
     @Environment(\.dismiss)
     private var dismiss
+    
+    enum Field {
+        case house
+        case apartment
+        case entrance
+        case floor
+        case contractAmount
+    }
     
     var body: some View {
         
@@ -307,7 +312,6 @@ struct NewTaskView: View {
                                 .disabled(viewModel.remoteEditingBlock)
                                 .background(Color.custom(streetTextFieldColor))
                                 .scrollContentBackground(hideScrollContentBackground ? .hidden : .visible)
-                            //.onChange(of: street) { oldValue, newValue in
                                 .onChange(of: viewModel.streetName) { _, newValue in
                                     if newValue.count > maxStreetCharactersCount {
                                         viewModel.streetName = String(newValue.prefix(maxStreetCharactersCount))
@@ -341,10 +345,7 @@ struct NewTaskView: View {
                         
                     )
                     .padding(.horizontal, 20)
-                    
-                    
-                    
-                    
+        
                     Text("максимум символов \(maxStreetCharactersCount)")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.red)
@@ -356,14 +357,19 @@ struct NewTaskView: View {
                         Text("дом -")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.black)
-                        
-                        
+
                         ZStack {
                             Color.custom(houseTextFieldColor)
                             TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .focused($focusedField, equals: .house)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .apartment
+                                }
                                 .disabled(viewModel.remoteEditingBlock)
+                              
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -402,6 +408,11 @@ struct NewTaskView: View {
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.privateHouseBlock)
+                                .focused($focusedField, equals: .apartment)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .entrance
+                                }
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharactersCount {
                                         viewModel.apartment = String(newValue.prefix(maxApartmentCharactersCount))
@@ -438,6 +449,11 @@ struct NewTaskView: View {
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.privateHouseBlock)
+                                .focused($focusedField, equals: .entrance)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .floor
+                                }
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharactersCount {
                                         viewModel.entrance = String(newValue.prefix(maxEntranceCharactersCount))
@@ -469,6 +485,11 @@ struct NewTaskView: View {
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.privateHouseBlock)
                                 .font(.system(size: 19, weight: .regular, design: .default))
+                                .focused($focusedField, equals: .floor)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .contractAmount
+                                }
                                 .onChange(of: viewModel.floor) { newValue in
                                     if newValue.count > maxFloorCharacters {
                                         viewModel.floor = String(newValue.prefix(maxFloorCharacters))
@@ -483,7 +504,7 @@ struct NewTaskView: View {
                                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         
-                        Text("Частный дом")
+                        Text("Только дом")
                             .font(.custom(SFPro.italic.rawValue, size: 20))
                             .padding(.horizontal)
                             .frame(width: 150)
@@ -535,6 +556,7 @@ struct NewTaskView: View {
                             .frame(width: 100, height: 30)
                             .multilineTextAlignment(.center)
                             .keyboardType(.decimalPad)
+                            .focused($focusedField, equals: .contractAmount)
                             .onChange(of: viewModel.contractAmountText) { newValue in
                                 if let value = Double(newValue.replacingOccurrences(of: ",", with: ".")) {
                                     viewModel.contractAmount = value

@@ -38,9 +38,16 @@ struct EditTaskView: View {
     @State private var streetTextFieldColor: CustomColor = .pureWhite
     @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
+    @FocusState private var focusedField: Field?
  
    
-    
+    enum Field {
+        case house
+        case apartment
+        case entrance
+        case floor
+        case contractAmount
+    }
     
     
     init(viewModel: EditTaskViewModel, onSave: ((String) -> Void)? = nil) {
@@ -399,6 +406,11 @@ struct EditTaskView: View {
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.remoteEditingBlock)
+                                .focused($focusedField, equals: .house)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .apartment
+                                }
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -436,6 +448,11 @@ struct EditTaskView: View {
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.privateHouseBlock)
+                                .focused($focusedField, equals: .apartment)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .entrance
+                                }
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharactersCount {
                                         viewModel.apartment = String(newValue.prefix(maxApartmentCharactersCount))
@@ -472,6 +489,11 @@ struct EditTaskView: View {
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.privateHouseBlock)
+                                .focused($focusedField, equals: .entrance)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .floor
+                                }
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharactersCount {
                                         viewModel.entrance = String(newValue.prefix(maxEntranceCharactersCount))
@@ -503,6 +525,11 @@ struct EditTaskView: View {
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.privateHouseBlock)
                                 .font(.system(size: 19, weight: .regular, design: .default))
+                                .focused($focusedField, equals: .floor)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .contractAmount
+                                }
                                 .onChange(of: viewModel.floor) { newValue in
                                     if newValue.count > maxFloorCharactersCount {
                                         viewModel.floor = String(newValue.prefix(maxFloorCharactersCount))
@@ -570,6 +597,7 @@ struct EditTaskView: View {
                             .frame(width: 100, height: 30)
                             .multilineTextAlignment(.center)
                             .keyboardType(.decimalPad)
+                            .focused($focusedField, equals: .contractAmount)
                             .onChange(of: viewModel.contractAmountText) { newValue in
                                 if newValue.count > maxContractAmountCharacters {
                                     viewModel.contractAmountText = String(newValue.prefix( maxContractAmountCharacters))

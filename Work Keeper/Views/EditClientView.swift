@@ -31,16 +31,20 @@ struct EditClientView: View {
     @Environment(\.dismiss)
     private var dismiss
     
+    enum Field {
+        case firstName
+        case lastName
+        case house
+        case apartment
+        case entrance
+        case floor
+        case phoneNumber
+    }
+    
     init(viewModel: EditClientViewModel, onEdit: ((String) -> Void)? = nil) {
         self._viewModel = ObservedObject(wrappedValue: viewModel)
         self.onEdit = onEdit
       }
-    
-    enum Field {
-        case firstName
-        case lastName
-        case phoneNumber
-    }
     
     var body: some View {
         let roomTypes = ["кв", "оф", "каб"]
@@ -201,6 +205,11 @@ struct EditClientView: View {
                             TextField("", text: $viewModel.house)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .focused($focusedField, equals: .house)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .apartment
+                                }
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharachtersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharachtersCount))
@@ -237,6 +246,11 @@ struct EditClientView: View {
                             TextField("", text: $viewModel.apartment)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .focused($focusedField, equals: .apartment)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .entrance
+                                }
                                 .onChange(of: viewModel.apartment) { newValue in
                                     if newValue.count > maxApartmentCharachtersCount {
                                         viewModel.apartment = String(newValue.prefix(maxApartmentCharachtersCount))
@@ -272,6 +286,11 @@ struct EditClientView: View {
                             TextField("", text: $viewModel.entrance)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                                 .multilineTextAlignment(.center)
+                                .focused($focusedField, equals: .entrance)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .floor
+                                }
                                 .onChange(of: viewModel.entrance) { newValue in
                                     if newValue.count > maxEntranceCharachtersCount {
                                         viewModel.entrance = String(newValue.prefix(maxEntranceCharachtersCount))
@@ -300,6 +319,11 @@ struct EditClientView: View {
                         ZStack {
                             Color.white
                             TextField("", text: $viewModel.floor)
+                                .focused($focusedField, equals: .floor)
+                                .submitLabel(.next)
+                                .onSubmit {
+                                    focusedField = .phoneNumber
+                                }
                                 .multilineTextAlignment(.center)
                                 .font(.system(size: 19, weight: .regular, design: .default))
                         }
@@ -311,7 +335,7 @@ struct EditClientView: View {
                                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         
-                        Text("Частный дом")
+                        Text("Только дом")
                             .font(.custom(SFPro.italic.rawValue, size: 20))
                             .padding(.horizontal)
                             .frame(width: 150)
@@ -347,6 +371,7 @@ struct EditClientView: View {
                                 .padding(.leading, 5)
                                 .keyboardType(.phonePad)
                                 .textContentType(.telephoneNumber)
+                                .focused($focusedField, equals: .phoneNumber)
                                 .onChange(of: phoneMasked) { newValue in
                                     let prevDigits = digitsOnly(previousPhoneMasked)
                                     var newDigits  = digitsOnly(newValue)
