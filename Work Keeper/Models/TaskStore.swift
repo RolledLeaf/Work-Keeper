@@ -17,7 +17,8 @@ final class TaskStore: NSObject, ObservableObject {
                     isRemote: Bool,
                     status: Status,
                     contractAmount: Double,
-                    cost: Double?) -> TaskEntity {
+                    cost: Double?,
+                    paymentType: PaymentType) -> TaskEntity {
         
         
         
@@ -31,6 +32,7 @@ final class TaskStore: NSObject, ObservableObject {
         task.contractAmount = contractAmount
         task.cost = cost ?? 0
         task.totalAmount = contractAmount - (cost ?? 0)
+        task.paymentType = PaymentType.none.rawValue
         
         do {
             try context.save()
@@ -63,9 +65,9 @@ final class TaskStore: NSObject, ObservableObject {
         }
     }
     
-    func makeScheduled(_ task: TaskEntity) {
+    func makeScheduled(_ task: TaskEntity, paymentType: PaymentType?) {
         task.status = .scheduled
-        task.paymentType = .none
+        task.paymentType = paymentType?.rawValue
         do {
             try context.save()
         } catch {
@@ -73,13 +75,13 @@ final class TaskStore: NSObject, ObservableObject {
         }
     }
     
-    func makeCanceled(_ task: TaskEntity, comment: String?) {
+    func makeCanceled(_ task: TaskEntity, comment: String?, paymentType: PaymentType?) {
         task.status = .canceled
         task.comment = comment
         task.contractAmount = 0
         task.cost = 0
         task.totalAmount = 0
-        task.paymentType = .none
+        task.paymentType = paymentType?.rawValue
         do {
             try context.save()
         } catch {

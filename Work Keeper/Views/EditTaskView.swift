@@ -691,6 +691,7 @@ struct EditTaskView: View {
                         Text("Наличные").tag(PaymentType.cash)
                         Text("Перевод").tag(PaymentType.transfer)
                     }
+                    .disabled(viewModel.status != .completed)
                     .pickerStyle(.segmented)
                     .frame(width: 200)
                     

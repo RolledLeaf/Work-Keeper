@@ -22,13 +22,14 @@ final class TaskListViewModel: ObservableObject {
     @Published var lastScheduledTaskDescription: String? = nil
     @Published var didScheduleTask: Bool = false
     @Published var selectedFilters: Set<TaskStatus> = []
+    @Published var defaultPaymentType: PaymentType = .none
     
     private let store = TaskStore()
     private var cancelables = Set<AnyCancellable>()
 
     func scheduleTask(_ task: TaskEntity, at date: Date) {
         task.scheduledAt = date
-        store.makeScheduled(task)
+        store.makeScheduled(task, paymentType: defaultPaymentType)
         lastScheduledTaskDescription = task.taskDescription
         didScheduleTask = true
         print("Task \(String(describing: task.taskDescription)) rescheduled to \(date)")
@@ -356,7 +357,9 @@ final class CreateTaskViewModel: ObservableObject {
             isRemote: isRemote,
             status: status,
             contractAmount: contractAmount,
-            cost: cost
+            cost: cost,
+            paymentType: selectedPayment
+           
         )
         didCreateTask = true
 
@@ -466,6 +469,7 @@ final class CompleteTaskViewModel: ObservableObject {
 final class CancelTaskViewModel: ObservableObject {
     @Published var comment: String = ""
     @Published var taskDescription: String = ""
+    @Published var paymentType: PaymentType = .none
 
     private let task: TaskEntity
     private let store = TaskStore()
@@ -476,7 +480,7 @@ final class CancelTaskViewModel: ObservableObject {
     }
 
     func cancel() {
-        store.makeCanceled(task, comment: comment)
+        store.makeCanceled(task, comment: comment, paymentType: paymentType)
     }
 }
 

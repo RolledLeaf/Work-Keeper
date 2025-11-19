@@ -149,7 +149,7 @@ struct TaskListView: View {
     @ViewBuilder
     private func mainContent(proxy: ScrollViewProxy) -> some View {
         ZStack {
-            Color(.white).edgesIgnoringSafeArea(.all)
+            Color(.systemBackground).edgesIgnoringSafeArea(.all)
                 .onTapGesture { hideKeyboard() }
             
             VStack {
@@ -189,6 +189,7 @@ struct TaskListView: View {
                             .resizable()
                             .frame(width: 30, height: 30)
                             .padding(.trailing, 5)
+                            .foregroundStyle(.pitchBlack)
                             .ifAvailableButtonStyleGlass()
                     }
                 }
@@ -207,7 +208,7 @@ struct TaskListView: View {
                         .background(
                             HStack {
                                 Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(.taskCellGray)
                                 Spacer()
                                 
                                 
@@ -293,7 +294,7 @@ struct TaskListView: View {
                                             Spacer()
                                             Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrency())")
                                                 .font(.custom(SFPro.bold.rawValue, size: 17))
-                                                .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? .black : .gray)
+                                                .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? Color.custom(.pitchBlack) : Color.custom(.taskTextGray))
                                         }
                                     }
                                     .background(
