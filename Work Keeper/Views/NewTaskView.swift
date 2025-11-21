@@ -65,7 +65,7 @@ struct NewTaskView: View {
                 VStack {
                     Text("Новое задание")
                         .font(.system(size: 24, weight: .bold, design: .default))
-                        .foregroundColor(Color.black)
+                        .foregroundColor(Color.custom(.pitchBlack))
                         .offset(y: 30)
                     Spacer()
                         .frame(height: 50)
@@ -103,7 +103,9 @@ struct NewTaskView: View {
                     .padding(.trailing, 20)
                     
                     ZStack {
-                        Color.white
+                        Color.custom(.pureWhite)
+                            .cornerRadius(12)
+                        
                         TextEditor(text: $viewModel.description)
                             .font(.system(size: 20, weight: .regular, design: .default))
                             .padding(.horizontal, 16)
@@ -111,6 +113,8 @@ struct NewTaskView: View {
                             .lineLimit(2, reservesSpace: false)
                             .minimumScaleFactor(0.6)
                             .multilineTextAlignment(.leading)
+                            .scrollContentBackground(.hidden) // скрыть внутренний фон
+                             .background(Color.custom(.pureWhite))
                             .onChange(of: viewModel.description) { newValue in
                                 if newValue.count > maxDescriptionCharactersCount {
                                     viewModel.description = String(newValue.prefix(maxDescriptionCharactersCount))
@@ -162,14 +166,14 @@ struct NewTaskView: View {
                     
                     HStack {
                         ZStack {
-                            Color.white
+                            Color.custom(.pureWhite)
                                 .cornerRadius(8)
                             
                             HStack {
                                 TextField("Имя", text: $viewModel.firstName)
                                     .font(.system(size: 19, weight: .regular, design: .default))
                                     .padding(.leading, 11)
-                                    .background(Color.clear)
+                                    .background( Color.custom(.pureWhite))
                                     .submitLabel(.next)
                                     .onChange(of: viewModel.firstName) { newValue in
                                         if newValue.count > maxFirstNameCharactersCount { viewModel.firstName = String(newValue.prefix(maxFirstNameCharactersCount))
@@ -183,7 +187,7 @@ struct NewTaskView: View {
                                 {
                                     Image(systemName: "chevron.right")
                                         .padding(.trailing, 4)
-                                        .tint(Color.black)
+                                        .tint(Color.custom(.pitchBlack))
                                 }
                             }
                         }
@@ -201,7 +205,7 @@ struct NewTaskView: View {
                         HStack {
                             
                             ZStack {
-                                Color.white
+                                Color.custom(.pureWhite)
                                 TextField("+7", text: $phoneMasked)
                                     .font(.system(size: 19, weight: .regular, design: .default))
                                     .foregroundColor(.black)
@@ -311,7 +315,7 @@ struct NewTaskView: View {
                                 .multilineTextAlignment(.leading)
                                 .disabled(viewModel.remoteEditingBlock)
                                 .background(Color.custom(streetTextFieldColor))
-                                .scrollContentBackground(hideScrollContentBackground ? .hidden : .visible)
+                                .scrollContentBackground(.hidden)
                                 .onChange(of: viewModel.streetName) { _, newValue in
                                     if newValue.count > maxStreetCharactersCount {
                                         viewModel.streetName = String(newValue.prefix(maxStreetCharactersCount))
@@ -331,7 +335,7 @@ struct NewTaskView: View {
                                 Image(systemName: "chevron.right")
                                     .opacity(streetChevronOpacity)
                             }
-                            .tint(Color(.black))
+                            .tint(Color.custom(.pitchBlack))
                             .offset(x: -5)
                         }
                         
@@ -356,7 +360,7 @@ struct NewTaskView: View {
                         
                         Text("дом -")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.black)
+                            .foregroundColor(Color.custom(.pitchBlack))
 
                         ZStack {
                             Color.custom(houseTextFieldColor)
@@ -394,7 +398,7 @@ struct NewTaskView: View {
                         } label: {
                             Text(viewModel.roomType ?? "кв.")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.black)
+                                .foregroundColor(Color.custom(.pitchBlack))
                             Image(systemName: "triangle.fill")
                                 .resizable()
                                 .frame(width: 8, height: 5)
@@ -436,7 +440,7 @@ struct NewTaskView: View {
                         } label: {
                             Text(viewModel.entranceType ?? "под.")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.black)
+                                .foregroundColor(Color.custom(.pitchBlack))
                             Image(systemName: "triangle.fill")
                                 .resizable()
                                 .frame(width: 8, height: 5)
@@ -477,7 +481,7 @@ struct NewTaskView: View {
                         
                         Text("эт -")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.black)
+                            .foregroundColor(Color.custom(.pitchBlack))
                         
                         ZStack {
                             Color.custom(textFieldColor)
@@ -546,7 +550,7 @@ struct NewTaskView: View {
                     HStack {
                         Text("Договорились")
                             .padding(.leading, 21)
-                            .foregroundColor(Color(.black))
+                            .foregroundColor(Color.custom(.pitchBlack))
                             .font(.system(size: 19, weight: .regular, design: .default))
                             .background(Color.clear)
                         Spacer()
@@ -571,7 +575,7 @@ struct NewTaskView: View {
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                                    .fill(Color.white)
+                                    .fill(Color.custom(.pureWhite))
                             )
                     }
                     .padding(.trailing, 48)
@@ -583,7 +587,7 @@ struct NewTaskView: View {
                     HStack {
                         Text("Издержки")
                             .padding(.leading, 21)
-                            .foregroundColor(Color(.black))
+                            .foregroundColor(Color.custom(.pitchBlack))
                             .font(.system(size: 19, weight: .regular, design: .default))
                             .background(Color.clear)
                         Spacer()
@@ -606,7 +610,7 @@ struct NewTaskView: View {
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
                                     .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                                    .fill(Color.white)
+                                    .fill(Color.custom(.pureWhite))
                             )
                     }
                     .padding(.trailing, 48)
@@ -659,7 +663,7 @@ struct NewTaskView: View {
                                 Rectangle()
                                     .tint(Color.custom(viewModel.canSaveTask() ? .highlightBlue : .inactiveButtonGray))
                                 Text("Cоздать")
-                                    .tint(Color.white)
+                                    .foregroundStyle(viewModel.canSaveTask() ? .black : .white)
                                  
                             }
                         }
