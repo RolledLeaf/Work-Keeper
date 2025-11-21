@@ -31,6 +31,8 @@ enum CustomColor: String {
     case orangeEndPoint = "orangeEndPoint"
     case highlightBlue = "highlightBlue"
     case pitchBlack = "pitchBlack"
+    case mainBackground = "mainBackground"
+    case scheduleCancelButton = "scheduleCancelButton"
 }
 
 
