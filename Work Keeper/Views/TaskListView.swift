@@ -658,6 +658,7 @@ struct TaskListView: View {
                             }
                         }
                     }
+                    .presentationDragIndicator(.visible)
             }
             .presentationDetents([.fraction(0.45)])
         }

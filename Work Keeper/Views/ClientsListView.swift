@@ -10,14 +10,7 @@ struct SortPopoverView: View {
 
     var body: some View {
           NavigationStack {
-              VStack(spacing: 16) {
-                  // drag indicator
-                  Capsule()
-                      .fill(Color(.systemGray5))
-                      .frame(width: 56, height: 6)
-                      .padding(.top, 6)
-
-                  // Title
+              VStack {
                   Text("Упорядочить")
                       .font(.system(size: 28, weight: .bold))
                       .padding(.top, 4)
@@ -72,9 +65,9 @@ struct SortPopoverView: View {
                   }
               }
           }
-          .presentationDetents([.medium])             // полумодал
+          .presentationDetents([.medium])
           .presentationCornerRadius(20)
-          .presentationDragIndicator(.hidden)         // мы сами рисуем
+          .presentationDragIndicator(.visible)
       }
   }
 
