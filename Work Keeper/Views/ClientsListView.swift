@@ -130,7 +130,7 @@ struct ClientsListView: View {
                             Image("sortAZ")
                                 .resizable()
                                 .frame(width: 31, height: 22)
-                                .foregroundStyle(.pitchBlack)
+                                
                         }
                         .padding(.leading, 3)
                         

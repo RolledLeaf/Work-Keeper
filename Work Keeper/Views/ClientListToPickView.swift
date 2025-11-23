@@ -11,7 +11,7 @@ struct ClientListToPickView: View {
        
         
         ZStack {
-            Color(.white).ignoresSafeArea()
+            Color.custom(.mainBackground).ignoresSafeArea()
                 .onTapGesture {
                     hideKeyboard()
                 }
@@ -24,6 +24,7 @@ struct ClientListToPickView: View {
                         
                         Text("Отмена")
                             .font(.custom(SFPro.regular.rawValue, size: 15))
+                            .foregroundStyle(.pitchBlack)
                     }
                     
                    
@@ -89,12 +90,11 @@ struct ClientListToPickView: View {
                                 viewModel.pickClient(client)
                                 dismiss()
                             }
-                           
+                            .listRowBackground(Color.custom(.mainBackground))
+                            .listRowSeparator(.hidden)
                     }
-                    .listRowSeparator(.hidden)
-                    .listStyle(PlainListStyle())
-                    .padding(.leading, -20)
-                    .padding(.trailing, -20)
+                    .listStyle(.inset)
+                    .background(Color.custom(.mainBackground))
                 }
                     
             }

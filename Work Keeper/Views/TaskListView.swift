@@ -164,11 +164,11 @@ struct TaskListView: View {
                             .ifAvailableButtonStyleGlass()
                     }
                     .padding(.leading, 8)
-                    .padding(.trailing, 10)
+                    .padding(.trailing, 5)
                     
                     ZStack {
-                        Image(systemName: "calendar")
-                            .font(.system(size: 30, weight: .regular))
+                        Image("calendar")
+                            .frame(width: 30, height: 30)
                             .ifAvailableButtonStyleGlass()
                         
                         DatePicker("",
@@ -178,7 +178,7 @@ struct TaskListView: View {
                         .labelsHidden()
                         .datePickerStyle(.compact)
                         .blendMode(.destinationOver)
-                        .frame(width: 35, height: 35)
+                        .frame(width: 30, height: 30)
                         .contentShape(Rectangle())
                     }
                     
@@ -187,8 +187,8 @@ struct TaskListView: View {
                     Button(action: {
                         showNewTaskView = true
                     }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 30, weight: .regular))
+                        Image("plus")
+                            .frame(width: 30, height: 30)
                             .foregroundStyle(.pitchBlack)
                             .padding(.trailing, 5)
                             .ifAvailableButtonStyleGlass()
@@ -209,7 +209,7 @@ struct TaskListView: View {
                         .background(
                             HStack {
                                 Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.taskCellGray)
+                                    .foregroundColor(.gray)
                                 Spacer()
                                 
                                 
