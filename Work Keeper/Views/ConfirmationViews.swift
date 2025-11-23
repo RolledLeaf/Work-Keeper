@@ -21,7 +21,7 @@ struct ScheduleTaskConfirmationView: View {
                  .multilineTextAlignment(.center)
         }
         .padding(16)
-        .background(.white)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -52,7 +52,7 @@ struct CancelTaskConfirmationView: View {
                  .multilineTextAlignment(.center)
         }
         .padding(16)
-        .background(.white)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -91,7 +91,7 @@ struct DeleteTaskConfirmationView: View {
             
         }
         .padding(16)
-        .background(.white)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -122,7 +122,7 @@ struct EditTaskConfirmationView: View {
                  .multilineTextAlignment(.center)
         }
         .padding(16)
-        .background(.white)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -159,7 +159,7 @@ struct CompleteTaskConfirmationView: View {
            
         }
         .padding(16)
-        .background(.white)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -197,7 +197,7 @@ struct AddClientConfirmationView: View {
 
         }
         .padding(16)
-        .background(.white)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -231,7 +231,7 @@ struct EditClientConfirmationView: View {
                  .foregroundColor(Color.custom(.textTitleGray))
         }
         .padding(16)
-        .background(.white)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -274,7 +274,7 @@ struct DeleteClientConfirmationView: View {
             
         }
         .padding(16)
-        .background(.white)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -308,7 +308,7 @@ struct AddStreetConfirmationView: View {
         }
         
         .padding(16)
-        .background(.regularMaterial)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -351,7 +351,7 @@ struct DeleteStreetConfirmationView: View {
             
         }
         .padding(16)
-        .background(.white)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -393,7 +393,7 @@ struct EditStreetConfirmationView: View {
         }
         
         .padding(16)
-        .background(.regularMaterial)
+        .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)

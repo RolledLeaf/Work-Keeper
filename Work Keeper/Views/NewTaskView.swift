@@ -208,7 +208,7 @@ struct NewTaskView: View {
                                 Color.custom(.pureWhite)
                                 TextField("+7", text: $phoneMasked)
                                     .font(.system(size: 19, weight: .regular, design: .default))
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.custom(.pitchBlack))
                                     .offset(x: 8)
                                     .keyboardType(.phonePad)
                                     .textContentType(.telephoneNumber)
