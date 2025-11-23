@@ -193,7 +193,7 @@ struct TaskRow: View {
                                     .foregroundColor(.custom(.taskTextGray))
                                     
                             }
-                                
+                                .offset(y: -5)
                         }
                        
                         

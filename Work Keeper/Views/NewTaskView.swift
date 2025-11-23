@@ -65,7 +65,7 @@ struct NewTaskView: View {
                 VStack {
                     Text("Новое задание")
                         .font(.system(size: 24, weight: .bold, design: .default))
-                        .foregroundColor(Color.custom(.pitchBlack))
+                        .foregroundStyle(Color.custom(.pitchBlack))
                         .offset(y: 30)
                     Spacer()
                         .frame(height: 50)
