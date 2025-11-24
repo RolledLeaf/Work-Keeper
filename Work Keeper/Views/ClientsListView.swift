@@ -140,8 +140,8 @@ struct ClientsListView: View {
                         Button(action: {
                             showNewClientView = true
                         }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 30, weight: .regular))
+                            Image("plus")
+                                .frame(width: 30, height: 30)
                                 .foregroundStyle(.pitchBlack)
                                 .padding(.trailing, 5)
                                 .ifAvailableButtonStyleGlass()
@@ -229,7 +229,7 @@ struct ClientsListView: View {
                                 
                             
                         }
-                        .listStyle(.inset)
+                        .listStyle(PlainListStyle())
                         .background(Color.custom(.mainBackground))
                         
                         .navigationDestination(item: $selectedClient) { client in

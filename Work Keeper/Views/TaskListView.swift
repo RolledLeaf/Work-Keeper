@@ -191,7 +191,7 @@ struct TaskListView: View {
                             .frame(width: 30, height: 30)
                             .foregroundStyle(.pitchBlack)
                             .padding(.trailing, 5)
-                            .ifAvailableButtonStyleGlass()
+
                     }
                 }
                 .padding(.leading, 3)

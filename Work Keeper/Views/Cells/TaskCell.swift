@@ -1,5 +1,5 @@
-import SwiftUI
 
+import SwiftUI
 
 let defaultNumber = "1"
 
@@ -396,11 +396,11 @@ struct TaskRow: View {
             .frame(maxHeight: 55)
             .padding(.top, -10)
         }
-        .background(Color.custom(.taskCellGray))
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12)
-            .stroke(Color.gray.opacity(0.5), lineWidth: 1))
-        
+        .background(
+           RoundedRectangle(cornerRadius: 38)
+                    .fill(Color.custom(.taskCellGray))
+        )
+        .frame(height: 167)
         .onAppear {
             print("\(task.taskDescription ?? "Без названия") Payment type is \(task.paymentType ?? "нет метода оплаты")")
         }
