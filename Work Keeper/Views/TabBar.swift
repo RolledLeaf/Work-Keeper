@@ -13,6 +13,7 @@ struct TabBar: View {
                         .resizable()
                         .frame(width: 25, height: 31)
                     Text("Задания")
+                        .foregroundStyle(.pitchBlack)
                         
                 }
                 .tag(0)
@@ -21,6 +22,7 @@ struct TabBar: View {
                 .tabItem {
                     Image(selectedTab == 1 ? "clientsActive" : "clientsInactive")
                     Text("Клиенты")
+                        .foregroundStyle(.pitchBlack)
                     if selectedTab == 1 {
                         
                     }
@@ -33,7 +35,7 @@ struct TabBar: View {
                         .resizable()
                         .frame(width: 25, height: 31)
                     Text("Статистика")
-                    
+                        .foregroundStyle(.pitchBlack)
                 }
                 .tag(2)
         }

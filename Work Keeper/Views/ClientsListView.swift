@@ -10,14 +10,7 @@ struct SortPopoverView: View {
 
     var body: some View {
           NavigationStack {
-              VStack(spacing: 16) {
-                  // drag indicator
-                  Capsule()
-                      .fill(Color(.systemGray5))
-                      .frame(width: 56, height: 6)
-                      .padding(.top, 6)
-
-                  // Title
+              VStack {
                   Text("Упорядочить")
                       .font(.system(size: 28, weight: .bold))
                       .padding(.top, 4)
@@ -72,9 +65,9 @@ struct SortPopoverView: View {
                   }
               }
           }
-          .presentationDetents([.medium])             // полумодал
+          .presentationDetents([.medium])
           .presentationCornerRadius(20)
-          .presentationDragIndicator(.hidden)         // мы сами рисуем
+          .presentationDragIndicator(.visible)
       }
   }
 
@@ -124,7 +117,7 @@ struct ClientsListView: View {
         NavigationStack {
             ZStack {
                 
-                Color(.white).edgesIgnoringSafeArea(.all)
+                Color.custom(.mainBackground).ignoresSafeArea()
                     .onTapGesture {
                         hideKeyboard()
                     }
@@ -137,6 +130,7 @@ struct ClientsListView: View {
                             Image("sortAZ")
                                 .resizable()
                                 .frame(width: 31, height: 22)
+                                
                         }
                         .padding(.leading, 3)
                         
@@ -146,12 +140,16 @@ struct ClientsListView: View {
                         Button(action: {
                             showNewClientView = true
                         }) {
-                            Image(systemName: "plus")
-                                .resizable()
+                            Image("plus")
                                 .frame(width: 30, height: 30)
+                                .foregroundStyle(.pitchBlack)
+                                .padding(.trailing, 5)
+                                .ifAvailableButtonStyleGlass()
                         }
-                        .padding(.trailing, 5)
+                        
                     }
+                    
+                    .padding(.horizontal, 10)
                     
                     HStack {
                         TextField("Поиск клиента", text: $viewModel.searchText)
@@ -184,7 +182,7 @@ struct ClientsListView: View {
                             
                         }
                     }
-                    
+                    .padding(.horizontal, 10)
                     
                     if viewModel.clients.isEmpty {
                         
@@ -226,12 +224,14 @@ struct ClientsListView: View {
                                     }
                                     .tint(Color.custom(.editButtonGray))
                                 }
+                                .listRowBackground(Color.custom(.mainBackground))
                                 .listRowSeparator(.hidden)
+                                
+                            
                         }
-                       
                         .listStyle(PlainListStyle())
-                        .padding(.leading, -20)
-                        .padding(.trailing, -20)
+                        .background(Color.custom(.mainBackground))
+                        
                         .navigationDestination(item: $selectedClient) { client in
                             ClientProfileView(client: client)
                         }
@@ -239,9 +239,7 @@ struct ClientsListView: View {
                 }
                 
             }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.trailing, 15)
-            .padding(.leading, 20)
+            
         }
         
         

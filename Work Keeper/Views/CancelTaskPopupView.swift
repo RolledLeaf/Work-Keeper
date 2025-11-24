@@ -20,7 +20,7 @@ struct CancelTaskPopup: View {
     
     var body: some View {
         ZStack {
-            Color.black.opacity(0.3)
+            Color(.systemBackground).opacity(0.3)
                 .ignoresSafeArea()
 
             VStack(spacing: 16) {
@@ -74,7 +74,10 @@ struct CancelTaskPopup: View {
                 }
             }
             .padding(24)
-            .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
+            .background(RoundedRectangle(cornerRadius: 16).fill(Color.custom(.mainBackground))
+                .stroke(Color.gray, lineWidth: 0.5)
+            )
+            
             .padding(24)
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }

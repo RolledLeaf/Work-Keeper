@@ -41,8 +41,12 @@ struct SchedulePickerView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color(UIColor.systemGray5))
+                    .background(Color.custom(.scheduleCancelButton))
                     .cornerRadius(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.custom(.taskTextGray).opacity(0.3), lineWidth: 1)
+                    )
 
                     Button(action: {
                         onAssign(selectedDate)

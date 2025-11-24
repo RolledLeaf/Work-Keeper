@@ -1,7 +1,6 @@
 import Foundation
 
 enum TaskStatus: String, Identifiable, CaseIterable {
-//    case all = "Все"
     case scheduled = "Запланированные"
     case completed = "Выполненные"
     case canceled = "Отменённые"
@@ -38,7 +37,7 @@ enum PaymentType: String, Codable {
         switch self {
         case .cash: return "Наличные"
         case .transfer: return "Перевод"
-            case .none: return "Нет"
+        case .none: return "Нет"
         }
     }
 }

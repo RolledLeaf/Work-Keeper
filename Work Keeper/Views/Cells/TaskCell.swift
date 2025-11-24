@@ -1,5 +1,5 @@
-import SwiftUI
 
+import SwiftUI
 
 let defaultNumber = "1"
 
@@ -23,6 +23,22 @@ struct TaskRow: View {
     
   
     let task: TaskEntity
+
+    private var paymentIconResource: ImageResource? {
+        guard let paymentTypeRaw = task.paymentType,
+              let paymentType = PaymentType(rawValue: paymentTypeRaw) else {
+            return nil
+        }
+
+        switch paymentType {
+        case .cash:
+            return ImageResource(name: "cash", bundle: .main)
+        case .transfer:
+            return ImageResource(name: "creditCard", bundle: .main)
+        case .none:
+            return nil
+        }
+    }
     
     
     
@@ -177,7 +193,7 @@ struct TaskRow: View {
                                     .foregroundColor(.custom(.taskTextGray))
                                     
                             }
-                                
+                                .offset(y: -5)
                         }
                        
                         
@@ -337,11 +353,10 @@ struct TaskRow: View {
                     
                     Text("Итого:")
                         .font(.custom(SFPro.bold.rawValue, size: 19))
-                    Image("creditCard")
-                        .opacity(creditCardOpacity)
+                        
                 }
                 .padding(.leading, 32)
-                .padding(.trailing, 8)
+                .padding(.trailing, 2)
                 .frame(maxHeight: 12)
                 
                 HStack{
@@ -361,48 +376,39 @@ struct TaskRow: View {
                     
                     Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(SFPro.bold.rawValue, size: 16))
-                        .foregroundStyle(task.totalAmount >= 0 ? Color.black : Color.custom(.costPaymentRed))
-                    Image("cash")
-                        .opacity(cashOpacity)
-                        .onAppear {
-                            updatePaymentIcons()
-                        }
-                        .onChange(of: task.paymentType ?? "") { _ in
-                            updatePaymentIcons()
-                        }
+                        .foregroundStyle(task.totalAmount >= 0 ? Color.custom(.pitchBlack) : Color.custom(.costPaymentRed))
+                       
+
+                    if let icon = paymentIconResource {
+                        Image(icon)
+                            .resizable()
+                            .frame(
+                                width: 20,
+                                height: task.paymentType == PaymentType.transfer.rawValue ? 15 : 20
+                            )
+                    }
                 }
                 .frame(maxHeight: 12)
                 .padding(.leading, 11)
-                .padding(.trailing, 8)
-                .padding(.top, 0)
+                .padding(.trailing, 4)
+                
             }
             .frame(maxHeight: 55)
             .padding(.top, -10)
         }
-        .background(Color.custom(.taskCellGray))
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12)
-            .stroke(Color.gray.opacity(0.5), lineWidth: 1))
-        
-    }
-       
-}
-
-
-
-
-// MARK: - Payment Icon Logic
-private extension TaskRow {
-    func updatePaymentIcons() {
-        if task.paymentType == PaymentType.cash.rawValue {
-            cashOpacity = 1
-            creditCardOpacity = 0
-        } else if task.paymentType == PaymentType.transfer.rawValue {
-            cashOpacity = 0
-            creditCardOpacity = 1
-        } else {
-            cashOpacity = 0
-            creditCardOpacity = 0
+        .background(
+           RoundedRectangle(cornerRadius: 38)
+                    .fill(Color.custom(.taskCellGray))
+        )
+        .frame(height: 167)
+        .onAppear {
+            print("\(task.taskDescription ?? "Без названия") Payment type is \(task.paymentType ?? "нет метода оплаты")")
         }
     }
 }
+
+  
+
+
+
+

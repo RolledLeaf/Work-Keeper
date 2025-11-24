@@ -69,10 +69,10 @@ struct StreetsListView: View {
                 Button(action: {
                     showAddStreetView = true
                 }) {
-                    Image(systemName: "plus")
-                        .resizable()
-                        .foregroundColor(.black)
-                        .frame(width: 25, height: 25)
+                    Image("plus")
+                        .frame(width: 30, height: 30)
+                       
+                        
                 }
             }
             .padding(.top, 20)

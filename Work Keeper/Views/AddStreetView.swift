@@ -96,6 +96,7 @@ struct AddStreetView: View {
                     }) {
                         Image(systemName: "xmark.circle")
                             .resizable()
+                            .foregroundStyle(.pitchBlack)
                             .frame(width: 35, height: 35)
                             .offset(x: -10)
                     }

@@ -60,7 +60,7 @@ struct EditClientView: View {
                     
                     Text("Редактирование клиента")
                         .font(.system(size: 24, weight: .bold, design: .default))
-                        .foregroundColor(Color.black)
+                        .foregroundStyle(Color.custom(.pitchBlack))
                         .offset(y: 30)
                     Spacer()
                         .frame(height: 70)

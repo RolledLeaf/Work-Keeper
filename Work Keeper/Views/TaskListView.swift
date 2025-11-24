@@ -149,25 +149,27 @@ struct TaskListView: View {
     @ViewBuilder
     private func mainContent(proxy: ScrollViewProxy) -> some View {
         ZStack {
-            Color(.white).edgesIgnoringSafeArea(.all)
+            Color.custom(.mainBackground).ignoresSafeArea()
                 .onTapGesture { hideKeyboard() }
             
             VStack {
                 HStack {
-                    
-                    
+ 
                     Button(action: {
                         showFilters = true
                     }) {
-                        Image("filters")
-                         
+                        Image(systemName: "slider.vertical.3")
+                            .font(.system(size: 30, weight: .regular))
+                            .foregroundStyle(.pitchBlack)
+                            .ifAvailableButtonStyleGlass()
                     }
                     .padding(.leading, 8)
-                    .padding(.trailing, 10)
+                    .padding(.trailing, 5)
                     
                     ZStack {
                         Image("calendar")
-                
+                            .frame(width: 30, height: 30)
+                            .ifAvailableButtonStyleGlass()
                         
                         DatePicker("",
                                    selection: $selectedDate,
@@ -176,7 +178,7 @@ struct TaskListView: View {
                         .labelsHidden()
                         .datePickerStyle(.compact)
                         .blendMode(.destinationOver)
-                        .frame(width: 35, height: 35)
+                        .frame(width: 30, height: 30)
                         .contentShape(Rectangle())
                     }
                     
@@ -185,11 +187,11 @@ struct TaskListView: View {
                     Button(action: {
                         showNewTaskView = true
                     }) {
-                        Image(systemName: "plus")
-                            .resizable()
+                        Image("plus")
                             .frame(width: 30, height: 30)
+                            .foregroundStyle(.pitchBlack)
                             .padding(.trailing, 5)
-                            .ifAvailableButtonStyleGlass()
+
                     }
                 }
                 .padding(.leading, 3)
@@ -226,6 +228,7 @@ struct TaskListView: View {
                             Image(systemName: "xmark.circle")
                                 .resizable()
                                 .frame(width: 25, height: 25)
+                                .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         
                     }
@@ -293,7 +296,7 @@ struct TaskListView: View {
                                             Spacer()
                                             Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrency())")
                                                 .font(.custom(SFPro.bold.rawValue, size: 17))
-                                                .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? .black : .gray)
+                                                .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? Color.custom(.pitchBlack) : Color.custom(.taskTextGray))
                                         }
                                     }
                                     .background(
@@ -310,6 +313,7 @@ struct TaskListView: View {
                                     ) { task in
                                         TaskRow(viewModel: viewModel, task: task
                                         )
+                                        
                                         .contentShape(Rectangle())
                                         .onTapGesture {
                                             selectedTask = task
@@ -409,7 +413,9 @@ struct TaskListView: View {
                                         .fill(Color.clear)
                                 )
                             }
+                            .listRowBackground(Color.custom(.mainBackground))
                         }
+                        
                         .coordinateSpace(name: "taskList")
                         .scrollPosition(id: $listScrollPosition)
                         .onPreferenceChange(SectionHeaderOffsetKey.self) { minY in
@@ -454,6 +460,7 @@ struct TaskListView: View {
                                 }
                             }
                         }
+                        
                         .listStyle(PlainListStyle())
                         .padding(.leading, -20)
                         .padding(.trailing, -20)
@@ -461,6 +468,7 @@ struct TaskListView: View {
                             TaskView(task: task)
                         }
                     }
+                    
                     .navigationTitle("")
                     .navigationBarTitleDisplayMode(.inline)
                     
@@ -650,6 +658,7 @@ struct TaskListView: View {
                             }
                         }
                     }
+                    .presentationDragIndicator(.visible)
             }
             .presentationDetents([.fraction(0.45)])
         }

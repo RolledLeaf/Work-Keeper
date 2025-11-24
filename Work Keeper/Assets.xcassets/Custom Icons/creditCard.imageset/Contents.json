@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "simple-credit-card-symbol-black-outline-18380 4.svg",
+      "filename" : "card.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "simple-credit-card-symbol-black-outline-18380 5.svg",
+      "filename" : "card 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "simple-credit-card-symbol-black-outline-18380 6.svg",
+      "filename" : "card 2.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }

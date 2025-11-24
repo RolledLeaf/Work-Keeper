@@ -6,12 +6,45 @@
       "scale" : "1x"
     },
     {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Stat ico dark.svg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
       "filename" : "Stat ico 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Stat ico dark 1.svg",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
       "filename" : "Stat ico 2.svg",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Stat ico dark 2.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }
