@@ -121,7 +121,10 @@ struct TaskRow: View {
                         Spacer()
                         
                         Button(action: {
-                                              
+                            if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
+                                                                  UIApplication.shared.canOpenURL(url) {
+                                                                   UIApplication.shared.open(url)
+                                                               }
                                            }) {
                                                Image("call")
        
