@@ -117,42 +117,45 @@ struct TaskListView: View {
     @State private var scrollProxy: ScrollViewProxy? = nil
     
     private var filterIcon: ImageResource {
-        // полный набор фильтров
-        let all: Set<TaskStatus> = [.scheduled, .completed, .canceled]
-        let selected = viewModel.selectedFilters
+       
+        let all: Set<Status> = [.scheduled, .completed, .canceled]
 
-        // Примеры названий ассетов — подставь свои реальные:
-        // filterAll, filterScheduled, filterCompleted, filterCanceled, filterMixed
+           // nil в selectedStatuses у тебя уже означает «без фильтра» → считаем, что выбрано всё
+           let selectedSet: Set<Status>
+           if let statuses = viewModel.selectedStatuses, !statuses.isEmpty {
+               selectedSet = Set(statuses)
+           } else {
+               selectedSet = all
+           }
 
-        if selected == all {
+        if selectedSet == all {
             return .init(name: "filterAll", bundle: .main)      // ничего не отфильтровано
         }
 
-        if selected == [.scheduled] {
+        if selectedSet == [.scheduled] {
             return .init(name: "filterScheduled", bundle: .main)
         }
 
-        if selected == [.completed] {
+        if selectedSet == [.completed] {
             return .init(name: "filterCompleted", bundle: .main)
         }
 
-        if selected == [.canceled] {
+        if selectedSet == [.canceled] {
             return .init(name: "filterCanceled", bundle: .main)
         }
 
-        if selected == [.completed, .canceled] {
+        if selectedSet == [.completed, .canceled] {
             return .init(name: "filterCompletedCanceled", bundle: .main)
         }
         
-        if selected == [.scheduled, .canceled] {
+        if selectedSet == [.scheduled, .canceled] {
             return .init(name: "filterScheduledCanceled", bundle: .main)
         }
         
-        if selected == [.scheduled, .completed] {
+       
             return .init(name: "filterScheduledCompleted", bundle: .main)
-        }
-        
-        return .init(name: "filterMixed", bundle: .main)
+    
+    
     }
    
     let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
@@ -276,6 +279,7 @@ struct TaskListView: View {
                         
                     }
                 }
+                .padding(.top, 7)
                 
                
                 
@@ -492,7 +496,7 @@ struct TaskListView: View {
                                 }
                             }
                         }
-                        .listRowSpacing(6)
+                        
                         .listStyle(PlainListStyle())
                         .padding(.leading, -16)
                         .padding(.trailing, -17)

@@ -120,7 +120,14 @@ struct TaskRow: View {
                         
                         Spacer()
                         
-                        Image("call")
+                        Button(action: {
+                                              
+                                           }) {
+                                               Image("call")
+       
+                                           }
+                                           .contentShape(Rectangle())
+                                           .buttonStyle(BorderlessButtonStyle())
                         
                     }
                     .lineLimit(1, reservesSpace: false)
@@ -309,21 +316,8 @@ struct TaskRow: View {
 //                    .offset(x: 11)
 //                    .opacity(showPhoneNumberCloudLocal ? 1 : 0)
 //                    .animation(.easeInOut(duration: 0.3), value: showPhoneNumberCloudLocal)
-//                    Button(action: {
-//                        showPhoneNumberCloudLocal = true
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-//                            withAnimation {
-//                                showPhoneNumberCloudLocal = false
-//                            }
-//                        }
-//                    }) {
-//                        Image("call")
-//                            .resizable()
-//                            .frame(width: 20, height: 20)
-//                            .padding(6)
-//                    }
-//                    .contentShape(Rectangle())
-//                    .buttonStyle(BorderlessButtonStyle())
+//
+
 //
 //
 //                }
