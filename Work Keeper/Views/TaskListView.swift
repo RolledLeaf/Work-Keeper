@@ -354,7 +354,7 @@ struct TaskListView: View {
                                     ) { task in
                                         TaskRow(viewModel: viewModel, task: task
                                         )
-                                        
+                                        .padding(.vertical, -10) // коррекция расстояния между ячейками
                                         .contentShape(Rectangle())
                                         .onTapGesture {
                                             selectedTask = task
