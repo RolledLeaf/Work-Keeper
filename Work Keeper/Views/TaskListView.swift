@@ -329,9 +329,14 @@ struct TaskListView: View {
                                                     .foregroundStyle(.pitchBlack)
                                             }
                                             Spacer()
-                                            Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrency())")
+                                            Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrencyForHeader())")
                                                 .font(.custom(Montserrat.bold.rawValue, size: 17))
                                                 .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? Color.custom(.pitchBlack) : Color.custom(.taskTextGray))
+                                            Text("₽")
+                                                .font(.custom(Montserrat.regular.rawValue, size: 17))
+                                                .foregroundStyle(.pitchBlack)
+                                            
+                                               
                                         }
                                         .frame(height: 17)
                                     }

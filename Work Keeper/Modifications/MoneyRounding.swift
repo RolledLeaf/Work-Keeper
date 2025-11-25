@@ -6,6 +6,12 @@ extension Double {
         "\(String(format: "%.0f", self)) \(symbol)" :
         "\(String(format: "%.2f", self)) \(symbol)"
     }
+    
+    func formattedCurrencyForHeader() -> String {
+        self == floor(self) ?
+        "\(String(format: "%.0f", self))" :
+        "\(String(format: "%.2f", self))"
+    }
 }
     
 
