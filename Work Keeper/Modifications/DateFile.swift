@@ -2,10 +2,10 @@ import Foundation
 
 extension DateFormatter {
     
-   static let taskDateFormatter: DateFormatter = {
+    static let taskDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-       formatter.locale = .current
-        formatter.setLocalizedDateFormatFromTemplate("d MMMM yyyy")
+        formatter.locale = .current
+        formatter.setLocalizedDateFormatFromTemplate("MMddyyyy")
         return formatter
     }()
     
@@ -28,6 +28,7 @@ extension DateFormatter {
 extension Date {
     func formattedAsDate() -> String {
         DateFormatter.taskDateFormatter.string(from: self)
+        
     }
     
     func formattedAsShortDate() -> String {

@@ -115,6 +115,45 @@ struct TaskListView: View {
     @State private var selectedTaskForEdit: TaskEntity?
     // Keep a reference to the ScrollViewProxy for scroll actions
     @State private var scrollProxy: ScrollViewProxy? = nil
+    
+    private var filterIcon: ImageResource {
+        // полный набор фильтров
+        let all: Set<TaskStatus> = [.scheduled, .completed, .canceled]
+        let selected = viewModel.selectedFilters
+
+        // Примеры названий ассетов — подставь свои реальные:
+        // filterAll, filterScheduled, filterCompleted, filterCanceled, filterMixed
+
+        if selected == all {
+            return .init(name: "filterAll", bundle: .main)      // ничего не отфильтровано
+        }
+
+        if selected == [.scheduled] {
+            return .init(name: "filterScheduled", bundle: .main)
+        }
+
+        if selected == [.completed] {
+            return .init(name: "filterCompleted", bundle: .main)
+        }
+
+        if selected == [.canceled] {
+            return .init(name: "filterCanceled", bundle: .main)
+        }
+
+        if selected == [.completed, .canceled] {
+            return .init(name: "filterCompletedCanceled", bundle: .main)
+        }
+        
+        if selected == [.scheduled, .canceled] {
+            return .init(name: "filterScheduledCanceled", bundle: .main)
+        }
+        
+        if selected == [.scheduled, .completed] {
+            return .init(name: "filterScheduledCompleted", bundle: .main)
+        }
+        
+        return .init(name: "filterMixed", bundle: .main)
+    }
    
     let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
     
@@ -146,6 +185,10 @@ struct TaskListView: View {
        selectedDate = Date()
     }
     
+ 
+    
+ 
+    
     @ViewBuilder
     private func mainContent(proxy: ScrollViewProxy) -> some View {
         ZStack {
@@ -158,7 +201,7 @@ struct TaskListView: View {
                     Button(action: {
                         showFilters = true
                     }) {
-                        Image(systemName: "slider.vertical.3")
+                        Image(filterIcon)
                             .font(.system(size: 30, weight: .regular))
                             .foregroundStyle(.pitchBlack)
                             .ifAvailableButtonStyleGlass()
@@ -234,38 +277,7 @@ struct TaskListView: View {
                     }
                 }
                 
-                Text("Активные фильтры")
-                
-                HStack(spacing: 8) {
-                    Rectangle()
-                        .frame(width: 15, height: 15)
-                        .foregroundColor(Color.custom(.taskCompleteGreen))
-                        .opacity(viewModel.selectedFilters.contains(.completed) ? 1 : 0.3)
-                    
-                    Text("- выполнено")
-                        .font(.custom(SFPro.regular.rawValue, size: 14))
-                        .opacity(viewModel.selectedFilters.contains(.completed) ? 1 : 0.3)
-                    
-                    
-                    Rectangle()
-                        .frame(width: 15, height: 15)
-                        .foregroundColor(Color.custom(.taskViewYellow))
-                        .opacity(viewModel.selectedFilters.contains(.scheduled) ? 1 : 0.3)
-                    
-                    Text("- запланировано")
-                        .font(.custom(SFPro.regular.rawValue, size: 14))
-                        .opacity(viewModel.selectedFilters.contains(.scheduled) ? 1 : 0.3)
-                    
-                    
-                    Rectangle()
-                        .frame(width: 15, height: 15)
-                        .foregroundColor(Color.custom(.taskCanceledOrange))
-                        .opacity(viewModel.selectedFilters.contains(.canceled) ? 1 : 0.3)
-                    
-                    Text("- отменено")
-                        .font(.custom(SFPro.regular.rawValue, size: 14))
-                        .opacity(viewModel.selectedFilters.contains(.canceled) ? 1 : 0.3)
-                }
+               
                 
                 if viewModel.groupedTasksByDate.isEmpty {
                     
@@ -292,12 +304,32 @@ struct TaskListView: View {
                                 Section(header:
                                     ZStack {
                                         HStack {
-                                            Text(customDateFormatter.string(from: dateKey)).font(.headline)
+                                            let today = dayKey(Date())
+                                            let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today)
+                                            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)
+                                            
+                                            Text(customDateFormatter.string(from: dateKey)).font(.custom(Montserrat.regular.rawValue, size: 14))
+                                                .foregroundStyle(Color.custom(.pitchBlack))
+                                            if dateKey == today {
+                                                
+                                                Text("• Сегодня")
+                                                    .font(.custom(Montserrat.bold.rawValue, size: 14))
+                                                    .foregroundStyle(.pitchBlack)
+                                            } else if dateKey == yesterday {
+                                                Text("• Вчера")
+                                                    .font(.custom(Montserrat.regular.rawValue, size: 14))
+                                                    .foregroundStyle(.pitchBlack)
+                                            } else if dateKey == tomorrow {
+                                                Text("• Завтра")
+                                                    .font(.custom(Montserrat.regular.rawValue, size: 14))
+                                                    .foregroundStyle(.pitchBlack)
+                                            }
                                             Spacer()
                                             Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrency())")
-                                                .font(.custom(SFPro.bold.rawValue, size: 17))
+                                                .font(.custom(Montserrat.bold.rawValue, size: 17))
                                                 .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? Color.custom(.pitchBlack) : Color.custom(.taskTextGray))
                                         }
+                                        .frame(height: 17)
                                     }
                                     .background(
                                         GeometryReader { geo in
@@ -460,10 +492,10 @@ struct TaskListView: View {
                                 }
                             }
                         }
-                        
+                        .listRowSpacing(6)
                         .listStyle(PlainListStyle())
-                        .padding(.leading, -20)
-                        .padding(.trailing, -20)
+                        .padding(.leading, -16)
+                        .padding(.trailing, -17)
                         .navigationDestination(item: $selectedTask) { task in
                             TaskView(task: task)
                         }

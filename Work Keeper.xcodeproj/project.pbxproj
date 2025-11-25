@@ -187,11 +187,12 @@
 				};
 			};
 			buildConfigurationList = B0E3F7FA2DEC4CC300C9604F /* Build configuration list for PBXProject "Work Keeper" */;
-			developmentRegion = en;
+			developmentRegion = ru;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				ru,
 			);
 			mainGroup = B0E3F7F62DEC4CC300C9604F;
 			minimizedProjectReferenceProxies = 1;
