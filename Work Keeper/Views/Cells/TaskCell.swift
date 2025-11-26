@@ -97,46 +97,83 @@ struct TaskRow: View {
                 .frame(height: 23)
    
                 VStack(spacing: 2) {
-                    HStack {
+                    if !task.isRemote {
                         
-                        ZStack {
-                            Circle()
-                                .frame(width: 20, height: 20)
-                                .foregroundStyle(Color.custom(.mainBackground))
-                                .opacity(0.2)
-                            Image("location")
+                        HStack {
+                            
+                            ZStack {
+                                Circle()
+                                    .frame(width: 20, height: 20)
+                                    .foregroundStyle(Color.custom(.mainBackground))
+                                    .opacity(0.2)
+                                Image("location")
+                                
+                            }
+                            
+                            Text(highlighted(task.client?.primaryAddress?.street?.name ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                                .font(.custom(Montserrat.medium.rawValue, size: 12))
+                            
+                            
+                            Text("\(task.client?.primaryAddress?.house ?? "")")
+                                .font(.custom(Montserrat.medium.rawValue, size: 12))
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
+                                   UIApplication.shared.canOpenURL(url) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }) {
+                                Image("call")
+                                
+                            }
+                            .contentShape(Rectangle())
+                            .buttonStyle(BorderlessButtonStyle())
                             
                         }
+                        .lineLimit(1, reservesSpace: false)
+                        .foregroundColor(.black)
+                        .frame(height: 20)
+                        .padding(.trailing, 10)
                         
+                    } else {
                         
-                        
-                        
-                        Text(highlighted(task.client?.primaryAddress?.street?.name ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
-                            .font(.custom(Montserrat.medium.rawValue, size: 12))
-                        
-                        
-                        Text("\(task.client?.primaryAddress?.house ?? "")")
-                            .font(.custom(Montserrat.medium.rawValue, size: 12))
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
-                                                                  UIApplication.shared.canOpenURL(url) {
-                                                                   UIApplication.shared.open(url)
-                                                               }
-                                           }) {
-                                               Image("call")
-       
-                                           }
-                                           .contentShape(Rectangle())
-                                           .buttonStyle(BorderlessButtonStyle())
+                        HStack {
+                            ZStack {
+                                Circle()
+                                    .frame(width: 20, height: 20)
+                                    .foregroundStyle(Color.custom(.mainBackground))
+                                    .opacity(0.2)
+                                Image("remote")
+                                    .resizable()
+                                    .frame(width: 14, height: 14)
+                            }
+                            
+                            Text("Удалёнка")
+                                .font(.custom(Montserrat.medium.rawValue, size: 12))
+                 
+                            Spacer()
+                            
+                            Button(action: {
+                                if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
+                                   UIApplication.shared.canOpenURL(url) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }) {
+                                Image("call")
+                                
+                            }
+                            .contentShape(Rectangle())
+                            .buttonStyle(BorderlessButtonStyle())
+                            
+                        }
+                        .lineLimit(1, reservesSpace: false)
+                        .foregroundColor(.black)
+                        .frame(height: 20)
+                        .padding(.trailing, 10)
                         
                     }
-                    .lineLimit(1, reservesSpace: false)
-                    .foregroundColor(.black)
-                    .frame(height: 20)
-                    .padding(.trailing, 10)
                     
                     HStack {
                         
