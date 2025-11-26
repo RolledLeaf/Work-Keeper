@@ -1,8 +1,6 @@
 import SwiftUI
 import CoreData
 
-
-// Кнопка-поле, открывающее wheel-пикер годов. Инкапсулирую и могу переиспользовать
 struct YearPickerField: View {
     @Binding var year: Int
     @State private var isPresented = false

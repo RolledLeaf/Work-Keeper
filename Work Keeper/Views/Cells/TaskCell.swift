@@ -228,6 +228,9 @@ struct TaskRow: View {
                     Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(Montserrat.bold.rawValue, size: 25))
                                   .foregroundStyle(.black)
+                    Text("₽")
+                        .font(.custom(Montserrat.regular.rawValue, size: 25))
+                        .foregroundStyle(.pitchBlack)
                     Spacer()
                 }
                 .frame(height: 25)
