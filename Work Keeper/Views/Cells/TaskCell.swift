@@ -230,7 +230,7 @@ struct TaskRow: View {
                                   .foregroundStyle(.black)
                     Text("₽")
                         .font(.custom(Montserrat.regular.rawValue, size: 25))
-                        .foregroundStyle(.pitchBlack)
+                        .foregroundStyle(.black)
                     Spacer()
                 }
                 .frame(height: 25)

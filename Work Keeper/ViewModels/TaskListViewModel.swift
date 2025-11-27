@@ -313,11 +313,11 @@ final class CreateTaskViewModel: ObservableObject {
         : .inactiveFiledGray
     }
 
-    func saveTask() -> Bool {
-        guard canSaveTask() else {
-            print("❌ Не все обязательные поля заполнены ")
-            return false
-        }
+    func saveTask() {
+//        guard canSaveTask() else {
+//            print("❌ Не все обязательные поля заполнены ")
+//            return false
+//        }
 
         let normalizedPhone = phoneDigits.isEmpty ? nil : "+7" + phoneDigits
         let client = clientStore.createOrFetchClient(
@@ -392,7 +392,7 @@ final class CreateTaskViewModel: ObservableObject {
              """)
         }
 
-        return true
+      
     }
     
     private func maskRU(fromDigits s: String) -> String {

@@ -38,6 +38,7 @@ struct NewTaskView: View {
     @State private var textFieldColor: CustomColor = .pureWhite
     @State private var showNewTaskAlert = false
     @FocusState private var focusedField: Field?
+    @State private var alertMessage: String = "Заполните обязательные поля"
     
     init(onComplete: ((String) -> Void)? = nil) {
      
@@ -53,6 +54,33 @@ struct NewTaskView: View {
         case entrance
         case floor
         case contractAmount
+    }
+    
+    private func missingRequiredFieldsMessage() -> String? {
+        var missing: [String] = []
+
+        if viewModel.firstName.isBlank {
+            missing.append("имя клиента")
+        }
+        if viewModel.phoneDigits.isBlank {
+            missing.append("номер телефона")
+        }
+        if !viewModel.isRemote && viewModel.streetName.isBlank {
+            missing.append("название улицы")
+        }
+        if !viewModel.isRemote && viewModel.house.isBlank {
+            missing.append("номер дома")
+        }
+
+        guard !missing.isEmpty else { return nil }
+
+        if missing.count == 1 {
+            return "\(missing[0]).".uppercased()
+        } else {
+            let allButLast = missing.dropLast().joined(separator: ", ")
+            let last = missing.last ?? ""
+            return " \(allButLast) и \(last).".uppercased()
+        }
     }
     
     var body: some View {
@@ -86,7 +114,7 @@ struct NewTaskView: View {
                         .onAppear {
                             UIDatePicker.appearance().minuteInterval = 5
                         } // такой подход применяет шаг в 5 минут ко всем пикерам
-                        .frame(maxWidth: 70, maxHeight: 35)
+
                         .contentShape(Rectangle())
                         
                         
@@ -96,7 +124,6 @@ struct NewTaskView: View {
                         )
                         .labelsHidden()
                         .datePickerStyle(.compact)
-                        .frame(maxWidth: 120, maxHeight: 35)
                         .contentShape(Rectangle())
                         
                     }
@@ -649,15 +676,14 @@ struct NewTaskView: View {
                         )
                         
                         Button(action: {
-                            if  viewModel.saveTask() {
+                            if let message = missingRequiredFieldsMessage() {
+                                alertMessage = message
+                                showNewTaskAlert = true
+                            } else {
+                                viewModel.saveTask()
                                 onComplete?(viewModel.description)
-                                    dismiss()
-                        } else {
-                            
-                            showNewTaskAlert = true
-                            
-                        }
-                    
+                                dismiss()
+                            }
                         }) {
                             ZStack {
                                 Rectangle()
@@ -682,12 +708,17 @@ struct NewTaskView: View {
                 hideKeyboard()
             }
         }
+        
+
+        
         .alert(isPresented: $showNewTaskAlert) {
-            if viewModel.isRemote == false {
-                Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя, номер телефона, название улицы и номер дома "), dismissButton: .default(Text("OK"))) } else {
-                    Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя и номер телефона"), dismissButton: .default(Text("OK")))
-                }
+            Alert(
+                title: Text("Зполните обязательные поля"),
+                message: Text(alertMessage),
+                dismissButton: .default(Text("OK"))
+            )
         }
+
         
         .onAppear {
             phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
