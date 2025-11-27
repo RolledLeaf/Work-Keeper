@@ -2,6 +2,122 @@
 
 import SwiftUI
 
+struct DatePickerField: View {
+    @Binding var date: Date
+    var minuteInterval: Int = 5
+    var onTap: () -> Void
+    
+    var body: some View {
+        Button {
+            onTap()
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(date.formattedAsDate())
+                    .font(.custom(Montserrat.regular.rawValue, size: 16))
+                    .foregroundStyle(.pitchBlack)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.custom(.pureWhite))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+            )
+        }
+    }
+}
+struct DatePickerView: View {
+    @Binding var date: Date
+    @Binding var isPresented: Bool
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Дата и время")
+                    .font(.headline)
+                Spacer()
+                Button("Готово") {
+                    isPresented = false
+                }
+                .font(.system(size: 17, weight: .semibold))
+            }
+            .padding()
+            
+            IntervalDatePicker(
+                date: $date,
+                components: [.date, .hourAndMinute],
+                minuteInterval: 5
+            )
+            .labelsHidden()
+            .frame(maxHeight: 250)
+            .padding(.horizontal)
+            
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical)
+    }
+}
+
+
+struct IntervalDatePicker: UIViewRepresentable {
+    @Binding var date: Date
+    var components: DatePickerComponents
+    var minuteInterval: Int = 5
+
+    func makeUIView(context: Context) -> UIDatePicker {
+        let picker = UIDatePicker()
+
+        switch components {
+        case [.date]:
+            picker.datePickerMode = .date
+        case [.hourAndMinute]:
+            picker.datePickerMode = .time
+        default:
+            picker.datePickerMode = .dateAndTime
+        }
+
+        picker.minuteInterval = minuteInterval
+        picker.preferredDatePickerStyle = .wheels
+        picker.date = date
+        picker.addTarget(
+            context.coordinator,
+            action: #selector(Coordinator.valueChanged(_:)),
+            for: .valueChanged
+        )
+
+        return picker
+    }
+
+    func updateUIView(_ uiView: UIDatePicker, context: Context) {
+        if uiView.date != date {
+            uiView.date = date
+        }
+
+        if uiView.minuteInterval != minuteInterval {
+            uiView.minuteInterval = minuteInterval
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
+
+    final class Coordinator: NSObject {
+        var parent: IntervalDatePicker
+
+        init(parent: IntervalDatePicker) {
+            self.parent = parent
+        }
+
+        @objc func valueChanged(_ sender: UIDatePicker) {
+            parent.date = sender.date
+        }
+    }
+}
+
 struct NewTaskView: View {
     
     
@@ -32,6 +148,7 @@ struct NewTaskView: View {
     @State private var streetChevronOpacity: Double = 1
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
+    @State private var isDatePickerPresented = false
     @State private var hideScrollContentBackground = false
     @State private var streetTextFieldColor: CustomColor = .pureWhite
     @State private var houseTextFieldColor: CustomColor = .pureWhite
@@ -105,27 +222,10 @@ struct NewTaskView: View {
                             .font(.system(size: 19, weight: .regular, design: .default))
                             .background(Color.clear)
                         Spacer()
-                        
-                        
-                        DatePicker("time", selection: $viewModel.scheduledAt, displayedComponents: .hourAndMinute
-                        )
-                        .labelsHidden()
-                        .datePickerStyle(.compact)
-                        .onAppear {
-                            UIDatePicker.appearance().minuteInterval = 5
-                        } // такой подход применяет шаг в 5 минут ко всем пикерам
-
-                        .contentShape(Rectangle())
-                        
-                        
-                        
-                        
-                        DatePicker("Date", selection: $viewModel.scheduledAt, displayedComponents: .date
-                        )
-                        .labelsHidden()
-                        .datePickerStyle(.compact)
-                        .contentShape(Rectangle())
-                        
+                        DatePickerField(date: $viewModel.scheduledAt, minuteInterval: 5) {
+                            isDatePickerPresented = true
+                        }
+                        .padding(.trailing, 20)
                     }
                     .padding(.trailing, 20)
                     
@@ -707,7 +807,21 @@ struct NewTaskView: View {
             .onTapGesture {
                 hideKeyboard()
             }
+            
+            if isDatePickerPresented {
+                Color.custom(.pitchBlack).opacity(0.9)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                
+                DatePickerView(date: $viewModel.scheduledAt, isPresented: $isDatePickerPresented)
+                    .frame(width: 320, height: 260)
+                    .background(Color.custom(.pureWhite))
+                    .cornerRadius(16)
+                    .shadow(radius: 10)
+                    .transition(.scale.combined(with: .opacity))
+            }
         }
+        .animation(.easeInOut(duration: 0.3), value: isDatePickerPresented)
         
 
         
