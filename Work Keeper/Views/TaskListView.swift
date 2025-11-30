@@ -320,33 +320,35 @@ struct TaskListView: View {
                                             let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today)
                                             let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)
                                             
-                                            Text(customDateFormatter.string(from: dateKey)).font(.custom(Montserrat.regular.rawValue, size: 14))
-                                                .foregroundStyle(Color.custom(.pitchBlack))
-                                            if dateKey == today {
-                                                
-                                                Text("• Сегодня")
-                                                    .font(.custom(Montserrat.bold.rawValue, size: 14))
-                                                    .foregroundStyle(.pitchBlack)
-                                            } else if dateKey == yesterday {
-                                                Text("•")
-                                                    .font(.custom(Montserrat.bold.rawValue, size: 14))
-                                                    .foregroundStyle(.pitchBlack)
-                                                Text("Вчера")
+                                            (
+                                                Text(customDateFormatter.string(from: dateKey))
                                                     .font(.custom(Montserrat.regular.rawValue, size: 14))
-                                                    .foregroundStyle(.pitchBlack)
-                                            } else if dateKey == tomorrow {
-                                                Text("•")
-                                                    .font(.custom(Montserrat.bold.rawValue, size: 14))
-                                                    .foregroundStyle(.pitchBlack)
-                                                Text("Завтра")
-                                                    .font(.custom(Montserrat.regular.rawValue, size: 14))
-                                                    .foregroundStyle(.pitchBlack)
-                                            }
+                                                    .foregroundStyle(Color.custom(.pitchBlack))
+                                                +
+                                                {
+                                                    if dateKey == today {
+                                                        return Text(" • Сегодня")
+                                                            .font(.custom(Montserrat.bold.rawValue, size: 14))
+                                                            .foregroundStyle(.pitchBlack)
+                                                    } else if dateKey == yesterday {
+                                                        return Text(" • Вчера")
+                                                            .font(.custom(Montserrat.regular.rawValue, size: 14))
+                                                            .foregroundStyle(.pitchBlack)
+                                                    } else if dateKey == tomorrow {
+                                                        return Text(" • Завтра")
+                                                            .font(.custom(Montserrat.regular.rawValue, size: 14))
+                                                            .foregroundStyle(.pitchBlack)
+                                                    } else {
+                                                        return Text("") // без хвоста
+                                                    }
+                                                }()
+                                            )
                                             Spacer()
                                             Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrency())")
                                                 .font(.custom(Montserrat.bold.rawValue, size: 17))
                                                 .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? Color.custom(.pitchBlack) : Color.custom(.taskTextGray))
-                                            Text("₽")
+                                            +
+                                            Text(" ₽")
                                                 .font(.custom(Montserrat.regular.rawValue, size: 17))
                                                 .foregroundStyle(.pitchBlack)
                                             

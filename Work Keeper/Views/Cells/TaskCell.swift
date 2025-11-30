@@ -125,7 +125,7 @@ struct TaskRow: View {
                                     }
                                 }) {
                                     Image("call")
-                                        .offset(y: -6)
+//                                        .offset(y: -6)
                                 }
                                 .contentShape(Rectangle())
                                 .buttonStyle(BorderlessButtonStyle())
@@ -165,7 +165,7 @@ struct TaskRow: View {
                                     }
                                 }) {
                                     Image("call")
-                                        .offset(y: -6)
+                                        
                                 }
                                 .contentShape(Rectangle())
                                 .buttonStyle(BorderlessButtonStyle())
@@ -221,7 +221,9 @@ struct TaskRow: View {
                     }
                     .frame(height: 20)
                     
+                    Spacer()
                 }
+                .frame(height: 60)
                 
                 HStack {
                     Image("separateLine2")
@@ -233,7 +235,8 @@ struct TaskRow: View {
                     Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(Montserrat.bold.rawValue, size: 25))
                                   .foregroundStyle(.mainBlack)
-                    Text("₽")
+                    +
+                    Text(" ₽")
                         .font(.custom(Montserrat.regular.rawValue, size: 25))
                         .foregroundStyle(.mainBlack)
                     Spacer()
@@ -253,10 +256,7 @@ struct TaskRow: View {
                 .resizable()
                         .scaledToFill()
         )
-        
-      
-        
-        
+ 
         .overlay(alignment: .center) {
             if showRepeatClientBubbleLocal {
                 Text("Это регулярный клиент")
@@ -266,12 +266,9 @@ struct TaskRow: View {
                     .background(.ultraThinMaterial)
                     .clipShape(Capsule())
                     .padding(.top, 20)
-            
             }
         }
-        
     }
-        
 }
 
 
