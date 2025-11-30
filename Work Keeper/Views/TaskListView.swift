@@ -8,6 +8,8 @@ private struct SectionHeaderOffsetKey: PreferenceKey {
     }
 }
 
+// MARK: - Filters
+
 struct TasksFilterView: View {
     @Binding var selectedFilters: Set<TaskStatus>
     
@@ -82,8 +84,8 @@ struct TasksFilterView: View {
 }
 
 struct TaskListView: View {
+    // MARK: - Properties
     @StateObject private var viewModel = TaskListViewModel()
-  
     @State private var selectedDate = Date()
     @State private var listScrollPosition: Date?
     @State private var showDeleteAlert = false
@@ -102,7 +104,7 @@ struct TaskListView: View {
     @State private var navigateToTaskView = false
     @State private var headerBaselineMinY: CGFloat? = nil
     @State private var lastCompletedTaskDescription: String = ""
-    @State private var lastCanceletedTaskDescription: String = ""
+    @State private var lastCanceledTaskDescription: String = ""
     @State private var lastScheduleTaskDescription: String = ""
     @State private var lastDeletedTaskDescription: String = ""
     @State private var lastEditedTaskDescription: String = ""
@@ -119,8 +121,7 @@ struct TaskListView: View {
     private var filterIcon: ImageResource {
        
         let all: Set<Status> = [.scheduled, .completed, .canceled]
-
-           // nil в selectedStatuses у тебя уже означает «без фильтра» → считаем, что выбрано всё
+        
            let selectedSet: Set<Status>
            if let statuses = viewModel.selectedStatuses, !statuses.isEmpty {
                selectedSet = Set(statuses)
@@ -129,7 +130,7 @@ struct TaskListView: View {
            }
 
         if selectedSet == all {
-            return .init(name: "filterAll", bundle: .main)      // ничего не отфильтровано
+            return .init(name: "filterAll", bundle: .main)
         }
 
         if selectedSet == [.scheduled] {
@@ -187,11 +188,7 @@ struct TaskListView: View {
     func scrollToToday() {
        selectedDate = Date()
     }
-    
- 
-    
- 
-    
+
     @ViewBuilder
     private func mainContent(proxy: ScrollViewProxy) -> some View {
         ZStack {
@@ -240,48 +237,59 @@ struct TaskListView: View {
 
                     }
                 }
+                .frame(height: 30)
                 .padding(.leading, 3)
-                
+           
                 HStack {
+                    HStack {
+                    Image(systemName: "magnifyingglass")
+                        .resizable()
+                        .frame(width: 21, height: 21)
+                        .foregroundColor(Color.custom(.mainBlack))
+                        .padding(.leading, 20)
+                    
                     TextField("Поиск задания", text: $viewModel.searchText)
                         .onChange(of: viewModel.searchText) { newValue in
                             print("[TaskListView] searchText changed:", newValue)
                         }
-                        .padding(9)
-                        .padding(.leading, 25)
                         .onSubmit {
                             hideKeyboard()
                         }
-                        .background(
-                            HStack {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.gray)
-                                Spacer()
-                                
-                                
-                            }
-                                .padding(.horizontal, 10)
+                    
+                    Button(action:  {
+                        viewModel.searchText = ""
+                        
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .resizable()
+                            .frame(width: 18, height: 18)
+                        
+                    }
+                    .opacity(viewModel.searchText.isEmpty ? 0 : 1)
+                    .padding(.trailing, 15)
+                }
+                    .frame(height: 50)
+                    .background(
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(Color.custom(.searchFieldGray))
                         )
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.custom(.searchFieldGray))
-                        )
+                    
                     
                     if !viewModel.searchText.isEmpty {
                         Button(action:  {
                             viewModel.searchText = ""
+                            hideKeyboard()
                         }) {
                             Image(systemName: "xmark.circle")
                                 .resizable()
-                                .frame(width: 25, height: 25)
+                                .frame(width: 45, height: 45)
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
-                        
                     }
                 }
-                .padding(.top, 7)
+                .frame(height: 50)
                 
-               
+                // MARK: - List beginning
                 
                 if viewModel.groupedTasksByDate.isEmpty {
                     
@@ -320,11 +328,17 @@ struct TaskListView: View {
                                                     .font(.custom(Montserrat.bold.rawValue, size: 14))
                                                     .foregroundStyle(.pitchBlack)
                                             } else if dateKey == yesterday {
-                                                Text("• Вчера")
+                                                Text("•")
+                                                    .font(.custom(Montserrat.bold.rawValue, size: 14))
+                                                    .foregroundStyle(.pitchBlack)
+                                                Text("Вчера")
                                                     .font(.custom(Montserrat.regular.rawValue, size: 14))
                                                     .foregroundStyle(.pitchBlack)
                                             } else if dateKey == tomorrow {
-                                                Text("• Завтра")
+                                                Text("•")
+                                                    .font(.custom(Montserrat.bold.rawValue, size: 14))
+                                                    .foregroundStyle(.pitchBlack)
+                                                Text("Завтра")
                                                     .font(.custom(Montserrat.regular.rawValue, size: 14))
                                                     .foregroundStyle(.pitchBlack)
                                             }
@@ -354,7 +368,7 @@ struct TaskListView: View {
                                     ) { task in
                                         TaskRow(viewModel: viewModel, task: task
                                         )
-                                        .padding(.vertical, -10) // коррекция расстояния между ячейками
+                                        .padding(.vertical, 6) // коррекция расстояния между ячейками
                                         .contentShape(Rectangle())
                                         .onTapGesture {
                                             selectedTask = task
@@ -517,13 +531,13 @@ struct TaskListView: View {
                 
                 
             }
-            .padding(.trailing, 16)
+            .padding(.trailing, 17)
             .padding(.leading, 16)
             
             if showPopup, let task = taskToCancel {
                 CancelTaskPopup(task: task, isPresented: $showPopup) { description in
                     
-                    lastCanceletedTaskDescription = description
+                    lastCanceledTaskDescription = description
                     viewModel.loadTasks()
                     loadSavedStatuses()
                     
@@ -567,9 +581,9 @@ struct TaskListView: View {
                 Button(action: {
                     selectedDate = Date()
                 }) {
-                    Image(systemName: "arrow.up")
+                    Image("arrowUp")
                         .resizable()
-                        .frame(width: 25, height: 25)
+                        .frame(width: 35, height: 20)
                 }
                 .padding(.trailing, 16)
                 .padding(.bottom, 24)
@@ -581,7 +595,7 @@ struct TaskListView: View {
         .overlay(alignment: .center) {
             Group {
                 if showCancelTaskNotification {
-                    CancelTaskConfirmationView(taskDescription: $lastCanceletedTaskDescription)
+                    CancelTaskConfirmationView(taskDescription: $lastCanceledTaskDescription)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 } else if showDeleteTaskNotification {
                     DeleteTaskConfirmationView(taskDescription: $lastDeletedTaskDescription)

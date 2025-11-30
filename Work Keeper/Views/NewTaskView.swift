@@ -71,10 +71,12 @@ struct IntervalDatePicker: UIViewRepresentable {
         let picker = UIDatePicker()
 
         switch components {
+            
         case [.date]:
             picker.datePickerMode = .date
         case [.hourAndMinute]:
             picker.datePickerMode = .time
+   
         default:
             picker.datePickerMode = .dateAndTime
         }
@@ -177,7 +179,7 @@ struct NewTaskView: View {
         var missing: [String] = []
 
         if viewModel.firstName.isBlank {
-            missing.append("имя клиента")
+            missing.append("Имя клиента")
         }
         if viewModel.phoneDigits.isBlank {
             missing.append("номер телефона")
@@ -192,11 +194,11 @@ struct NewTaskView: View {
         guard !missing.isEmpty else { return nil }
 
         if missing.count == 1 {
-            return "\(missing[0]).".uppercased()
+            return "\(missing[0])."
         } else {
             let allButLast = missing.dropLast().joined(separator: ", ")
             let last = missing.last ?? ""
-            return " \(allButLast) и \(last).".uppercased()
+            return " \(allButLast) и \(last)."
         }
     }
     
@@ -787,14 +789,15 @@ struct NewTaskView: View {
                         }) {
                             ZStack {
                                 Rectangle()
-                                    .tint(Color.custom(viewModel.canSaveTask() ? .highlightBlue : .inactiveButtonGray))
+                                    .tint(Color.custom(.taskCompleteGreen))
                                 Text("Cоздать")
-                                    .foregroundStyle(viewModel.canSaveTask() ? .black : .white)
+                                    .foregroundStyle(Color.custom(.mainBlack))
                                  
                             }
                         }
                         .cornerRadius(16)
                         .frame(width: 166, height: 60)
+                        .opacity(viewModel.canSaveTask() ? 1 : 0.5)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
                                 .stroke(Color(.black), lineWidth: 0.5)

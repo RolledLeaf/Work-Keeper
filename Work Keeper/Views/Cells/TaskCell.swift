@@ -60,14 +60,11 @@ struct TaskRow: View {
             VStack {
                 
                 HStack {
-                    HStack(spacing: 4) {
+                    HStack {
                         Text(highlighted(task.client?.firstName?.uppercased() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                             .font(.custom(Montserrat.bold.rawValue, size: 23))
-                            .foregroundStyle(.black)
-                            
-                            
-                        
-                        
+                            .foregroundStyle(.mainBlack)
+                  
                         
                         Button(action: {
                             showRepeatClientBubbleLocal = true
@@ -93,8 +90,8 @@ struct TaskRow: View {
                     
                     Spacer()
                 }
-                .padding(.top, 11)
-                .frame(height: 23)
+                
+             
    
                 VStack(spacing: 2) {
                     if !task.isRemote {
@@ -104,7 +101,7 @@ struct TaskRow: View {
                             ZStack {
                                 Circle()
                                     .frame(width: 20, height: 20)
-                                    .foregroundStyle(Color.custom(.mainBackground))
+                                    .foregroundStyle(Color.custom(.mainBlack))
                                     .opacity(0.2)
                                 Image("location")
                                 
@@ -112,30 +109,35 @@ struct TaskRow: View {
                             
                             Text(highlighted(task.client?.primaryAddress?.street?.name ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                                 .font(.custom(Montserrat.medium.rawValue, size: 12))
-                            
+                                .foregroundStyle(.mainBlack)
                             
                             Text("\(task.client?.primaryAddress?.house ?? "")")
                                 .font(.custom(Montserrat.medium.rawValue, size: 12))
+                                .foregroundStyle(.mainBlack)
                             
                             Spacer()
                             
-                            Button(action: {
-                                if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
-                                   UIApplication.shared.canOpenURL(url) {
-                                    UIApplication.shared.open(url)
+                            VStack {
+                                Button(action: {
+                                    if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
+                                       UIApplication.shared.canOpenURL(url) {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }) {
+                                    Image("call")
+                                        .offset(y: -3)
                                 }
-                            }) {
-                                Image("call")
-                                
+                                .contentShape(Rectangle())
+                                .buttonStyle(BorderlessButtonStyle())
+                                Spacer()
                             }
-                            .contentShape(Rectangle())
-                            .buttonStyle(BorderlessButtonStyle())
+                       
                             
                         }
                         .lineLimit(1, reservesSpace: false)
-                        .foregroundColor(.black)
+                        .foregroundColor(.mainBlack)
                         .frame(height: 20)
-                        .padding(.trailing, 10)
+//                        .padding(.trailing, 10)
                         
                     } else {
                         
@@ -143,7 +145,7 @@ struct TaskRow: View {
                             ZStack {
                                 Circle()
                                     .frame(width: 20, height: 20)
-                                    .foregroundStyle(Color.custom(.mainBackground))
+                                    .foregroundStyle(Color.custom(.mainBlack))
                                     .opacity(0.2)
                                 Image("remote")
                                     .resizable()
@@ -155,23 +157,26 @@ struct TaskRow: View {
                  
                             Spacer()
                             
-                            Button(action: {
-                                if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
-                                   UIApplication.shared.canOpenURL(url) {
-                                    UIApplication.shared.open(url)
+                            VStack {
+                                Button(action: {
+                                    if let url = URL(string: "tel://\(task.client?.phone ?? "")"),
+                                       UIApplication.shared.canOpenURL(url) {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }) {
+                                    Image("call")
+                                        .offset(y: -3)
                                 }
-                            }) {
-                                Image("call")
-                                
+                                .contentShape(Rectangle())
+                                .buttonStyle(BorderlessButtonStyle())
+                                Spacer()
                             }
-                            .contentShape(Rectangle())
-                            .buttonStyle(BorderlessButtonStyle())
                             
                         }
                         .lineLimit(1, reservesSpace: false)
-                        .foregroundColor(.black)
+                        .foregroundColor(.mainBlack)
                         .frame(height: 20)
-                        .padding(.trailing, 10)
+//                        .padding(.trailing, 10)
                         
                     }
                     
@@ -180,7 +185,7 @@ struct TaskRow: View {
                         ZStack {
                             Circle()
                                 .frame(width: 20, height: 20)
-                                .foregroundStyle(Color.custom(.mainBackground))
+                                .foregroundStyle(Color.custom(.mainBlack))
                                 .opacity(0.2)
                             Image("clock")
                             
@@ -189,7 +194,7 @@ struct TaskRow: View {
                         
                         Text(task.scheduledAt?.formattedAsTime() ?? "\(Date())")
                             .font(.custom(Montserrat.medium.rawValue, size: 12))
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.mainBlack)
                         
                         Spacer()
                         
@@ -201,7 +206,7 @@ struct TaskRow: View {
                         ZStack {
                             Circle()
                                 .frame(width: 20, height: 20)
-                                .foregroundStyle(Color.custom(.mainBackground))
+                                .foregroundStyle(Color.custom(.mainBlack))
                                 .opacity(0.2)
                             Image("taskDesc")
                             
@@ -210,7 +215,7 @@ struct TaskRow: View {
                         Text(highlighted(task.taskDescription ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                             .font(.custom(Montserrat.medium.rawValue, size: 12, ))
                             .frame(maxWidth: 285, alignment: .leading)
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.mainBlack)
                         
                         Spacer()
                     }
@@ -227,10 +232,10 @@ struct TaskRow: View {
                 HStack {
                     Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(Montserrat.bold.rawValue, size: 25))
-                                  .foregroundStyle(.black)
+                                  .foregroundStyle(.mainBlack)
                     Text("₽")
                         .font(.custom(Montserrat.regular.rawValue, size: 25))
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.mainBlack)
                     Spacer()
                 }
                 .frame(height: 25)
@@ -249,7 +254,7 @@ struct TaskRow: View {
                         .scaledToFill()
         )
         
-        .frame(height: 167)
+      
         
         
         .overlay(alignment: .center) {
