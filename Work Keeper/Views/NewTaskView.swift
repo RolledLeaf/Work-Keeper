@@ -29,6 +29,35 @@ struct DatePickerField: View {
         }
     }
 }
+
+struct TimePickerField: View {
+    @Binding var date: Date
+    var minuteInterval: Int = 5
+    var onTap: () -> Void
+    
+    var body: some View {
+        Button {
+            onTap()
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(date.formattedAsTime())
+                    .font(.custom(Montserrat.regular.rawValue, size: 16))
+                    .foregroundStyle(.pitchBlack)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.custom(.pureWhite))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+            )
+        }
+    }
+}
+
 struct DatePickerView: View {
     @Binding var date: Date
     @Binding var isPresented: Bool
@@ -36,7 +65,7 @@ struct DatePickerView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Дата и время")
+                Text("Дата")
                     .font(.headline)
                 Spacer()
                 Button("Готово") {
@@ -48,7 +77,7 @@ struct DatePickerView: View {
             
             IntervalDatePicker(
                 date: $date,
-                components: [.date, .hourAndMinute],
+                components: [.date],
                 minuteInterval: 5
             )
             .labelsHidden()
@@ -60,6 +89,39 @@ struct DatePickerView: View {
         .padding(.vertical)
     }
 }
+
+struct TimePickerView: View {
+    @Binding var date: Date
+    @Binding var isPresented: Bool
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Время")
+                    .font(.headline)
+                Spacer()
+                Button("Готово") {
+                    isPresented = false
+                }
+                .font(.system(size: 17, weight: .semibold))
+            }
+            .padding()
+            
+            IntervalDatePicker(
+                date: $date,
+                components: [.hourAndMinute],
+                minuteInterval: 5
+            )
+            .labelsHidden()
+            .frame(maxHeight: 250)
+            .padding(.horizontal)
+            
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical)
+    }
+}
+
 
 
 struct IntervalDatePicker: UIViewRepresentable {
@@ -151,6 +213,7 @@ struct NewTaskView: View {
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
     @State private var isDatePickerPresented = false
+    @State private var isTimePickerPresented = false
     @State private var hideScrollContentBackground = false
     @State private var streetTextFieldColor: CustomColor = .pureWhite
     @State private var houseTextFieldColor: CustomColor = .pureWhite
@@ -224,6 +287,11 @@ struct NewTaskView: View {
                             .font(.system(size: 19, weight: .regular, design: .default))
                             .background(Color.clear)
                         Spacer()
+                      
+                        TimePickerField(date: $viewModel.scheduledAt, minuteInterval: 5) {
+                            isTimePickerPresented = true
+                        }
+                        
                         DatePickerField(date: $viewModel.scheduledAt, minuteInterval: 5) {
                             isDatePickerPresented = true
                         }
@@ -823,8 +891,21 @@ struct NewTaskView: View {
                     .shadow(radius: 10)
                     .transition(.scale.combined(with: .opacity))
             }
+            if isTimePickerPresented {
+                Color.custom(.pitchBlack).opacity(0.9)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+
+                TimePickerView(date: $viewModel.scheduledAt, isPresented: $isTimePickerPresented)
+                    .frame(width: 320, height: 260)
+                    .background(Color.custom(.pureWhite))
+                    .cornerRadius(16)
+                    .shadow(radius: 10)
+                    .transition(.scale.combined(with: .opacity))
+            }
         }
         .animation(.easeInOut(duration: 0.3), value: isDatePickerPresented)
+        .animation(.easeInOut(duration: 0.3), value: isTimePickerPresented)
         
 
         
