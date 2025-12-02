@@ -4,7 +4,6 @@ import SwiftUI
 
 struct DatePickerField: View {
     @Binding var date: Date
-    var minuteInterval: Int = 5
     var onTap: () -> Void
     
     var body: some View {
@@ -13,17 +12,18 @@ struct DatePickerField: View {
         } label: {
             VStack(alignment: .leading, spacing: 2) {
                 Text(date.formattedAsDate())
-                    .font(.custom(Montserrat.regular.rawValue, size: 16))
+                    .font(.custom(Montserrat.regular.rawValue, size: 15))
                     .foregroundStyle(.pitchBlack)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.custom(.pureWhite))
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(Color.custom(.bckgFieldGray))
             )
+           
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 30)
                     .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
             )
         }
@@ -41,17 +41,17 @@ struct TimePickerField: View {
         } label: {
             VStack(alignment: .leading, spacing: 2) {
                 Text(date.formattedAsTime())
-                    .font(.custom(Montserrat.regular.rawValue, size: 16))
+                    .font(.custom(Montserrat.regular.rawValue, size: 15))
                     .foregroundStyle(.pitchBlack)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.custom(.pureWhite))
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(Color.custom(.bckgFieldGray))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: 30)
                     .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
             )
         }
@@ -66,12 +66,12 @@ struct DatePickerView: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Дата")
-                    .font(.headline)
+                    .font(.custom(Montserrat.regular.rawValue, size: 17))
                 Spacer()
                 Button("Готово") {
                     isPresented = false
                 }
-                .font(.system(size: 17, weight: .semibold))
+                .font(.custom(Montserrat.semibold.rawValue, size: 17))
             }
             .padding()
             
@@ -98,12 +98,12 @@ struct TimePickerView: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Время")
-                    .font(.headline)
+                    .font(.custom(Montserrat.regular.rawValue, size: 17))
                 Spacer()
                 Button("Готово") {
                     isPresented = false
                 }
-                .font(.system(size: 17, weight: .semibold))
+                .font(.custom(Montserrat.semibold.rawValue, size: 17))
             }
             .padding()
             
@@ -269,81 +269,130 @@ struct NewTaskView: View {
         
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
-            
+
             ScrollView {
-                
-                VStack {
-                    Text("Новое задание")
-                        .font(.system(size: 24, weight: .bold, design: .default))
-                        .foregroundStyle(Color.custom(.pitchBlack))
-                        .offset(y: 30)
-                    Spacer()
-                        .frame(height: 50)
+               
                     
-                    HStack {
-                        Text("Описание")
+                    VStack {
+                        VStack  {
+                            HStack {
+                                Text("• НОВОЕ ")
+                                    .font(.custom(Montserrat.bold.rawValue, size: 20))
+                                    .foregroundStyle(Color.custom(.pitchBlack))
+                                +
+                                Text("ЗАДАНИЕ •")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 20))
+                                    .foregroundStyle(Color.custom(.pitchBlack))
+                            }
+                            .frame(height: 22)
+                            .padding(.top, 31)
+                            
+                            
+                            HStack {
+                                Text("Описание")
+                                    .padding(.leading, 16)
+                                    .foregroundColor(Color.custom(.textTitleGray))
+                                    .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                    .background(Color.clear)
+                                Spacer()
+                            }
                             .padding(.leading, 21)
-                            .foregroundColor(Color.custom(.textTitleGray))
-                            .font(.system(size: 19, weight: .regular, design: .default))
-                            .background(Color.clear)
-                        Spacer()
-                      
+                            .padding(.top, 27)
+                            .padding(.trailing, 20)
+                            
+                            ZStack {
+                                Color.custom(.pureWhite)
+                                
+                                TextEditor(text: $viewModel.description)
+                                
+                                    .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                    .foregroundStyle(Color.custom(.pitchBlack))
+                                    .padding(.horizontal, 16)
+                                    .frame(height: 80)
+                                    .multilineTextAlignment(.leading)
+                                    .scrollContentBackground(.hidden) // скрыть внутренний фон
+                                    .background(Color.custom(.pureWhite))
+                                    .onChange(of: viewModel.description) { newValue in
+                                        if newValue.count > maxDescriptionCharactersCount {
+                                            viewModel.description = String(newValue.prefix(maxDescriptionCharactersCount))
+                                        }
+                                        
+                                        if viewModel.description.count >= maxDescriptionCharactersCount {
+                                            DescriptionCharactersTextOpacity = 1
+                                        } else { DescriptionCharactersTextOpacity = 0
+                                            
+                                        }
+                                        
+                                    }
+                                
+                            }
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                            )
+                            .cornerRadius(20)
+                            .padding(.horizontal, 16)
+                            
+                  
+                            Spacer()
+                                .frame(height: 20)
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 26)
+                                .fill(Color.custom(.bckgFieldGray))
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                            )
+                        
+                    
+                        HStack {
+                            ZStack {
+                                Circle()
+                                .fill(Color.custom(.bckgFieldGray))
+                            Image("dateTime")
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                              
+                        }
+                            .overlay(
+                               Circle()
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                            )
+                            .frame(width: 30, height: 30)
+                             
+                            
+                            DatePickerField(date: $viewModel.scheduledAt) {
+                                isDatePickerPresented = true
+                            }
+                           
+                            
+                            Spacer()
+                            
+                            ZStack {
+                                Circle()
+                                .fill(Color.custom(.bckgFieldGray))
+                            Image("clock")
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                              
+                        }
+                            .overlay(
+                               Circle()
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                            )
+                            .frame(width: 30, height: 30)
+                        
                         TimePickerField(date: $viewModel.scheduledAt, minuteInterval: 5) {
                             isTimePickerPresented = true
                         }
-                        
-                        DatePickerField(date: $viewModel.scheduledAt, minuteInterval: 5) {
-                            isDatePickerPresented = true
-                        }
-                        .padding(.trailing, 20)
+                      
                     }
-                    .padding(.trailing, 20)
-                    
-                    ZStack {
-                        Color.custom(.pureWhite)
-                            .cornerRadius(12)
-                        
-                        TextEditor(text: $viewModel.description)
-                            .font(.system(size: 20, weight: .regular, design: .default))
-                            .padding(.horizontal, 16)
-                            .frame(minHeight: 80, maxHeight: 100)
-                            .lineLimit(2, reservesSpace: false)
-                            .minimumScaleFactor(0.6)
-                            .multilineTextAlignment(.leading)
-                            .scrollContentBackground(.hidden) // скрыть внутренний фон
-                             .background(Color.custom(.pureWhite))
-                            .onChange(of: viewModel.description) { newValue in
-                                if newValue.count > maxDescriptionCharactersCount {
-                                    viewModel.description = String(newValue.prefix(maxDescriptionCharactersCount))
-                                }
-                                
-                                if viewModel.description.count >= maxDescriptionCharactersCount {
-                                    DescriptionCharactersTextOpacity = 1
-                                } else { DescriptionCharactersTextOpacity = 0
-                                    
-                                }
-                                
-                            }
-                        
-                    }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                    )
-                    .padding(.horizontal, 16)
-                    
-                    Text("максимум символов \(maxDescriptionCharactersCount)")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.red)
-                        .opacity(DescriptionCharactersTextOpacity)
-                    
-                    Spacer()
-                        .frame(height: 20)
+                        .padding(.top, 10)
+                    .padding(.horizontal, 20)
                     
                     HStack {
                         Text("Клиент")
                             .foregroundColor(Color.custom(.textTitleGray))
-                            .font(.system(size: 18, weight: .regular, design: .default))
+                            .font(.custom(Montserrat.regular.rawValue, size: 12))
                             .background(Color.clear)
                             .frame(width: 100, alignment: .leading)
                             .frame(height: 15)
@@ -353,7 +402,7 @@ struct NewTaskView: View {
                         Text("Номер телефона")
                             .padding(.leading, 21)
                             .foregroundColor(Color.custom(.textTitleGray))
-                            .font(.system(size: 18, weight: .regular, design: .default))
+                            .font(.custom(Montserrat.regular.rawValue, size: 12))
                             .background(Color.clear)
                             .frame(height: 15)
                         
@@ -364,11 +413,12 @@ struct NewTaskView: View {
                     HStack {
                         ZStack {
                             Color.custom(.pureWhite)
-                                .cornerRadius(8)
+                                
                             
                             HStack {
                                 TextField("Имя", text: $viewModel.firstName)
-                                    .font(.system(size: 19, weight: .regular, design: .default))
+                                    .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                    .foregroundStyle(Color.custom(.pitchBlack))
                                     .padding(.leading, 11)
                                     .background( Color.custom(.pureWhite))
                                     .submitLabel(.next)
@@ -382,7 +432,9 @@ struct NewTaskView: View {
                                     showClientListToPickView = true
                                 })
                                 {
-                                    Image(systemName: "chevron.right")
+                                    Image("clientsActive")
+                                        .resizable()
+                                        .frame(width: 14, height: 14)
                                         .padding(.trailing, 4)
                                         .tint(Color.custom(.pitchBlack))
                                 }
@@ -404,7 +456,7 @@ struct NewTaskView: View {
                             ZStack {
                                 Color.custom(.pureWhite)
                                 TextField("+7", text: $phoneMasked)
-                                    .font(.system(size: 19, weight: .regular, design: .default))
+                                    .font(.custom(Montserrat.regular.rawValue, size: 15))
                                     .foregroundColor(.custom(.pitchBlack))
                                     .offset(x: 8)
                                     .keyboardType(.phonePad)
@@ -448,11 +500,6 @@ struct NewTaskView: View {
                     }
                     .padding(.horizontal, 20)
                     
-                    
-                    Rectangle()
-                        .frame(height: 0.5)
-                        .foregroundColor(.custom(.separatorLineGray))
-                    
                     Spacer()
                         .frame(height: 15)
                     
@@ -461,13 +508,14 @@ struct NewTaskView: View {
                         Text("Улица")
                             .padding(.leading, 21)
                             .foregroundColor(Color.custom(.textTitleGray))
-                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .font(.custom(Montserrat.regular.rawValue, size: 12))
                             .background(Color.clear)
                         
                         Spacer()
                         
                         Text("Удалёнка")
-                            .font(.custom(SFPro.italic.rawValue, size: 20))
+                            .font(.custom(Montserrat.regular.rawValue, size: 15))
+                            .foregroundStyle(Color.custom(.pitchBlack))
                             .padding(.horizontal)
                             .frame(width: 150, alignment: .trailing)
                             .offset(x: 65)
@@ -504,11 +552,10 @@ struct NewTaskView: View {
                         HStack {
                             Spacer()
                             TextEditor(text: $viewModel.streetName)
-                                .font(.system(size: 20, weight: .regular, design: .default))
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .foregroundStyle(Color.custom(.pitchBlack))
                                 .frame(width: 320)
                                 .frame(height: 50)
-                                .lineLimit(1, reservesSpace: false)
-                                .minimumScaleFactor(0.5)
                                 .multilineTextAlignment(.leading)
                                 .disabled(viewModel.remoteEditingBlock)
                                 .background(Color.custom(streetTextFieldColor))
@@ -546,23 +593,24 @@ struct NewTaskView: View {
                         
                     )
                     .padding(.horizontal, 20)
-        
+                    
                     Text("максимум символов \(maxStreetCharactersCount)")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.custom(Montserrat.medium.rawValue, size: 12))
                         .foregroundColor(.red)
                         .opacity(StreetCharactersTextOpacity)
                     //Street section end
                     
                     HStack {
                         
-                        Text("дом -")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color.custom(.pitchBlack))
-
+                        Text("дом")
+                            .font(.custom(Montserrat.regular.rawValue, size: 12))
+                            .foregroundStyle(Color.custom(.textTitleGray))
+                        
                         ZStack {
                             Color.custom(houseTextFieldColor)
                             TextField("", text: $viewModel.house)
-                                .font(.system(size: 19, weight: .regular, design: .default))
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .foregroundStyle(Color.custom(.pitchBlack))
                                 .multilineTextAlignment(.center)
                                 .focused($focusedField, equals: .house)
                                 .submitLabel(.next)
@@ -570,7 +618,7 @@ struct NewTaskView: View {
                                     focusedField = .apartment
                                 }
                                 .disabled(viewModel.remoteEditingBlock)
-                              
+                            
                                 .onChange(of: viewModel.house) { newValue in
                                     if newValue.count > maxBuildingCharactersCount {
                                         viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
@@ -594,7 +642,7 @@ struct NewTaskView: View {
                             }
                         } label: {
                             Text(viewModel.roomType ?? "кв.")
-                                .font(.system(size: 16, weight: .medium))
+                                .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .foregroundColor(Color.custom(.pitchBlack))
                             Image(systemName: "triangle.fill")
                                 .resizable()
@@ -606,7 +654,8 @@ struct NewTaskView: View {
                         ZStack {
                             Color.custom(textFieldColor)
                             TextField("", text: $viewModel.apartment)
-                                .font(.system(size: 19, weight: .regular, design: .default))
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .foregroundStyle(Color.custom(.pitchBlack))
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.privateHouseBlock)
                                 .focused($focusedField, equals: .apartment)
@@ -636,8 +685,8 @@ struct NewTaskView: View {
                             }
                         } label: {
                             Text(viewModel.entranceType ?? "под.")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color.custom(.pitchBlack))
+                                .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                .foregroundStyle(Color.custom(.pitchBlack))
                             Image(systemName: "triangle.fill")
                                 .resizable()
                                 .frame(width: 8, height: 5)
@@ -647,7 +696,8 @@ struct NewTaskView: View {
                         ZStack {
                             Color.custom(textFieldColor)
                             TextField("", text: $viewModel.entrance)
-                                .font(.system(size: 19, weight: .regular, design: .default))
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .foregroundStyle(Color.custom(.pitchBlack))
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.privateHouseBlock)
                                 .focused($focusedField, equals: .entrance)
@@ -676,16 +726,17 @@ struct NewTaskView: View {
                     // Стек Этаж - Частный дом, Начало
                     HStack {
                         
-                        Text("эт -")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color.custom(.pitchBlack))
+                        Text("эт.")
+                            .font(.custom(Montserrat.regular.rawValue, size: 12))
+                            .foregroundStyle(Color.custom(.textTitleGray))
                         
                         ZStack {
                             Color.custom(textFieldColor)
                             TextField("", text: $viewModel.floor)
                                 .multilineTextAlignment(.center)
                                 .disabled(viewModel.privateHouseBlock)
-                                .font(.system(size: 19, weight: .regular, design: .default))
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .foregroundStyle(Color.custom(.pitchBlack))
                                 .focused($focusedField, equals: .floor)
                                 .submitLabel(.next)
                                 .onSubmit {
@@ -706,7 +757,8 @@ struct NewTaskView: View {
                         )
                         
                         Text("Только дом")
-                            .font(.custom(SFPro.italic.rawValue, size: 20))
+                            .font(.custom(Montserrat.regular.rawValue, size: 15))
+                            .foregroundStyle(Color.custom(.pitchBlack))
                             .padding(.horizontal)
                             .frame(width: 150)
                             .offset(x: 35)
@@ -729,31 +781,30 @@ struct NewTaskView: View {
                     // Стек Этаж - Частный дом, конец
                     .padding(.horizontal, 35)
                     
-                    Rectangle()
-                        .frame(height: 0.5)
-                        .foregroundColor(.custom(.separatorLineGray))
+                    Image("separateLine2")
                     
                     
-                    HStack {
-                        Text("Оплата")
-                            .padding(.leading, 21)
-                            .foregroundColor(Color.custom(.textTitleGray))
-                            .font(.system(size: 19, weight: .regular, design: .default))
-                            .background(Color.clear)
-                        
-                        Spacer()
-                    }
+                    //                    HStack {
+                    //                        Text("Оплата")
+                    //                            .padding(.leading, 21)
+                    //                            .foregroundColor(Color.custom(.textTitleGray))
+                    //                            .font(.system(size: 19, weight: .regular, design: .default))
+                    //                            .background(Color.clear)
+                    //
+                    //                        Spacer()
+                    //                    }
                     
                     HStack {
-                        Text("Договорились")
+                        Text("Стоимость")
                             .padding(.leading, 21)
-                            .foregroundColor(Color.custom(.pitchBlack))
-                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .font(.custom(Montserrat.regular.rawValue, size: 15))
+                            .foregroundStyle(Color.custom(.pitchBlack))
                             .background(Color.clear)
                         Spacer()
                         
                         TextField("0", text: $viewModel.contractAmountText)
-                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .font(.custom(Montserrat.regular.rawValue, size: 20))
+                            .foregroundStyle(Color.custom(.pitchBlack))
                             .frame(width: 100, height: 30)
                             .multilineTextAlignment(.center)
                             .keyboardType(.decimalPad)
@@ -784,13 +835,14 @@ struct NewTaskView: View {
                     HStack {
                         Text("Издержки")
                             .padding(.leading, 21)
-                            .foregroundColor(Color.custom(.pitchBlack))
-                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .font(.custom(Montserrat.regular.rawValue, size: 15))
+                            .foregroundStyle(Color.custom(.pitchBlack))
                             .background(Color.clear)
                         Spacer()
                         
                         TextField("0", text: $viewModel.costText)
-                            .font(.system(size: 19, weight: .regular, design: .default))
+                            .font(.custom(Montserrat.regular.rawValue, size: 20))
+                            .foregroundStyle(Color.custom(.pitchBlack))
                             .frame(width: 100, height: 30)
                             .multilineTextAlignment(.center)
                             .keyboardType(.numberPad)
@@ -817,33 +869,34 @@ struct NewTaskView: View {
                     
                     HStack {
                         Text("Итого")
-                            .font(.custom(SFPro.bold.rawValue, size: 24))
+                            .font(.custom(Montserrat.bold.rawValue, size: 15))
+                            .foregroundStyle(Color.custom(.pitchBlack))
                         
                         Text(viewModel.totalAmount.formattedCurrency())
-                            .font(.custom(SFPro.bold.rawValue, size: 24))
+                            .font(.custom(Montserrat.regular.rawValue, size: 15))
+                            .foregroundStyle(Color.custom(.pitchBlack))
                     }
                     
                     
                     Spacer()
-                        .frame(height: 20)
-      
+                    
+                    
                     HStack {
                         Button(action: {
                             dismiss()
                         }) {
                             ZStack {
                                 Rectangle()
-                                    .tint(Color.custom(.cancelButtonRed))
-                                Text("Отменить")
-                                    .tint(Color.white)
+                                    .tint(Color.custom(.taskCanceledOrange))
+                                Text("Отмена")
+                                    .foregroundStyle(Color.custom(.pitchBlack))
                             }
                         }
-                        .cornerRadius(16)
-                        .frame(width: 166, height: 60)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color(.black), lineWidth: 0.5)
-                        )
+                        .cornerRadius(30)
+                        .frame(height: 60)
+                        
+                        Spacer()
+                            .frame(width: 11)
                         
                         Button(action: {
                             if let message = missingRequiredFieldsMessage() {
@@ -860,21 +913,21 @@ struct NewTaskView: View {
                                     .tint(Color.custom(.taskCompleteGreen))
                                 Text("Cоздать")
                                     .foregroundStyle(Color.custom(.mainBlack))
-                                 
+                                
                             }
                         }
-                        .cornerRadius(16)
-                        .frame(width: 166, height: 60)
+                        .cornerRadius(30)
+                        .frame(height: 60)
                         .opacity(viewModel.canSaveTask() ? 1 : 0.5)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color(.black), lineWidth: 0.5)
-                        )
+                        
                     }
-                    Spacer()
+                    .padding(.trailing, 20)
+                    .padding(.leading, 20)
                 } // end of main VStack
-                
+                .padding(.trailing, 20)
+                .padding(.leading, 20)
             }
+         
             .onTapGesture {
                 hideKeyboard()
             }
