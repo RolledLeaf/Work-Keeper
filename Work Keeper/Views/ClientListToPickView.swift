@@ -99,8 +99,8 @@ struct ClientListToPickView: View {
                     
             }
             .frame(maxHeight: .infinity, alignment: .top)
-            .padding(.trailing, 15)
-            .padding(.leading, 20)
+//            .padding(.trailing, 15)
+//            .padding(.leading, 20)
             .padding(.top, 20)
         }
         
