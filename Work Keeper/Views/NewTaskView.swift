@@ -206,9 +206,9 @@ struct NewTaskView: View {
     
     @State private var phoneMasked: String = ""
     @State private var previousPhoneMasked: String = ""
+    @State private var alertMessage: String = "Заполните обязательные поля"
     
     @State private var StreetCharactersTextOpacity: Double = 0
-    @State private var DescriptionCharactersTextOpacity: Double = 0
     @State private var streetChevronOpacity: Double = 1
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
@@ -220,7 +220,7 @@ struct NewTaskView: View {
     @State private var textFieldColor: CustomColor = .pureWhite
     @State private var showNewTaskAlert = false
     @FocusState private var focusedField: Field?
-    @State private var alertMessage: String = "Заполните обязательные поля"
+   
     
     init(onComplete: ((String) -> Void)? = nil) {
         
@@ -316,13 +316,7 @@ struct NewTaskView: View {
                                     if newValue.count > maxDescriptionCharactersCount {
                                         viewModel.description = String(newValue.prefix(maxDescriptionCharactersCount))
                                     }
-                                    
-                                    if viewModel.description.count >= maxDescriptionCharactersCount {
-                                        DescriptionCharactersTextOpacity = 1
-                                    } else { DescriptionCharactersTextOpacity = 0
-                                        
-                                    }
-                                    
+           
                                 }
                             
                         }
