@@ -271,8 +271,7 @@ struct NewTaskView: View {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             
             ScrollView {
-                
-                
+
                 VStack {
                     VStack  {
                         HStack {
@@ -327,12 +326,13 @@ struct NewTaskView: View {
                                 }
                             
                         }
+                        .cornerRadius(20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
-                        .cornerRadius(20)
-                        .padding(.horizontal, 16)
+                        
+                        .padding(.horizontal, 20)
                         .padding(.top, 7)
                         
                         
@@ -393,13 +393,13 @@ struct NewTaskView: View {
                     .padding(.top, 10)
                     .padding(.horizontal, 20)
                     
-                    VStack {
+                    VStack { // Начало, клиент и телефон
                         HStack {
                             Text("Клиент")
                                 .foregroundColor(Color.custom(.textTitleGray))
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .background(Color.clear)
-                                .frame(width: 100, alignment: .leading)
+                                .frame(maxWidth: .infinity,alignment: .leading)
                                 .frame(height: 12)
                             
                             Spacer()
@@ -409,6 +409,7 @@ struct NewTaskView: View {
                                 .foregroundColor(Color.custom(.textTitleGray))
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .background(Color.clear)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
                                 .frame(height: 12)
                             
                         }
@@ -455,18 +456,17 @@ struct NewTaskView: View {
                                         Circle()
                                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                     )
-                                    Spacer()
-                                        .frame(width: 5)
+                                    .padding(.trailing, 5)
                                 }
                                 
                             }
+                            .cornerRadius(60)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 60)
                                 
                                     .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                             )
-                            .cornerRadius(60)
-                            .frame(width: 170)
+                           
                             .frame(height: 40, alignment: .center)
                             
                             Spacer()
@@ -479,7 +479,6 @@ struct NewTaskView: View {
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundColor(.custom(.pitchBlack))
                                         .padding(.leading, 16)
-                                    
                                         .keyboardType(.phonePad)
                                         .textContentType(.telephoneNumber)
                                         .onChange(of: phoneMasked) { newValue in
@@ -509,7 +508,8 @@ struct NewTaskView: View {
                                         }
                                 }
                                 .cornerRadius(60)
-                                .frame(width: 170, height: 40)
+                                
+                                .frame(height: 40)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 60)
                                         .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
@@ -523,16 +523,14 @@ struct NewTaskView: View {
                         .padding(.horizontal, 20)
                         
                         Spacer()
-                    }
-                    
+                    } // Клиент и телефон, конец
                     .frame(height: 93)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color.custom(.bckgFieldGray))
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                            .padding(.horizontal, 4)
-                        
                     )
+                    .padding(.horizontal, 4)
                     
                     VStack {
                     //address section
@@ -554,7 +552,7 @@ struct NewTaskView: View {
                                     .font(.custom(Montserrat.regular.rawValue, size: 15))
                                     .foregroundStyle(Color.custom(.pitchBlack))
                                 
-                                    .frame(width: 320)
+//                                    .frame(width: 320)
                                     .frame(height: 40, alignment: .center)
                                     .multilineTextAlignment(.leading)
                                     .disabled(viewModel.remoteEditingBlock)
@@ -660,11 +658,7 @@ struct NewTaskView: View {
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .foregroundColor(Color.custom(.pitchBlack))
                                 .frame(width: 25)
-//                            Image(systemName: "triangle.fill")
-//                                .resizable()
-//                                .frame(width: 8, height: 5)
-//                                .rotationEffect(.degrees(180))
-//                                .foregroundColor(.black)
+                   
                         }
                                 Image("deviderVertical")
                         
@@ -715,11 +709,6 @@ struct NewTaskView: View {
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .frame(width: 32)
-//                            Image(systemName: "triangle.fill")
-//                                .resizable()
-//                                .frame(width: 8, height: 5)
-//                                .rotationEffect(.degrees(180))
-//                                .foregroundColor(.black)
                         }
                                 
                                 Image("deviderVertical")
@@ -883,8 +872,8 @@ struct NewTaskView: View {
                             TextField("0", text: $viewModel.contractAmountText)
                                 .font(.custom(Montserrat.regular.rawValue, size: 20))
                                 .foregroundStyle(Color.custom(.pitchBlack))
-                            
-                                .frame(width: 100, height: 30)
+                            //                                .frame(maxWidth: 100)
+                                                            .frame(height: 30)
                                 .multilineTextAlignment(.trailing)
                                 .keyboardType(.decimalPad)
                                 .focused($focusedField, equals: .contractAmount)
@@ -931,7 +920,8 @@ struct NewTaskView: View {
                             TextField("0", text: $viewModel.costText)
                                 .font(.custom(Montserrat.regular.rawValue, size: 20))
                                 .foregroundStyle(Color.custom(.pitchBlack))
-                                .frame(width: 100, height: 30)
+//                                .frame(maxWidth: 100)
+                                .frame(height: 30)
                                 .multilineTextAlignment(.trailing)
                                 .keyboardType(.numberPad)
                                 .onChange(of: viewModel.costText) { newValue in
@@ -974,14 +964,14 @@ struct NewTaskView: View {
                         }
                         .padding(.leading, 33)
                     }
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 4)
                     .frame(height: 161)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color.custom(.bckgFieldGray))
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
-                            .padding(.horizontal, 4)
+                            
                     
                     
              
@@ -1002,7 +992,7 @@ struct NewTaskView: View {
                         .frame(height: 60)
                         
                         Spacer()
-                            .frame(width: 11)
+                           
                         
                         Button(action: {
                             if let message = missingRequiredFieldsMessage() {
@@ -1043,7 +1033,8 @@ struct NewTaskView: View {
                     .transition(.opacity)
                 
                 DatePickerView(date: $viewModel.scheduledAt, isPresented: $isDatePickerPresented)
-                    .frame(width: 320, height: 260)
+//                    .frame(width: 320, height: 260)
+                    .frame(height: 260)
                     .background(Color.custom(.pureWhite))
                     .cornerRadius(16)
                     .shadow(radius: 10)
@@ -1055,7 +1046,8 @@ struct NewTaskView: View {
                     .transition(.opacity)
                 
                 TimePickerView(date: $viewModel.scheduledAt, isPresented: $isTimePickerPresented)
-                    .frame(width: 320, height: 260)
+                //                    .frame(width: 320, height: 260)
+                                    .frame(height: 260)
                     .background(Color.custom(.pureWhite))
                     .cornerRadius(16)
                     .shadow(radius: 10)
@@ -1139,22 +1131,22 @@ struct NewTaskView: View {
         var result = "+7"
         let chars = Array(s)
         
-        result += "("
+        result += " "
         let a = min(3, chars.count)
         result += String(chars[0..<a])
         if chars.count < 3 { return result }
         
-        result += ")"
+        result += " "
         let b = min(3, chars.count - 3)
         if b > 0 { result += String(chars[3..<(3 + b)]) }
         if chars.count < 6 { return result }
         
-        result += "-"
+        result += " "
         let c = min(2, chars.count - 6)
         if c > 0 { result += String(chars[6..<(6 + c)]) }
         if chars.count < 8 { return result }
         
-        result += "-"
+        result += " "
         let d = min(2, chars.count - 8)
         if d > 0 { result += String(chars[8..<(8 + d)]) }
         

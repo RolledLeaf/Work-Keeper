@@ -187,7 +187,7 @@ struct TaskRow: View {
                                 .frame(width: 20, height: 20)
                                 .foregroundStyle(Color.custom(.mainBlack))
                                 .opacity(0.2)
-                            Image("clock")
+                            Image("clockBlack")
                             
                         }
                        
