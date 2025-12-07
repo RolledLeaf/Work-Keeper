@@ -289,13 +289,13 @@ struct NewTaskView: View {
                         
                         HStack {
                             Text("Описание")
-                                .padding(.leading, 16)
+                               
                                 .foregroundColor(Color.custom(.textTitleGray))
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .background(Color.clear)
                             Spacer()
                         }
-                        .padding(.leading, 21)
+                        .padding(.leading, 36)
                         .padding(.top, 27)
                         .padding(.trailing, 20)
                         .frame(height: 16)
@@ -332,7 +332,7 @@ struct NewTaskView: View {
                                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 24)
                         .padding(.top, 7)
                         
                         
@@ -391,7 +391,7 @@ struct NewTaskView: View {
                         
                     }
                     .padding(.top, 10)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 24)
                     
                     VStack { // Начало, клиент и телефон
                         HStack {
@@ -405,7 +405,7 @@ struct NewTaskView: View {
                             Spacer()
                             
                             Text("Номер телефона")
-                                .padding(.leading, 21)
+                               
                                 .foregroundColor(Color.custom(.textTitleGray))
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .background(Color.clear)
@@ -414,7 +414,7 @@ struct NewTaskView: View {
                             
                         }
                         .padding(.top, 16)
-                        .padding(.leading, 37)
+                        .padding(.leading, 36)
                         .padding(.trailing, 69)
                         
                         HStack {
@@ -475,37 +475,42 @@ struct NewTaskView: View {
                                 
                                 ZStack {
                                     Color.custom(.pureWhite)
-                                    TextField("", text: $phoneMasked)
+                                    TextField("", text: $viewModel.phoneDigits)
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundColor(.custom(.pitchBlack))
                                         .padding(.leading, 16)
                                         .keyboardType(.phonePad)
                                         .textContentType(.telephoneNumber)
-                                        .onChange(of: phoneMasked) { newValue in
-                                            let prevDigits = digitsOnly(previousPhoneMasked)
-                                            var newDigits  = digitsOnly(newValue)
-                                            
-                                            // Если удалили масочный символ — удалим ещё одну цифру вручную
-                                            if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
-                                                if !newDigits.isEmpty { newDigits.removeLast() }
+                                        .onChange(of: viewModel.phoneDigits) { newValue in
+                                            if newValue.count > maxPhoneNumberCharactersCount { viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                                                
                                             }
-                                            
-                                            // Нормализация под РФ: убираем ведущие 8/7, ограничиваем до 10
-                                            if newDigits.hasPrefix("8") { newDigits.removeFirst() }
-                                            if newDigits.hasPrefix("7") { newDigits.removeFirst() }
-                                            if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
-                                            
-                                            let masked = maskRU(fromDigits: newDigits) // \"+7(XXX)XXX-XX-XX\"
-                                            
-                                            if masked.count > maxPhoneNumberCharactersCount {
-                                                phoneMasked = String(masked.prefix(maxPhoneNumberCharactersCount))
-                                            } else {
-                                                phoneMasked = masked
-                                            }
-                                            
-                                            previousPhoneMasked = phoneMasked
-                                            viewModel.phoneDigits = newDigits // ← главное: в VM кладём только цифры
                                         }
+//                                        .onChange(of: phoneMasked) { newValue in
+//                                            let prevDigits = digitsOnly(previousPhoneMasked)
+//                                            var newDigits  = digitsOnly(newValue)
+//                                            
+//                                            // Если удалили масочный символ — удалим ещё одну цифру вручную
+//                                            if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
+//                                                if !newDigits.isEmpty { newDigits.removeLast() }
+//                                            }
+//                                            
+//                                            // Нормализация под РФ: убираем ведущие 8/7, ограничиваем до 10
+//                                            if newDigits.hasPrefix("8") { newDigits.removeFirst() }
+//                                            if newDigits.hasPrefix("7") { newDigits.removeFirst() }
+//                                            if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
+//                                            
+//                                            let masked = maskRU(fromDigits: newDigits) // \"+7(XXX)XXX-XX-XX\"
+//                                            
+//                                            if masked.count > maxPhoneNumberCharactersCount {
+//                                                phoneMasked = String(masked.prefix(maxPhoneNumberCharactersCount))
+//                                            } else {
+//                                                phoneMasked = masked
+//                                            }
+//                                            
+//                                            previousPhoneMasked = phoneMasked
+//                                            viewModel.phoneDigits = newDigits // ← главное: в VM кладём только цифры
+//                                        }
                                 }
                                 .cornerRadius(60)
                                 
@@ -536,23 +541,20 @@ struct NewTaskView: View {
                     //address section
                     HStack {
                         Text("Улица")
-                            .padding(.leading, 21)
                             .foregroundColor(Color.custom(.textTitleGray))
                             .font(.custom(Montserrat.regular.rawValue, size: 12))
                             .background(Color.clear)
                             
                         Spacer()
                     }
-                    .padding(.leading, 17)
+                    .padding(.leading, 36)
                     .frame(height: 12)
                     
                         HStack {
-                            HStack {
+                            HStack(spacing: 6) {
                                 TextEditor(text: $viewModel.streetName)
                                     .font(.custom(Montserrat.regular.rawValue, size: 15))
                                     .foregroundStyle(Color.custom(.pitchBlack))
-                                
-//                                    .frame(width: 320)
                                     .frame(height: 40, alignment: .center)
                                     .multilineTextAlignment(.leading)
                                     .disabled(viewModel.remoteEditingBlock)
@@ -582,8 +584,8 @@ struct NewTaskView: View {
                                 
                             }
                             .frame(height: 40)
-                            .padding(.trailing, 16)
-                            .padding(.leading, 14)
+                            .padding(.trailing, 10)
+                            .padding(.leading, 10)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(streetTextFieldColor))
@@ -629,9 +631,9 @@ struct NewTaskView: View {
                                     }
                                 Spacer()
                             }
-                        
+                            
                             .cornerRadius(30)
-                            .frame(width: 106, height: 40)
+                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(houseTextFieldColor))
@@ -749,7 +751,7 @@ struct NewTaskView: View {
                     
                     
                     
-                    // Стек Этаж - Частный дом, Начало
+                    // Стек Этаж , Начало
                     HStack {
                         HStack(spacing: 6) {
                             Spacer()
@@ -796,6 +798,7 @@ struct NewTaskView: View {
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
+                        .tint(Color.custom(.taskCompleteGreen))
                         .frame(width: 165, alignment: .leading)
                         .disabled(viewModel.shouldBlockPrivate)
                         .onChange(of: viewModel.isPrivateHouse) { newValue in
@@ -817,6 +820,7 @@ struct NewTaskView: View {
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
+                        .tint(Color.custom(.taskCompleteGreen))
                         .frame(width: 148, alignment: .trailing)
                         
                         .disabled(viewModel.shouldBlockRemote)
@@ -855,11 +859,12 @@ struct NewTaskView: View {
                         )
                             .padding(.horizontal, 4)
                
+                    
                     VStack {
                         HStack {
-                        HStack(spacing: 6) {
+                        HStack {
                             Text("Стоимость")
-                                .padding(.leading, 21)
+                                
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
                                 .multilineTextAlignment(.leading)
                                 .foregroundStyle(Color.custom(.pitchBlack))
@@ -872,8 +877,6 @@ struct NewTaskView: View {
                             TextField("0", text: $viewModel.contractAmountText)
                                 .font(.custom(Montserrat.regular.rawValue, size: 20))
                                 .foregroundStyle(Color.custom(.pitchBlack))
-                            //                                .frame(maxWidth: 100)
-                                                            .frame(height: 30)
                                 .multilineTextAlignment(.trailing)
                                 .keyboardType(.decimalPad)
                                 .focused($focusedField, equals: .contractAmount)
@@ -891,7 +894,7 @@ struct NewTaskView: View {
                             
                         }
                         .frame(height: 40)
-                        .padding(.trailing, 16)
+                        .padding(.horizontal, 16)
                         .cornerRadius(30)
                         .background(
                             RoundedRectangle(cornerRadius: 30)
@@ -905,9 +908,9 @@ struct NewTaskView: View {
                     .padding(.horizontal, 20)
                         
                         HStack {
-                        HStack(spacing: 6) {
+                        HStack {
                             Text("Издержки")
-                                .padding(.leading, 21)
+                                
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
                                 
                                 .foregroundStyle(Color.custom(.pitchBlack))
@@ -936,7 +939,7 @@ struct NewTaskView: View {
                                 }
                         }
                         .frame(height: 40)
-                        .padding(.trailing, 16)
+                        .padding(.horizontal, 16)
                         .cornerRadius(30)
                         .background(
                             RoundedRectangle(cornerRadius: 30)
@@ -962,16 +965,15 @@ struct NewTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                             Spacer()
                         }
-                        .padding(.leading, 33)
+                        .padding(.leading, 36)
                     }
-                    .padding(.horizontal, 4)
                     .frame(height: 161)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color.custom(.bckgFieldGray))
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
-                            
+                    .padding(.horizontal, 4)
                     
                     
              

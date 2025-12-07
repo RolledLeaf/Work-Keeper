@@ -319,7 +319,7 @@ final class CreateTaskViewModel: ObservableObject {
 //            return false
 //        }
 
-        let normalizedPhone = phoneDigits.isEmpty ? nil : "+7" + phoneDigits
+        let normalizedPhone = phoneDigits.isEmpty ? nil : phoneDigits //было +7 перед phone digits
         let client = clientStore.createOrFetchClient(
             firstName: firstName,
             lastName: lastName,
