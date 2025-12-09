@@ -760,7 +760,7 @@ struct EditTaskView: View {
                                 .multilineTextAlignment(.leading)
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .background(Color.clear)
-                            
+                                .frame(width: 88)
                             Image("deviderVertical")
                             
                             Spacer()
@@ -803,7 +803,7 @@ struct EditTaskView: View {
                             Text("Издержки")
                                 
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
-                                
+                                .frame(width: 88)
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .background(Color.clear)
                             
@@ -848,7 +848,7 @@ struct EditTaskView: View {
                             Text("Доплачено")
                                 
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
-                                
+                                .frame(width: 88)
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .background(Color.clear)
                             
@@ -887,11 +887,10 @@ struct EditTaskView: View {
                         )
                     }
                     .padding(.horizontal, 20)
-
                         
-                       
-                        
-                        
+                        Spacer()
+                            .frame(height: 17)
+    
                         HStack {
                             Text("Итого:")
                                 .font(.custom(Montserrat.bold.rawValue, size: 15))
@@ -902,6 +901,8 @@ struct EditTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                             Spacer()
                         }
+                        .frame(height: 15)
+                       
                         .padding(.leading, 36)
                     }
                     .frame(height: 201)
@@ -916,16 +917,14 @@ struct EditTaskView: View {
                     
                     
                     VStack {
-                    Picker("Тип оплаты", selection: $viewModel.paymentType) {
-                        Text("Наличные").tag(PaymentType.cash)
-                            .font(.custom(Montserrat.regular.rawValue, size: 14))
-                        Text("Перевод").tag(PaymentType.transfer)
-                            .font(.custom(Montserrat.regular.rawValue, size: 14))
-                    }
-                   
-                    .disabled(viewModel.status != .completed)
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 4)
+                        Picker("Тип оплаты", selection: $viewModel.paymentType) {
+                            Text("Наличные").tag(PaymentType.cash)
+                            Text("Перевод").tag(PaymentType.transfer)
+                        }
+                        .pickerStyle(.segmented)
+                        .disabled(viewModel.status != .completed)
+                        .tint(Color.custom(.taskCompleteGreen))   // цвет активного сегмента
+                        .padding(.horizontal, 4)
                 }
                 .frame(height: 38)
                 .background(
@@ -979,14 +978,7 @@ struct EditTaskView: View {
                     .padding(.top, 20)
                 } // end of main VStack
                 
-//                Button(action: {
-              //                        if  viewModel.update() {
-              //                            onSave?(viewModel.descriptionText)
-              //                            dismiss()
-              //                        } else {
-              //
-              //                            showEditTaskAlert = true
-              //                        }
+
                 
             }
             .onTapGesture {

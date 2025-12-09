@@ -35,6 +35,8 @@ enum CustomColor: String {
     case scheduleCancelButton = "scheduleCancelButton"
     case mainBlack = "mainBlack"
     case bckgFieldGray = "bckgFieldGray"
+    case whiteOnly = "whiteOnly"
+    case inactiveColorsGray = "inactiveColorsGray"
 }
 
 

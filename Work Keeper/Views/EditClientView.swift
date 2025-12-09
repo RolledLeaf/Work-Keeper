@@ -22,7 +22,8 @@ struct EditClientView: View {
     @State private var previousPhoneMasked: String = ""
     @State private var maxStreetCharactersTextOpacity: Double = 0
  
-    @State private var showCreateClientAlert = false
+    @State private var showNameAndPhoneAlert = false
+    @State private var showNumberExistsAlert = false
     @State private var showStreetsView = false
     @FocusState private var focusedField: Field?
     
@@ -365,35 +366,17 @@ struct EditClientView: View {
                     HStack {
                         ZStack {
                             Color.white
-                            TextField("+7", text: $phoneMasked)
+                            TextField("", text: $viewModel.phoneDigits)
                                 .font(.system(size: 21, weight: .regular, design: .default))
                                 .foregroundColor(.black)
                                 .padding(.leading, 5)
                                 .keyboardType(.phonePad)
                                 .textContentType(.telephoneNumber)
                                 .focused($focusedField, equals: .phoneNumber)
-                                .onChange(of: phoneMasked) { newValue in
-                                    let prevDigits = digitsOnly(previousPhoneMasked)
-                                    var newDigits  = digitsOnly(newValue)
-
-                                    // Если удалили масочный символ, удалим ещё одну цифру вручную
-                                    if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
-                                        if !newDigits.isEmpty { newDigits.removeLast() }
+                                .onChange(of: viewModel.phoneDigits) { newValue in
+                                    if newValue.count > maxPhoneNumberCharactersCount { viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                                        
                                     }
-
-                                    // РФ нормализация: убрать ведущие 8/7 и ограничить до 10 цифр
-                                    if newDigits.hasPrefix("8") { newDigits.removeFirst() }
-                                    if newDigits.hasPrefix("7") { newDigits.removeFirst() }
-                                    if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
-
-                                    let masked = maskRU(fromDigits: newDigits) // +7(XXX)XXX-XX-XX
-                                    if masked.count > maxPhoneNumberCharactersCount {
-                                        phoneMasked = String(masked.prefix(maxPhoneNumberCharactersCount))
-                                    } else {
-                                        phoneMasked = masked
-                                    }
-                                    previousPhoneMasked = phoneMasked
-                                    viewModel.phoneDigits = newDigits // в VM храним только цифры
                                 }
                         }
                         .cornerRadius(10)
@@ -430,13 +413,22 @@ struct EditClientView: View {
                         )
                         
                         Button(action: {
-                            if viewModel.canUpdateClient() {
-                                onEdit?(viewModel.firstName)
-                                viewModel.update()
-                                dismiss()
-                            } else {
-                                showCreateClientAlert = true
+                            // Сначала проверяем заполненность обязательных полей
+                            if !viewModel.hasRequiredNameAndPhone() {
+                                showNameAndPhoneAlert = true
+                                return
                             }
+
+                            // Затем проверяем уникальность номера телефона
+                            if !viewModel.hasUniquePhone() {
+                                showNumberExistsAlert = true
+                                return
+                            }
+
+                            // Если обе проверки пройдены — сохраняем
+                            onEdit?(viewModel.firstName)
+                            viewModel.update()
+                            dismiss()
                         }) {
                             ZStack {
                                 Rectangle()
@@ -471,9 +463,13 @@ struct EditClientView: View {
          StreetsListView(viewModel: streetListViewModel)
      }
 
-     .alert(isPresented: $showCreateClientAlert) {
+     .alert(isPresented: $showNameAndPhoneAlert) {
          Alert(title: Text("Ошибка"), message: Text("Заполните Имя и телефон"), dismissButton: .default(Text("OK")))
      }
+     .alert(isPresented: $showNumberExistsAlert) {
+         Alert(title: Text("Ошибка"), message: Text("Такой телефон уже занят"), dismissButton: .default(Text("OK")))
+     }
+     
         .onAppear {
             phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
             previousPhoneMasked = phoneMasked

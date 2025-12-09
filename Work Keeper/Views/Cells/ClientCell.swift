@@ -80,8 +80,8 @@ struct ClientRow: View {
                     }
                   
                     Spacer()
-          
-                    Text(highlighted(client.phone?.formattedAsPhone() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+//                    Text(highlighted(client.phone?.formattedAsPhone() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                    Text(highlighted(client.phone ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                         .font(.custom(SFPro.regular.rawValue, size: 16))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 20, alignment: .center)

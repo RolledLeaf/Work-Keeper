@@ -123,6 +123,29 @@ func createOrFetchClient(firstName: String,
     }
     
     
+    func hasClient(withPhone phone: String, excluding: Client? = nil) -> Bool {
+        let context = CoreDataStack.shared.context
+        let request: NSFetchRequest<Client> = Client.fetchRequest()
+
+        var predicates: [NSPredicate] = [
+            NSPredicate(format: "phone == %@", phone)
+        ]
+
+        if let excludingClient = excluding {
+            predicates.append(NSPredicate(format: "SELF != %@", excludingClient))
+        }
+
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+        request.fetchLimit = 1
+
+        do {
+            let count = try context.count(for: request)
+            return count > 0
+        } catch {
+            print("[ClientStore] hasClient(withPhone:) error:", error)
+            return false
+        }
+    }
 
     
     func newClientsByMonth(

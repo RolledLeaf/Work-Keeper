@@ -314,17 +314,12 @@ final class CreateTaskViewModel: ObservableObject {
     }
 
     func saveTask() {
-//        guard canSaveTask() else {
-//            print("❌ Не все обязательные поля заполнены ")
-//            return false
-//        }
-
-        let normalizedPhone = phoneDigits.isEmpty ? nil : phoneDigits //было +7 перед phone digits
+        let normalizedPhone = phoneDigits.isEmpty ? "" : phoneDigits //было +7 перед phone digits
         let client = clientStore.createOrFetchClient(
             firstName: firstName,
             lastName: lastName,
             addresses: [],
-            phone: normalizedPhone ?? "",
+            phone: normalizedPhone,
             comment: comment.isEmpty ? nil : comment
         )
 
@@ -618,7 +613,8 @@ final class EditTaskViewModel: ObservableObject {
         // Обновляем клиента и адрес, как и раньше
         client.firstName = firstName
         client.lastName = lastName
-        client.phone = phoneDigits.isEmpty ? "" : "+7" + phoneDigits
+        client.phone =  phoneDigits.isEmpty ? "" : phoneDigits
+//        phoneDigits.isEmpty ? "" : "+7" + phoneDigits
         
         if let address = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
             address.street?.name = streetName

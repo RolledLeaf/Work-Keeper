@@ -33,7 +33,8 @@ struct ClientProfileView: View {
                             }
                             
                         }) {
-                            Text(client.phone?.formattedAsPhone() ?? "Телефон не указан")
+//                            Text(client.phone?.formattedAsPhone() ?? "Телефон не указан")
+                            Text(client.phone ?? "Телефон не указан")
                                 .font(.custom(SFPro.regular.rawValue, size: 19))
                                 .foregroundColor(.custom(.taskTextGray))
                         }

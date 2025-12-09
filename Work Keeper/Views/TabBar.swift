@@ -5,6 +5,11 @@ struct TabBar: View {
     @State private var selectedTab = 0
     @Environment(\.managedObjectContext) private var context
 
+    init() {
+        // Цвет НЕвыбранных иконок + текста
+        UITabBar.appearance().unselectedItemTintColor = UIColor(Color.custom(.inactiveColorsGray))
+    }
+
     var body: some View {
         TabView(selection: $selectedTab) {
             TaskListView()
@@ -13,8 +18,6 @@ struct TabBar: View {
                         .resizable()
                         .frame(width: 25, height: 31)
                     Text("Задания")
-                        .foregroundStyle(.pitchBlack)
-                        
                 }
                 .tag(0)
 
@@ -22,23 +25,18 @@ struct TabBar: View {
                 .tabItem {
                     Image(selectedTab == 1 ? "clientsActive" : "clientsInactive")
                     Text("Клиенты")
-                        .foregroundStyle(.pitchBlack)
-                    if selectedTab == 1 {
-                        
-                    }
                 }
                 .tag(1)
-            
+
             StatisticsView(context: context)
                 .tabItem {
                     Image(selectedTab == 2 ? "statsActive" : "statsInactive")
                         .resizable()
                         .frame(width: 25, height: 31)
                     Text("Статистика")
-                        .foregroundStyle(.pitchBlack)
                 }
                 .tag(2)
         }
-        .accentColor(.black)
+        .tint(Color.custom(.pitchBlack)) // цвет ВЫБРАННОГО таба (иконка + текст)
     }
 }

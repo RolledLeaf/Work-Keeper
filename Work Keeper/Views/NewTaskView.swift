@@ -863,6 +863,7 @@ struct NewTaskView: View {
                                 .multilineTextAlignment(.leading)
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .background(Color.clear)
+                                .frame(width: 88)
                             
                             Image("deviderVertical")
                             
@@ -906,7 +907,7 @@ struct NewTaskView: View {
                             Text("Издержки")
                                 
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
-                                
+                                .frame(width: 88)
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .background(Color.clear)
                             

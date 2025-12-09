@@ -286,10 +286,9 @@ final class EditClientViewModel: ObservableObject {
         let rawPhone = client.phone ?? ""
         let digitsAll = rawPhone.filter { $0.isNumber }
         var nsn = digitsAll
-        if nsn.hasPrefix("7") { nsn.removeFirst() }     // убираем +7
-        if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
+     
         self.phoneDigits = nsn
-        self.phoneNumber = rawPhone // можно не использовать во View
+        self.phoneNumber = rawPhone
         
         self.client = client
         self.firstName = client.firstName ?? ""
@@ -324,13 +323,33 @@ final class EditClientViewModel: ObservableObject {
         }
     }
     
+    
+    
+    /// Проверяет, что заполнены обязательные поля: имя и номер телефона
+    func hasRequiredNameAndPhone() -> Bool {
+        let name = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let phone = phoneDigits.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !name.isBlank && !phone.isBlank
+    }
+
+    /// Проверяет, что номер телефона не занят другим клиентом
+    func hasUniquePhone() -> Bool {
+        let normalizedPhone = phoneDigits.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Если номер пустой, считаем, что проверка уникальности здесь не проходит
+        guard !normalizedPhone.isEmpty else { return false }
+
+        let existsAnother = store.hasClient(withPhone: normalizedPhone, excluding: client)
+        return !existsAnother
+    }
+
+    /// Общая проверка перед сохранением клиента
     func canUpdateClient() -> Bool {
-        !firstName.isEmpty && !phoneDigits.isEmpty
+        hasRequiredNameAndPhone() && hasUniquePhone()
     }
     
     func update() {
         // normalize phone
-        let phoneValue = phoneDigits.isEmpty ? "" : "+7" + phoneDigits
+        let phoneValue = phoneDigits.isEmpty ? "" : phoneDigits
 
         // Update client basic fields
         client.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
