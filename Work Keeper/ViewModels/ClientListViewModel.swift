@@ -219,8 +219,26 @@ final class CreateClientViewModel: ObservableObject {
     private let streetStore = StreetStore()
     private let addressStore = AddressStore()
     
+    /// Проверяет, что заполнены обязательные поля: имя и номер телефона
+    func hasRequiredNameAndPhone() -> Bool {
+        let name = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let phone = phoneDigits.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !name.isBlank && !phone.isBlank
+    }
+
+    /// Проверяет, что номер телефона не занят другим клиентом
+    func hasUniquePhone() -> Bool {
+        let normalizedPhone = phoneDigits.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Если номер пустой, считаем, что проверка уникальности не пройдена
+        guard !normalizedPhone.isBlank else { return false }
+
+        let existsAnother = store.hasClient(withPhone: normalizedPhone, excluding: nil)
+        return !existsAnother
+    }
+
+    /// Общая проверка перед созданием клиента
     func canCreateClient() -> Bool {
-        !firstName.isEmpty && !phoneDigits.isEmpty
+        hasRequiredNameAndPhone() && hasUniquePhone()
     }
     
     func createClient() {
@@ -232,7 +250,7 @@ final class CreateClientViewModel: ObservableObject {
             firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
             lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
             addresses: [],
-            phone: phoneDigits.isEmpty ? "" : "+7" + phoneDigits
+            phone: phoneDigits.isBlank ? "" : phoneDigits
         )
         
         // 3) Адрес, привязанный к клиенту
