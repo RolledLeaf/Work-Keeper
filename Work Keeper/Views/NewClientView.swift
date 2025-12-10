@@ -375,11 +375,10 @@ struct NewClientView: View {
                             .focused($focusedField, equals: .phoneNumber)
                             .textContentType(.telephoneNumber)
                             .onChange(of: viewModel.phoneDigits) { newValue in
-                                var digits = digitsOnly(newValue)
-                                if digits.count > maxPhoneNumberCharactersCount {
-                                    digits = String(digits.prefix(maxPhoneNumberCharactersCount))
+                                if newValue.count > maxPhoneNumberCharactersCount {
+                                    viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))
                                 }
-                                viewModel.phoneDigits = digits
+                               
                             }
                     }
                     .cornerRadius(10)
@@ -488,33 +487,33 @@ struct NewClientView: View {
 
 
 //# MARK: - Phone helpers
-private func digitsOnly(_ s: String) -> String {
-    String(s.filter { $0.isNumber })
-}
+//private func digitsOnly(_ s: String) -> String {
+//    String(s.filter { $0.isNumber })
+//}
 
-private func maskRU(fromDigits s: String) -> String {
-    if s.isEmpty { return "" }
-    var result = "+7"
-    let chars = Array(s)
-    
-    result += "("
-    let a = min(3, chars.count)
-    result += String(chars[0..<a])
-    if chars.count < 3 { return result }
-    
-    result += ")"
-    let b = min(3, chars.count - 3)
-    if b > 0 { result += String(chars[3..<(3 + b)]) }
-    if chars.count < 6 { return result }
-    
-    result += "-"
-    let c = min(2, chars.count - 6)
-    if c > 0 { result += String(chars[6..<(6 + c)]) }
-    if chars.count < 8 { return result }
-    
-    result += "-"
-    let d = min(2, chars.count - 8)
-    if d > 0 { result += String(chars[8..<(8 + d)]) }
-    
-    return result
-}
+//private func maskRU(fromDigits s: String) -> String {
+//    if s.isEmpty { return "" }
+//    var result = "+7"
+//    let chars = Array(s)
+//    
+//    result += "("
+//    let a = min(3, chars.count)
+//    result += String(chars[0..<a])
+//    if chars.count < 3 { return result }
+//    
+//    result += ")"
+//    let b = min(3, chars.count - 3)
+//    if b > 0 { result += String(chars[3..<(3 + b)]) }
+//    if chars.count < 6 { return result }
+//    
+//    result += "-"
+//    let c = min(2, chars.count - 6)
+//    if c > 0 { result += String(chars[6..<(6 + c)]) }
+//    if chars.count < 8 { return result }
+//    
+//    result += "-"
+//    let d = min(2, chars.count - 8)
+//    if d > 0 { result += String(chars[8..<(8 + d)]) }
+//    
+//    return result
+//}
