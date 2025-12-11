@@ -314,7 +314,7 @@ final class CreateTaskViewModel: ObservableObject {
     }
 
     func saveTask() {
-        let normalizedPhone = phoneDigits.isEmpty ? "" : phoneDigits //было +7 перед phone digits
+        let normalizedPhone = phoneDigits.isEmpty ? "" : phoneDigits //было +7 перед phone digits. Пока в этом нет необходимости
         let client = clientStore.createOrFetchClient(
             firstName: firstName,
             lastName: lastName,

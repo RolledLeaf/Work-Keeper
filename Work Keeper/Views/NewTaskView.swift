@@ -199,7 +199,7 @@ struct NewTaskView: View {
     private let maxEntranceCharactersCount: Int = 4
     private let maxFloorCharactersCount: Int = 4
     private let maxCountryCodeCharactersCount: Int = 3
-    private let maxPhoneNumberCharactersCount: Int = 16
+    private let maxPhoneNumberCharactersCount: Int = 20
     private let maxContractAmountCharacters: Int = 7
     private let maxCostCharacters: Int = 7
     private let maxFloorCharacters: Int = 4
@@ -480,31 +480,7 @@ struct NewTaskView: View {
                                                 
                                             }
                                         }
-//                                        .onChange(of: phoneMasked) { newValue in
-//                                            let prevDigits = digitsOnly(previousPhoneMasked)
-//                                            var newDigits  = digitsOnly(newValue)
-//                                            
-//                                            // Если удалили масочный символ — удалим ещё одну цифру вручную
-//                                            if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
-//                                                if !newDigits.isEmpty { newDigits.removeLast() }
-//                                            }
-//                                            
-//                                            // Нормализация под РФ: убираем ведущие 8/7, ограничиваем до 10
-//                                            if newDigits.hasPrefix("8") { newDigits.removeFirst() }
-//                                            if newDigits.hasPrefix("7") { newDigits.removeFirst() }
-//                                            if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
-//                                            
-//                                            let masked = maskRU(fromDigits: newDigits) // \"+7(XXX)XXX-XX-XX\"
-//                                            
-//                                            if masked.count > maxPhoneNumberCharactersCount {
-//                                                phoneMasked = String(masked.prefix(maxPhoneNumberCharactersCount))
-//                                            } else {
-//                                                phoneMasked = masked
-//                                            }
-//                                            
-//                                            previousPhoneMasked = phoneMasked
-//                                            viewModel.phoneDigits = newDigits // ← главное: в VM кладём только цифры
-//                                        }
+//
                                 }
                                 .cornerRadius(60)
                                 
@@ -1082,16 +1058,9 @@ struct NewTaskView: View {
         .sheet(isPresented: $showClientListToPickView, onDismiss: {
             if let selectedClient = clientsListViewModel.selectedClient {
                 viewModel.firstName = selectedClient.firstName ?? ""
-                // Достанем только цифры
-                let digitsAll = digitsOnly(selectedClient.phone ?? "")
-                // Срежем ведущую 7 (если храним \"+7...\") и ограничим до 10 цифр NSN
-                var nsn = digitsAll
-                if nsn.hasPrefix("7") { nsn.removeFirst() }
-                if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
-                
-                viewModel.phoneDigits = nsn
-                phoneMasked = maskRU(fromDigits: nsn)
-                previousPhoneMasked = phoneMasked
+            
+                viewModel.phoneDigits = selectedClient.phone ?? ""
+   
                 if let primaryAddress = selectedClient.address?.first(where: {
                     ($0 as? Address)?.isPrimary == true
                 }) as? Address {
@@ -1100,7 +1069,8 @@ struct NewTaskView: View {
                     viewModel.apartment = primaryAddress.apartment ?? ""
                     viewModel.entrance = primaryAddress.entrance ?? ""
                     viewModel.floor = primaryAddress.floor ?? ""
-                    
+               
+                    viewModel.isPrivateHouse = primaryAddress.isPrivateHouse
                 }
             }
         }) {
