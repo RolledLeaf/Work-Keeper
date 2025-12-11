@@ -24,6 +24,14 @@ struct TaskRow: View {
     
     let task: TaskEntity
     
+    private var taskAddress: Address? {
+        if let address = task.address {
+            return address          // адрес, привязанный к задаче
+        } else {
+            return task.client?.primaryAddress // fallback для старых заданий
+        }
+    }
+    
     private var paymentIconResource: ImageResource? {
         guard let paymentTypeRaw = task.paymentType,
               let paymentType = PaymentType(rawValue: paymentTypeRaw) else {
@@ -121,11 +129,17 @@ struct TaskRow: View {
                                 
                             }
                             
-                            Text(highlighted(task.client?.primaryAddress?.street?.name ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
-                                .font(.custom(Montserrat.medium.rawValue, size: 12))
-                                .foregroundStyle(.mainBlack)
-                            
-                            Text("\(task.client?.primaryAddress?.house ?? "")")
+                            Text(
+                                highlighted(
+                                    taskAddress?.street?.name ?? "",
+                                    query: viewModel.searchText,
+                                    highlightColor: .highlightBlue
+                                )
+                            )
+                            .font(.custom(Montserrat.medium.rawValue, size: 12))
+                            .foregroundStyle(.mainBlack)
+
+                            Text(taskAddress?.house ?? "")
                                 .font(.custom(Montserrat.medium.rawValue, size: 12))
                                 .foregroundStyle(.mainBlack)
                             

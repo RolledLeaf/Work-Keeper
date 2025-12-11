@@ -35,6 +35,8 @@ final class TaskListViewModel: ObservableObject {
         print("Task \(String(describing: task.taskDescription)) rescheduled to \(date)")
     }
     
+    
+    
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
             let date = task.scheduledAt ?? Date.distantPast
@@ -324,7 +326,7 @@ final class CreateTaskViewModel: ObservableObject {
         )
 
         // Если задание не удалённое, создаём/подтягиваем улицу и адрес
-        if !isRemote {
+       
             let street = streetStore.createOrFetchStreet(name: streetName)
 
             let address = addressStore.createOrFetchAddress(
@@ -335,26 +337,26 @@ final class CreateTaskViewModel: ObservableObject {
                 isPrivateHouse: isPrivateHouse,
                 street: street,
                 client: client,
-                isPrimary: true,
+                isPrimary: false, // 👈 при создании задания НЕ трогаем primary
                 roomType: roomType ?? "кв.",
                 entranceType: entranceType ?? "под."
             )
 
             // link the address with the client
             client.addToAddress(address)
-        }
+    
 
         // Создаём задачу
         taskStore.createTask(
             scheduledAt: scheduledAt,
             client: client,
+            address: address,        // 👈 новый параметр
             description: description,
             isRemote: isRemote,
             status: status,
             contractAmount: contractAmount,
             cost: cost,
             paymentType: selectedPayment
-           
         )
         didCreateTask = true
 

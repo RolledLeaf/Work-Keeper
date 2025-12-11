@@ -34,32 +34,43 @@ final class AddressStore: NSObject {
     
     
     
-    func createOrFetchAddress(house: String,
-                              apartment: String?,
-                              entrance: String?,
-                              floor: String,
-                              isPrivateHouse: Bool,
-                              street: Street,
-                              client: Client,
-                              isPrimary: Bool,
-                              roomType: String,
-                                  entranceType: String) -> Address {
-        
+    func createOrFetchAddress(
+        house: String,
+        apartment: String?,
+        entrance: String?,
+        floor: String,
+        isPrivateHouse: Bool,
+        street: Street,
+        client: Client,
+        isPrimary: Bool,
+        roomType: String,
+        entranceType: String
+    ) -> Address {
+
         let request: NSFetchRequest<Address> = Address.fetchRequest()
-        request.predicate = NSPredicate(format: "street.name == %@ AND house == %@", street.name ?? "", house)
+        
+        // Ищем адрес только внутри адресов ЭТОГО клиента и этой улицы/дома
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "client == %@", client),
+            NSPredicate(format: "street == %@", street),
+            NSPredicate(format: "house == %@", house)
+        ])
+        
         request.fetchLimit = 1
 
         do {
             if let existing = try context.fetch(request).first {
                 return existing
             } else {
-                let address = createAddress(house: house,
-                                            apartment: apartment,
-                                            entrance: entrance,
-                                            floor: floor,
-                                            isPrivateHouse: isPrivateHouse,
-                                            street: street,
-                                            roomType: roomType, entranceType: entranceType
+                let address = createAddress(
+                    house: house,
+                    apartment: apartment,
+                    entrance: entrance,
+                    floor: floor,
+                    isPrivateHouse: isPrivateHouse,
+                    street: street,
+                    roomType: roomType,
+                    entranceType: entranceType
                 )
                 address.client = client
                 address.isPrimary = isPrimary
@@ -76,14 +87,16 @@ final class AddressStore: NSObject {
             }
         } catch {
             print("Error in createOrFetchAddress: \(error)")
-            let address = createAddress(house: house,
-                                        apartment: apartment,
-                                        entrance: entrance,
-                                        floor: floor,
-                                        isPrivateHouse: isPrivateHouse,
-                                        street: street,
-                                        roomType: roomType,
-                                        entranceType: entranceType)
+            let address = createAddress(
+                house: house,
+                apartment: apartment,
+                entrance: entrance,
+                floor: floor,
+                isPrivateHouse: isPrivateHouse,
+                street: street,
+                roomType: roomType,
+                entranceType: entranceType
+            )
             address.client = client
             address.isPrimary = isPrimary
             return address
