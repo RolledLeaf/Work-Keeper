@@ -376,31 +376,7 @@ struct EditTaskView: View {
                                                 
                                             }
                                         }
-//                                        .onChange(of: phoneMasked) { newValue in
-//                                            let prevDigits = digitsOnly(previousPhoneMasked)
-//                                            var newDigits  = digitsOnly(newValue)
-//
-//                                            // Если удалили масочный символ — удалим ещё одну цифру вручную
-//                                            if newValue.count < previousPhoneMasked.count && newDigits.count == prevDigits.count {
-//                                                if !newDigits.isEmpty { newDigits.removeLast() }
-//                                            }
-//
-//                                            // Нормализация под РФ: убираем ведущие 8/7, ограничиваем до 10
-//                                            if newDigits.hasPrefix("8") { newDigits.removeFirst() }
-//                                            if newDigits.hasPrefix("7") { newDigits.removeFirst() }
-//                                            if newDigits.count > 10 { newDigits = String(newDigits.prefix(10)) }
-//
-//                                            let masked = maskRU(fromDigits: newDigits) // \"+7(XXX)XXX-XX-XX\"
-//
-//                                            if masked.count > maxPhoneNumberCharactersCount {
-//                                                phoneMasked = String(masked.prefix(maxPhoneNumberCharactersCount))
-//                                            } else {
-//                                                phoneMasked = masked
-//                                            }
-//
-//                                            previousPhoneMasked = phoneMasked
-//                                            viewModel.phoneDigits = newDigits // ← главное: в VM кладём только цифры
-//                                        }
+
                                 }
                                 .cornerRadius(60)
                                 
