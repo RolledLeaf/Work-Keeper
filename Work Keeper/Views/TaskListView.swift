@@ -245,7 +245,7 @@ struct TaskListView: View {
                     Image(systemName: "magnifyingglass")
                         .resizable()
                         .frame(width: 21, height: 21)
-                        .foregroundColor(Color.custom(.mainBlack))
+                        .foregroundColor(Color.custom(.pitchBlack))
                         .padding(.leading, 20)
                     
                     TextField("Поиск задания", text: $viewModel.searchText)
