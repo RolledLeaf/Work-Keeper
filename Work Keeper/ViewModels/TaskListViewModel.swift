@@ -316,7 +316,7 @@ final class CreateTaskViewModel: ObservableObject {
     }
 
     func saveTask() {
-        let normalizedPhone = phoneDigits.isEmpty ? "" : phoneDigits //было +7 перед phone digits. Пока в этом нет необходимости
+        let normalizedPhone = phoneDigits.isEmpty ? "" : phoneDigits
         let client = clientStore.createOrFetchClient(
             firstName: firstName,
             lastName: lastName,
@@ -325,7 +325,7 @@ final class CreateTaskViewModel: ObservableObject {
             comment: comment.isEmpty ? nil : comment
         )
 
-        // Если задание не удалённое, создаём/подтягиваем улицу и адрес
+        let hasAddress = client.addressesArray.count > 0
        
             let street = streetStore.createOrFetchStreet(name: streetName)
 
@@ -337,7 +337,7 @@ final class CreateTaskViewModel: ObservableObject {
                 isPrivateHouse: isPrivateHouse,
                 street: street,
                 client: client,
-                isPrimary: false, // 👈 при создании задания НЕ трогаем primary
+                isPrimary: !hasAddress ? true : false, // 👈 при создании задания НЕ трогаем primary
                 roomType: roomType ?? "кв.",
                 entranceType: entranceType ?? "под."
             )
