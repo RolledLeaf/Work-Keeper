@@ -20,7 +20,7 @@ struct ClientRow: View {
                         .fill(Color.randomColor()) // свой метод
                         .frame(width: 57, height: 57)
                     Text("\(initials.uppercased())")
-                        .font(.custom(SFPro.bold.rawValue, size: 24))
+                        .font(.custom(Montserrat.bold.rawValue, size: 24))
                         .foregroundColor(.white)
                     
                     ZStack {
@@ -41,7 +41,7 @@ struct ClientRow: View {
                 
                 VStack {
                     Text(highlighted(client.firstName?.uppercased() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
-                        .font(.custom(SFPro.bold.rawValue, size: 24))
+                        .font(.custom(Montserrat.bold.rawValue, size: 24))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 25, alignment: .center)
                         .padding(.top, 7)
@@ -52,7 +52,7 @@ struct ClientRow: View {
                         HStack {
                             
                             Text("Клиент не давал адрес")
-                                .font(.custom(SFPro.regular.rawValue, size: 19))
+                                .font(.custom(Montserrat.regular.rawValue, size: 19))
                         }
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: 230, alignment: .leading)
@@ -82,7 +82,7 @@ struct ClientRow: View {
                     Spacer()
 //                    Text(highlighted(client.phone?.formattedAsPhone() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                     Text(highlighted(client.phone ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
-                        .font(.custom(SFPro.regular.rawValue, size: 16))
+                        .font(.custom(Montserrat.regular.rawValue, size: 16))
                         .frame(maxWidth: 230, alignment: .leading)
                         .frame(maxHeight: 20, alignment: .center)
                         .multilineTextAlignment(.leading)
