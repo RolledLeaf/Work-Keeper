@@ -91,7 +91,7 @@ struct StreetsListView: View {
                     }
                     .background(
                         HStack {
-                            Image(systemName: "magnifyingglass")
+                            Image("magnifyingGlass")
                                 .foregroundColor(.gray)
                                 .padding(.leading, 10)
                             Spacer()

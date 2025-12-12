@@ -1,25 +1,109 @@
 import SwiftUI
 
+struct PrimaryAddressPickMenu: View {
+    
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.managedObjectContext) private var context
+    
+    @ObservedObject var client: Client
+    
+    private var addresses: [Address] {
+        client.addressesArray
+    }
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(addresses, id: \.objectID) { address in
+                    Button(action: {
+                        setPrimary(address)
+                    }) {
+                        HStack(alignment: .top, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(address.street?.name ?? "Улица не указана")
+                                    .font(.custom(SFPro.regular.rawValue, size: 18))
+                                
+                                HStack(spacing: 4) {
+                                    Text(address.house ?? "")
+                                    if let apartment = address.apartment, !apartment.isEmpty {
+                                        Text("\(address.roomType ?? "кв.") \(apartment)")
+                                    }
+                                    if let entrance = address.entrance, !entrance.isEmpty {
+                                        Text("\(address.entranceType ?? "под.") \(entrance)")
+                                    }
+                                    if let floor = address.floor, !floor.isEmpty {
+                                        Text("эт. \(floor)")
+                                    }
+                                }
+                                .font(.custom(SFPro.regular.rawValue, size: 14))
+                                .foregroundColor(.custom(.taskTextGray))
+                            }
+                            
+                            Spacer()
+                            
+                            if address.isPrimary {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(Color.custom(.taskCompleteGreen))
+                            } else {
+                                Image(systemName: "circle")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle("Основной адрес")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Закрыть") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+    
+    private func setPrimary(_ address: Address) {
+        if let all = client.address as? Set<Address> {
+            for addr in all {
+                addr.isPrimary = (addr == address)
+            }
+        } else {
+            address.isPrimary = true
+        }
+        
+        do {
+            try context.save()
+            context.refresh(client, mergeChanges: true) //Обновление данных во всех ObservedObjects, связанных с client
+           
+        } catch {
+            print("[PrimaryAddressPickMenu] Failed to save primary address:", error)
+        }
+        
+        dismiss()
+    }
+}
+
+
 struct ClientProfileView: View {
 
     @ObservedObject var viewModel = ClientsListViewModel()
-    var client: Client
+    @ObservedObject var client: Client
     @State private var selectedTaskForDetails: TaskEntity?
     @State private var didCopyPhoneNumber = false
     @State private var didCopyAddress = false
+    @State private var isPrimaryAddressPickerPresented = false
     
         var body: some View {
-            
-          
-
             VStack {
-                
                 HStack {
                     Spacer()
                     
                     VStack{
                         Text(client.firstName ?? "имя не указано")
-                            .font(.custom(SFPro.bold.rawValue, size: 32))
+                            .font(.custom(Montserrat.bold.rawValue, size: 32))
                         
                         
                         Button(action: {
@@ -35,7 +119,7 @@ struct ClientProfileView: View {
                         }) {
 //                            Text(client.phone?.formattedAsPhone() ?? "Телефон не указан")
                             Text(client.phone ?? "Телефон не указан")
-                                .font(.custom(SFPro.regular.rawValue, size: 19))
+                                .font(.custom(Montserrat.regular.rawValue, size: 19))
                                 .foregroundColor(.custom(.taskTextGray))
                         }
                     }
@@ -50,7 +134,13 @@ struct ClientProfileView: View {
                 
                 if !client.hasAddress {
                     HStack {
-                        Image("remote")
+                        Button(action: {
+                            if client.addressesArray.count > 1 {
+                                isPrimaryAddressPickerPresented = true
+                            }
+                        }) {
+                            Image("home")
+                        }
                         
                         Spacer()
                         
@@ -72,8 +162,14 @@ struct ClientProfileView: View {
                     
             } else {
                 HStack {
-                    Image("home")
                     
+                    Button(action: {
+                        if client.addressesArray.count > 1 {
+                            isPrimaryAddressPickerPresented = true
+                        }
+                    }) {
+                        Image("home")
+                    }
                     Spacer()
                     
                     Button(action: {
@@ -87,9 +183,13 @@ struct ClientProfileView: View {
                         }
                         
                     }) {
-                        Text(client.formattedAddress)
+                        HStack {
+                        Text(client.primaryAddress?.street?.name ?? "Адрес не указан")
+                        
+                        Text("\(client.primaryAddress?.house ?? "")")
+                    }
                             .frame(height: 48)
-                            .font(.custom(SFPro.regular.rawValue, size: 24))
+                            .font(.custom(Montserrat.regular.rawValue, size: 24))
                             .lineLimit(2, reservesSpace: false)
                             .frame(width: 300, alignment: .center)
                             .multilineTextAlignment(.center)
@@ -106,17 +206,17 @@ struct ClientProfileView: View {
                 if client.primaryAddress?.isPrivateHouse == false {
                     HStack { //not private house
                         Text("\(client.addressesArray.first?.roomType ?? "кв.") \(client.apartmentNumber)")
-                            .font(.custom(SFPro.regular.rawValue, size: 20))
+                            .font(.custom(Montserrat.regular.rawValue, size: 20))
                         
                         Spacer()
                         
                         Text("\(client.addressesArray.first?.entranceType ?? "под.") \(client.entranceNumber)")
-                            .font(.custom(SFPro.regular.rawValue, size: 20))
+                            .font(.custom(Montserrat.regular.rawValue, size: 20))
                         
                         Spacer()
                         
                         Text("эт. \(client.floorNumber)")
-                            .font(.custom(SFPro.regular.rawValue, size: 20))
+                            .font(.custom(Montserrat.regular.rawValue, size: 20))
                     }
                     .padding(.horizontal, 80)
                 } else {
@@ -132,14 +232,14 @@ struct ClientProfileView: View {
                     .frame(height: 35)
                 
                 Text("Доход от клиента")
-                    .font(.custom(SFPro.regular.rawValue, size: 20))
+                    .font(.custom(Montserrat.regular.rawValue, size: 20))
                     .foregroundColor(.custom(.taskTextGray))
                 
                 Spacer()
                     .frame(height: 15)
                 
                 Text(client.totalIncome.formattedCurrency())
-                    .font(.custom(SFPro.bold.rawValue, size: 32))
+                    .font(.custom(Montserrat.bold.rawValue, size: 32))
                 
                 
                 Spacer()
@@ -152,7 +252,7 @@ struct ClientProfileView: View {
                 
                 HStack {
                     Text("Всего заданий")
-                        .font(.custom(SFPro.regular.rawValue, size: 20))
+                        .font(.custom(Montserrat.regular.rawValue, size: 20))
                         
                     
                     Text("\(client.totalTasksCount)")
@@ -249,9 +349,8 @@ struct ClientProfileView: View {
                 
                 }
             }
-            
+            .sheet(isPresented: $isPrimaryAddressPickerPresented) {
+                PrimaryAddressPickMenu(client: client)
+            }
     }
 }
-
-
-

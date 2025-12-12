@@ -63,6 +63,7 @@ final class ClientsStatViewModel: ObservableObject {
 final class ClientsListViewModel: ObservableObject {
     @Published var clients: [Client] = []
     @Published var selectedClient: Client?
+    @Published var pickedAddress: Address?
     @Published var client: Client?
     @Published var firstName: String = ""
     @Published var lastName: String = ""
@@ -183,6 +184,13 @@ final class ClientsListViewModel: ObservableObject {
     
     func pickClient(_ client: Client) {
         selectedClient = client
+        // если адрес не выбирали явно, сбрасываем предыдущий выбор
+        pickedAddress = nil
+    }
+
+    func pickClient(_ client: Client, address: Address) {
+        selectedClient = client
+        pickedAddress = address
     }
     
     func loadClients() {

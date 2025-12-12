@@ -1061,16 +1061,30 @@ struct NewTaskView: View {
             
                 viewModel.phoneDigits = selectedClient.phone ?? ""
    
-                if let primaryAddress = selectedClient.address?.first(where: {
-                    ($0 as? Address)?.isPrimary == true
-                }) as? Address {
-                    viewModel.streetName = primaryAddress.street?.name ?? ""
-                    viewModel.house = primaryAddress.house ?? ""
-                    viewModel.apartment = primaryAddress.apartment ?? ""
-                    viewModel.entrance = primaryAddress.entrance ?? ""
-                    viewModel.floor = primaryAddress.floor ?? ""
-               
-                    viewModel.isPrivateHouse = primaryAddress.isPrivateHouse
+                // Если пользователь выбрал конкретный адрес в оверлее — используем его.
+                // Иначе берём primary-адрес клиента (как дефолтный).
+                let chosenAddress: Address? = {
+                    if let picked = clientsListViewModel.pickedAddress {
+                        return picked
+                    }
+                    return (selectedClient.address as? Set<Address>)?.first(where: { $0.isPrimary })
+                }()
+
+                if let address = chosenAddress {
+                    viewModel.streetName = address.street?.name ?? ""
+                    viewModel.house = address.house ?? ""
+                    viewModel.apartment = address.apartment ?? ""
+                    viewModel.entrance = address.entrance ?? ""
+                    viewModel.floor = address.floor ?? ""
+                    viewModel.isPrivateHouse = address.isPrivateHouse
+                } else {
+                    // Если адресов нет — очищаем поля
+                    viewModel.streetName = ""
+                    viewModel.house = ""
+                    viewModel.apartment = ""
+                    viewModel.entrance = ""
+                    viewModel.floor = ""
+                    viewModel.isPrivateHouse = false
                 }
             }
         }) {

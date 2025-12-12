@@ -152,37 +152,50 @@ struct ClientsListView: View {
                     .padding(.horizontal, 10)
                     
                     HStack {
+                        HStack {
+                            Image("magnifyingGlass")
+                                .resizable()
+                                .frame(width: 21, height: 21)
+                                .foregroundColor(Color.custom(.pitchBlack))
+                                .padding(.leading, 20)
+                            
                         TextField("Поиск клиента", text: $viewModel.searchText)
-                            .padding(9)
-                            .padding(.leading, 25)
-                            .onTapGesture {
+                           
+                            .onSubmit {
                                 hideKeyboard()
                             }
+                            
+                            Button(action:  {
+                                viewModel.searchText = ""
+                                
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .resizable()
+                                    .frame(width: 18, height: 18)
+                                
+                            }
+                            .opacity(viewModel.searchText.isEmpty ? 0 : 1)
+                            .padding(.trailing, 15)
+                        }
+                            .frame(height: 50)
                             .background(
-                                HStack {
-                                    Image(systemName: "magnifyingglass")
-                                        .foregroundColor(.gray)
-                                        .padding(.leading, 10)
-                                    Spacer()
-                                })
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
+                                RoundedRectangle(cornerRadius: 30)
                                     .fill(Color.custom(.searchFieldGray))
-                            )
-                            .padding(.leading, 1)
-                            .padding(.trailing, 1)
+                                )
                         if !viewModel.searchText.isEmpty {
                             Button(action:  {
                                 viewModel.searchText = ""
+                                hideKeyboard()
                             }) {
                                 Image(systemName: "xmark.circle")
                                     .resizable()
-                                    .frame(width: 25, height: 25)
+                                    .frame(width: 45, height: 45)
+                                    .foregroundStyle(Color.custom(.pitchBlack))
                             }
                             
                         }
                     }
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, 20)
                     
                     if viewModel.clients.isEmpty {
                         

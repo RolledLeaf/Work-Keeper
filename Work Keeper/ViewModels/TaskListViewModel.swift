@@ -35,6 +35,8 @@ final class TaskListViewModel: ObservableObject {
         print("Task \(String(describing: task.taskDescription)) rescheduled to \(date)")
     }
     
+    
+    
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
             let date = task.scheduledAt ?? Date.distantPast
@@ -314,7 +316,7 @@ final class CreateTaskViewModel: ObservableObject {
     }
 
     func saveTask() {
-        let normalizedPhone = phoneDigits.isEmpty ? "" : phoneDigits //было +7 перед phone digits. Пока в этом нет необходимости
+        let normalizedPhone = phoneDigits.isEmpty ? "" : phoneDigits
         let client = clientStore.createOrFetchClient(
             firstName: firstName,
             lastName: lastName,
@@ -323,8 +325,8 @@ final class CreateTaskViewModel: ObservableObject {
             comment: comment.isEmpty ? nil : comment
         )
 
-        // Если задание не удалённое, создаём/подтягиваем улицу и адрес
-        if !isRemote {
+        let hasAddress = client.addressesArray.count > 0
+       
             let street = streetStore.createOrFetchStreet(name: streetName)
 
             let address = addressStore.createOrFetchAddress(
@@ -335,26 +337,26 @@ final class CreateTaskViewModel: ObservableObject {
                 isPrivateHouse: isPrivateHouse,
                 street: street,
                 client: client,
-                isPrimary: true,
+                isPrimary: !hasAddress ? true : false, // 👈 при создании задания НЕ трогаем primary
                 roomType: roomType ?? "кв.",
                 entranceType: entranceType ?? "под."
             )
 
             // link the address with the client
             client.addToAddress(address)
-        }
+    
 
         // Создаём задачу
         taskStore.createTask(
             scheduledAt: scheduledAt,
             client: client,
+            address: address,        // 👈 новый параметр
             description: description,
             isRemote: isRemote,
             status: status,
             contractAmount: contractAmount,
             cost: cost,
             paymentType: selectedPayment
-           
         )
         didCreateTask = true
 
@@ -529,6 +531,8 @@ final class EditTaskViewModel: ObservableObject {
     // MARK: - Internal
     private let task: TaskEntity
     private let store = TaskStore()
+    private let streetStore = StreetStore()
+    private let addressStore = AddressStore()
 
     // MARK: - Initialization
     init(task: TaskEntity) {
@@ -566,16 +570,25 @@ final class EditTaskViewModel: ObservableObject {
         self.lastName = task.client?.lastName ?? ""
         self.phoneNumber = task.client?.phone ?? ""
 
-        // Populate address info (primary address)
-        if let address = (task.client?.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
-            self.streetName = address.street?.name ?? ""
-            self.house = address.house ?? ""
-            self.apartment = address.apartment ?? ""
-            self.entrance = address.entrance ?? "?"
-            self.floor = address.floor ?? "?"
-            self.isPrivateHouse = address.isPrivateHouse
-            self.roomType = address.roomType ?? "кв."
-            self.entranceType = address.entranceType ?? "под."
+        // Populate address info: сначала пробуем адрес самой задачи, затем fallback на primary-адрес клиента
+        if let taskAddress = task.address {
+            self.streetName = taskAddress.street?.name ?? ""
+            self.house = taskAddress.house ?? ""
+            self.apartment = taskAddress.apartment ?? ""
+            self.entrance = taskAddress.entrance ?? "?"
+            self.floor = taskAddress.floor ?? "?"
+            self.isPrivateHouse = taskAddress.isPrivateHouse
+            self.roomType = taskAddress.roomType ?? "кв."
+            self.entranceType = taskAddress.entranceType ?? "под."
+        } else if let primaryAddress = (task.client?.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
+            self.streetName = primaryAddress.street?.name ?? ""
+            self.house = primaryAddress.house ?? ""
+            self.apartment = primaryAddress.apartment ?? ""
+            self.entrance = primaryAddress.entrance ?? "?"
+            self.floor = primaryAddress.floor ?? "?"
+            self.isPrivateHouse = primaryAddress.isPrivateHouse
+            self.roomType = primaryAddress.roomType ?? "кв."
+            self.entranceType = primaryAddress.entranceType ?? "под."
         } else {
             self.streetName = ""
             self.house = ""
@@ -616,15 +629,36 @@ final class EditTaskViewModel: ObservableObject {
         client.phone =  phoneDigits.isEmpty ? "" : phoneDigits
 //        phoneDigits.isEmpty ? "" : "+7" + phoneDigits
         
-        if let address = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
-            address.street?.name = streetName
-            address.house = house
-            address.apartment = apartment
-            address.entrance = entrance
-            address.floor = floor
-            address.isPrivateHouse = isPrivateHouse
-            address.entranceType = entranceType
-            address.roomType = roomType
+        // Обновляем адрес, привязанный к задаче (а не обязательно primary-адрес клиента)
+        if !isRemote {
+            let street = streetStore.createOrFetchStreet(name: streetName)
+
+            if let existingAddress = task.address {
+                existingAddress.street = street
+                existingAddress.house = house
+                existingAddress.apartment = apartment
+                existingAddress.entrance = entrance
+                existingAddress.floor = floor
+                existingAddress.isPrivateHouse = isPrivateHouse
+                existingAddress.entranceType = entranceType
+                existingAddress.roomType = roomType
+            } else {
+                // Если у задачи ещё нет адреса, создаём/находим его и привязываем
+                let newAddress = addressStore.createOrFetchAddress(
+                    house: house,
+                    apartment: apartment,
+                    entrance: entrance,
+                    floor: floor,
+                    isPrivateHouse: isPrivateHouse,
+                    street: street,
+                    client: client,
+                    isPrimary: false,
+                    roomType: roomType ?? "кв.",
+                    entranceType: entranceType ?? "под."
+                )
+                client.addToAddress(newAddress)
+                task.address = newAddress
+            }
         }
         
         // безопасный вызов updateTask

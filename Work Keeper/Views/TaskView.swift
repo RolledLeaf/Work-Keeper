@@ -4,13 +4,22 @@ import UIKit
 struct TaskView: View {
     
     @ObservedObject var viewModel = TaskListViewModel()
-    
-    let task: TaskEntity
-    
     @State private var didCopyTaskDescription = false
     @State private var didCopyTaskComment = false
     @State private var didCopyPhoneNumber = false
     @State private var didCopyAddress = false
+    
+    let task: TaskEntity
+    
+    private var taskAddress: Address? {
+        if let address = task.address {
+            return address          // адрес, привязанный к задаче
+        } else {
+            return task.client?.primaryAddress // fallback для старых заданий
+        }
+    }
+    
+   
     
     var body: some View {
         
@@ -112,7 +121,7 @@ struct TaskView: View {
                                 
                                 VStack {
                                     
-                                    let addressText = "\(task.client?.primaryAddress?.street?.name ?? "Адрес не указан") \(task.client?.primaryAddress?.house ?? "")"
+                                    let addressText = "\( taskAddress?.street?.name ?? "Адрес не указан") \(taskAddress?.house ?? "")"
                                     Button(action: {
                                         UIPasteboard.general.string = addressText
                                         withAnimation { didCopyAddress = true }
@@ -132,19 +141,19 @@ struct TaskView: View {
                                     
                                     if task.client?.primaryAddress?.isPrivateHouse == false {
                                     HStack {
-                                        Text("\(task.client?.primaryAddress?.roomType ?? "кв.") \(task.client?.primaryAddress?.apartment ?? "")")
+                                        Text("\(taskAddress?.roomType ?? "кв.") \(taskAddress?.apartment ?? "")")
                                             .foregroundColor(.custom(.taskTextGray))
                                             .font(.custom(SFPro.regular.rawValue, size: 17))
                                         
                                         Spacer()
                                         
-                                        Text("\(task.client?.primaryAddress?.entranceType ?? "" ) \(task.client?.primaryAddress?.entrance ?? "") ")
+                                        Text("\(taskAddress?.entranceType ?? "" ) \(taskAddress?.entrance ?? "") ")
                                             .foregroundColor(.custom(.taskTextGray))
                                             .font(.custom(SFPro.regular.rawValue, size: 17))
                                         
                                         Spacer()
                                         
-                                        Text("эт. \(task.client?.primaryAddress?.floor ?? "")")
+                                        Text("эт. \(taskAddress?.floor ?? "")")
                                             .foregroundColor(.custom(.taskTextGray))
                                             .font(.custom(SFPro.regular.rawValue, size: 17))
                                     }
