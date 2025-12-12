@@ -388,6 +388,7 @@ extension Client {
     
     var totalIncome: Double {
            (tasks as? Set<TaskEntity>)?
+            .filter { $0.status == .completed }
                .compactMap { $0.totalAmount }
                .reduce(0, +) ?? 0
        }
