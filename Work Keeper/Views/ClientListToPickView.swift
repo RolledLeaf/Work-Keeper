@@ -6,6 +6,9 @@ struct ClientListToPickView: View {
     @StateObject var viewModel = ClientsListViewModel()
     @Environment(\.dismiss)
     private var dismiss
+
+    @State private var clientForAddressPick: Client?
+    @State private var isAddressPickerPresented = false
     
     var body: some View {
        
@@ -87,8 +90,17 @@ struct ClientListToPickView: View {
                     List(viewModel.clients) { client in
                         ClientRow(client: client, viewModel: viewModel)
                             .onTapGesture {
-                                viewModel.pickClient(client)
-                                dismiss()
+                                let addressesCount = client.addressesArray.count
+
+                                // Если у клиента больше одного адреса — сначала попросим выбрать нужный
+                                if addressesCount > 1 {
+                                    clientForAddressPick = client
+                                    isAddressPickerPresented = true
+                                } else {
+                                    // Иначе выбираем клиента сразу (адрес будет либо единственный, либо primary)
+                                    viewModel.pickClient(client)
+                                    dismiss()
+                                }
                             }
                             .listRowBackground(Color.custom(.mainBackground))
                             .listRowSeparator(.hidden)
@@ -102,7 +114,33 @@ struct ClientListToPickView: View {
 //            .padding(.trailing, 15)
 //            .padding(.leading, 20)
             .padding(.top, 20)
+
+            // Address picker overlay
+            if isAddressPickerPresented, let client = clientForAddressPick {
+                Color.black.opacity(0.45)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isAddressPickerPresented = false
+                        }
+                        clientForAddressPick = nil
+                    }
+
+                AddressPickOverlay(client: client) { address in
+                    // Сохраняем выбор и закрываем экран выбора клиента
+                    viewModel.pickClient(client, address: address)
+                    isAddressPickerPresented = false
+                    clientForAddressPick = nil
+                    dismiss()
+                } onCancel: {
+                    isAddressPickerPresented = false
+                    clientForAddressPick = nil
+                }
+                .transition(.scale.combined(with: .opacity))
+                .padding(.horizontal, 16)
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: isAddressPickerPresented)
         
         
         .onAppear {
@@ -113,8 +151,94 @@ struct ClientListToPickView: View {
     
 }
 
+private struct AddressPickOverlay: View {
+
+    var client: Client
+    var onPick: (Address) -> Void
+    var onCancel: () -> Void
+
+    private var addresses: [Address] { client.addressesArray }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Выберите адрес")
+                    .font(.custom(SFPro.regular.rawValue, size: 17))
+                    .foregroundStyle(.pitchBlack)
+                Spacer()
+                Button("Закрыть") {
+                    onCancel()
+                }
+                .font(.custom(SFPro.regular.rawValue, size: 15))
+                .foregroundStyle(.pitchBlack)
+            }
+
+            ScrollView {
+                VStack(spacing: 10) {
+                    ForEach(addresses, id: \.objectID) { address in
+                        Button {
+                            onPick(address)
+                        } label: {
+                            HStack(alignment: .top, spacing: 10) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(address.street?.name ?? "Улица не указана")
+                                        .font(.custom(SFPro.regular.rawValue, size: 16))
+                                        .foregroundStyle(.pitchBlack)
+
+                                    Text(composeSubtitle(address))
+                                        .font(.custom(SFPro.regular.rawValue, size: 13))
+                                        .foregroundStyle(Color.custom(.taskTextGray))
+                                }
+
+                                Spacer()
+
+                                if address.isPrimary {
+                                    Image(systemName: "house.fill")
+                                        .foregroundStyle(Color.custom(.highlightBlue))
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .fill(Color.custom(.bckgFieldGray))
+                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .frame(maxHeight: 260)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color.custom(.pureWhite))
+                .shadow(radius: 10)
+        )
+    }
+
+    private func composeSubtitle(_ address: Address) -> String {
+        var parts: [String] = []
+
+        if let house = address.house, !house.isEmpty {
+            parts.append("д. \(house)")
+        }
+        if let apartment = address.apartment, !apartment.isEmpty {
+            parts.append("\(address.roomType ?? "кв.") \(apartment)")
+        }
+        if let entrance = address.entrance, !entrance.isEmpty {
+            parts.append("\(address.entranceType ?? "под.") \(entrance)")
+        }
+        if let floor = address.floor, !floor.isEmpty {
+            parts.append("эт. \(floor)")
+        }
+
+        return parts.joined(separator: ", ")
+    }
+}
 
 #Preview {
     ClientsListView()
 }
-
