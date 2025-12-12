@@ -153,7 +153,7 @@ struct ClientsListView: View {
                     
                     HStack {
                         HStack {
-                            Image(systemName: "magnifyingglass")
+                            Image("magnifyingGlass")
                                 .resizable()
                                 .frame(width: 21, height: 21)
                                 .foregroundColor(Color.custom(.pitchBlack))
