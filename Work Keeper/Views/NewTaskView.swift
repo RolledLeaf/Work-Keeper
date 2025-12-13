@@ -1061,12 +1061,24 @@ struct NewTaskView: View {
             
                 viewModel.phoneDigits = selectedClient.phone ?? ""
    
-                // Если пользователь выбрал конкретный адрес в оверлее — используем его.
-                // Иначе берём primary-адрес клиента (как дефолтный).
+                if clientsListViewModel.didPickNewAddress {
+                    viewModel.streetName = ""
+                    viewModel.house = ""
+                    viewModel.apartment = ""
+                    viewModel.entrance = ""
+                    viewModel.floor = ""
+                    viewModel.isPrivateHouse = false
+
+                    // сбрасываем флаг, чтобы не влиял на следующий выбор
+                    clientsListViewModel.didPickNewAddress = false
+                    clientsListViewModel.pickedAddress = nil
+                    return
+                }
                 let chosenAddress: Address? = {
                     if let picked = clientsListViewModel.pickedAddress {
                         return picked
                     }
+                    
                     return (selectedClient.address as? Set<Address>)?.first(where: { $0.isPrimary })
                 }()
 
@@ -1086,6 +1098,7 @@ struct NewTaskView: View {
                     viewModel.floor = ""
                     viewModel.isPrivateHouse = false
                 }
+                clientsListViewModel.pickedAddress = nil
             }
         }) {
             ClientListToPickView(viewModel: clientsListViewModel)

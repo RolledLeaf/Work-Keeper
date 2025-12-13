@@ -141,6 +141,12 @@ struct ClientListToPickView: View {
                     isAddressPickerPresented = false
                     clientForAddressPick = nil
                     dismiss()
+                } onPickNewAddress: {
+                    // Выбираем клиента без адреса (адрес будет введён вручную на экране создания задания)
+                    viewModel.pickClientWithNewAddress(client) // сбросит pickedAddress
+                    isAddressPickerPresented = false
+                    clientForAddressPick = nil
+                    dismiss()
                 } onCancel: {
                     isAddressPickerPresented = false
                     clientForAddressPick = nil
@@ -164,7 +170,9 @@ private struct AddressPickOverlay: View {
 
     var client: Client
     var onPick: (Address) -> Void
+    var onPickNewAddress: () -> Void
     var onCancel: () -> Void
+    
 
     private var addresses: [Address] { client.addressesArray }
 
@@ -216,6 +224,21 @@ private struct AddressPickOverlay: View {
                         }
                         .buttonStyle(.plain)
                     }
+                    
+                    Button("Новый адрес +") {
+                       onPickNewAddress()
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                   
+                    .cornerRadius(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.custom(.bckgFieldGray))
+                            .stroke(Color.custom(.pitchBlack), lineWidth: 0.5)
+                    )
+                    
                 }
             }
             .frame(maxHeight: 260)

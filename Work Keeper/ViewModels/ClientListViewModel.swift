@@ -71,6 +71,7 @@ final class ClientsListViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var total: Int = 0
     @Published var sortSelection: SortOption = .lessCompleted
+    @Published var didPickNewAddress = false
     
     private var cancellables = Set<AnyCancellable>()
 
@@ -88,6 +89,11 @@ final class ClientsListViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
+    func pickClientWithNewAddress(_ client: Client) {
+        selectedClient = client
+        pickedAddress = nil
+        didPickNewAddress = true
+    }
     
     func applySearchUsingDB(debug: Bool = false) {
         print(" Applying search: \(searchText)")

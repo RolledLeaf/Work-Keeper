@@ -95,6 +95,7 @@ struct ClientProfileView: View {
     @State private var didCopyPhoneNumber = false
     @State private var didCopyAddress = false
     @State private var isPrimaryAddressPickerPresented = false
+    @State private var showSingleAddressMessage = false
     
         var body: some View {
             VStack {
@@ -137,6 +138,8 @@ struct ClientProfileView: View {
                         Button(action: {
                             if client.addressesArray.count > 1 {
                                 isPrimaryAddressPickerPresented = true
+                            } else if client.addressesArray.count == 1 {
+                                showSingleAddressMessage = true
                             }
                         }) {
                             Image("home")
@@ -326,6 +329,19 @@ struct ClientProfileView: View {
             .overlay(alignment: .center) {
                 if didCopyPhoneNumber {
                     Text("Номер клиента скопирован")
+                        .font(.custom(SFPro.regular.rawValue, size: 18))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Capsule())
+                        .padding(.top, 20)
+                
+                }
+            }
+            
+            .overlay(alignment: .center) {
+                if showSingleAddressMessage {
+                    Text("Это единственный адрес клиента")
                         .font(.custom(SFPro.regular.rawValue, size: 18))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
