@@ -192,8 +192,16 @@ struct TaskListView: View {
     @ViewBuilder
     private func mainContent(proxy: ScrollViewProxy) -> some View {
         ZStack {
-            Color.custom(.mainBackground).ignoresSafeArea()
-                .onTapGesture { hideKeyboard() }
+            
+            if viewModel.groupedTasksByDate.isEmpty {
+                Image(ImageResource(name: "noTasksBackgroung", bundle: .main))
+                      .resizable()
+                      .scaledToFit()
+                      .opacity(0.03)
+            } else {
+                Color.custom(.mainBackground).ignoresSafeArea()
+                    .onTapGesture { hideKeyboard() }
+            }
             
             VStack {
                 HStack {
@@ -290,51 +298,63 @@ struct TaskListView: View {
                 }
                 .frame(height: 50)
                 
-                // MARK: - List beginning
+                // MARK: - Placeholder or the List beginning
                 
                 if viewModel.groupedTasksByDate.isEmpty {
                     
-                    VStack {
+                    
                        
+                        
+                    VStack {
+                        
                         HStack {
                             Text("ЗАДАНИЙ")
                                 .foregroundStyle(Color.custom(.taskViewYellow))
                                 .font(.custom(Montserrat.black.rawValue, size: 38))
                             
                                 .multilineTextAlignment(.leading)
-                             Spacer()
+                            Spacer()
                         }
+                        .frame(height: 27)
+                        
                         HStack {
-                        Text("ПОКА")
-                            .foregroundStyle(Color.custom(.taskCompleteGreen))
-                            .font(.custom(Montserrat.bold.rawValue, size: 38))
-                          
-                            .multilineTextAlignment(.leading)
-                        Spacer()
-                   }
+                            Text("ПОКА")
+                                .foregroundStyle(Color.custom(.taskCompleteGreen))
+                                .font(.custom(Montserrat.bold.rawValue, size: 38))
+                            
+                                .multilineTextAlignment(.leading)
+                            Spacer()
+                        }
+                        .frame(height: 27)
+                        
                         HStack {
-                        Text("НЕТ")
-                            .foregroundStyle(Color.custom(.taskCanceledOrange))
-                            .font(.custom(Montserrat.regular.rawValue, size: 38))
-                            Text("...")
+                            Text("НЕТ")
                                 .foregroundStyle(Color.custom(.taskCanceledOrange))
                                 .font(.custom(Montserrat.regular.rawValue, size: 38))
-                    Spacer()
-               }
-                            .multilineTextAlignment(.leading)
-                        HStack {
-                        Text("Создайте карточку задания, нажав на \nиконку + в правом верхнем углу экрана")
-                            .foregroundStyle(Color.custom(.pitchBlack))
-                            .font(.custom(Montserrat.medium.rawValue, size: 12))
-                            .multilineTextAlignment(.leading)
-                Spacer()
-           }
+                            +
+                            Text("...")
+                                .foregroundStyle(Color.custom(.taskCanceledOrange))
+                                .font(.custom(Montserrat.black.rawValue, size: 38))
+                            Spacer()
+                        }
+                        .frame(height: 27)
+                        .multilineTextAlignment(.leading)
                         
+                        HStack {
+                            Text("Создайте карточку задания, нажав на \nиконку “+“ в правом верхнем углу экрана")
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                                .font(.custom(Montserrat.medium.rawValue, size: 12))
+                                .multilineTextAlignment(.leading)
+                        }
+                        .frame(height: 30)
+                        .padding(.top, 18)
+                        Spacer()
                     }
-                    .padding(.top, 270)
-                    .padding(.horizontal, 58)
+                    .padding(.top, 192)
+                    .padding(.leading, 58)
+                    .padding(.trailing, 30)
+                
                     
-                    Spacer()
                 } else {
                     Spacer()
                         .frame(height: 20)
@@ -618,6 +638,7 @@ struct TaskListView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 24)
                 .transition(.scale.combined(with: .opacity))
+                .opacity(viewModel.groupedTasksByDate.isEmpty ? 0.0 : 1.0)
                 .ifAvailableButtonStyleGlass()
             }
         }

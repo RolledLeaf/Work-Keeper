@@ -448,6 +448,7 @@ struct EditTaskView: View {
                                         .opacity(streetChevronOpacity)
                                 }
                                 .tint(Color.custom(.pitchBlack))
+                                .disabled(viewModel.isRemote ? true : false)
                                 
                             }
                             .frame(height: 40)
@@ -895,19 +896,19 @@ struct EditTaskView: View {
                     VStack {
                         Picker("Тип оплаты", selection: $viewModel.paymentType) {
                             Text("Наличные").tag(PaymentType.cash)
+                                .font(.custom(Montserrat.regular.rawValue, size: 14))
                             Text("Перевод").tag(PaymentType.transfer)
+                                .font(.custom(Montserrat.regular.rawValue, size: 14))
                         }
+                        
                         .pickerStyle(.segmented)
                         .disabled(viewModel.status != .completed)
-                        .tint(Color.custom(.taskCompleteGreen))   // цвет активного сегмента
-                        .padding(.horizontal, 4)
+                        
+                        
+                        
                 }
                 .frame(height: 38)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.custom(.bckgFieldGray))
-                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                    )
+             
                 .padding(.horizontal, 4)
                     
                     
