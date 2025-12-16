@@ -551,6 +551,7 @@ struct NewTaskView: View {
                                         .opacity(streetChevronOpacity)
                                 }
                                 .tint(Color.custom(.pitchBlack))
+                                .disabled(viewModel.isRemote ? true : false)
                                 
                             }
                             .frame(height: 40)

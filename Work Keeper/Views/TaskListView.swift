@@ -249,6 +249,7 @@ struct TaskListView: View {
                         .padding(.leading, 20)
                     
                     TextField("Поиск задания", text: $viewModel.searchText)
+                            .font(.custom(Montserrat.regular.rawValue, size: 16))
                         .onChange(of: viewModel.searchText) { newValue in
                             print("[TaskListView] searchText changed:", newValue)
                         }
@@ -294,17 +295,44 @@ struct TaskListView: View {
                 if viewModel.groupedTasksByDate.isEmpty {
                     
                     VStack {
-                        Image("noTasksPlaceholder")
-                            .imageScale(.large)
-                            .foregroundStyle(.tint)
-                            .frame(width: 266, height: 273)
-                            .padding(.leading, 65)
+                       
+                        HStack {
+                            Text("ЗАДАНИЙ")
+                                .foregroundStyle(Color.custom(.taskViewYellow))
+                                .font(.custom(Montserrat.black.rawValue, size: 38))
+                            
+                                .multilineTextAlignment(.leading)
+                             Spacer()
+                        }
+                        HStack {
+                        Text("ПОКА")
+                            .foregroundStyle(Color.custom(.taskCompleteGreen))
+                            .font(.custom(Montserrat.bold.rawValue, size: 38))
+                          
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                   }
+                        HStack {
+                        Text("НЕТ")
+                            .foregroundStyle(Color.custom(.taskCanceledOrange))
+                            .font(.custom(Montserrat.regular.rawValue, size: 38))
+                            Text("...")
+                                .foregroundStyle(Color.custom(.taskCanceledOrange))
+                                .font(.custom(Montserrat.regular.rawValue, size: 38))
+                    Spacer()
+               }
+                            .multilineTextAlignment(.leading)
+                        HStack {
+                        Text("Создайте карточку задания, нажав на \nиконку + в правом верхнем углу экрана")
+                            .foregroundStyle(Color.custom(.pitchBlack))
+                            .font(.custom(Montserrat.medium.rawValue, size: 12))
+                            .multilineTextAlignment(.leading)
+                Spacer()
+           }
                         
-                        Text("Заданий пока нет")
-                            .font(.custom(SFPro.regular.rawValue, size: 24))
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
                     }
+                    .padding(.top, 270)
+                    .padding(.horizontal, 58)
                     
                     Spacer()
                 } else {

@@ -17,6 +17,7 @@ enum Montserrat: String {
     case italic = "Montserrat-Italic"
     case medium = "Montserrat-Medium"
     case semibold = "Montserrat-SemiBold"
+    case black = "Montserrat-Black"
 }
 
 

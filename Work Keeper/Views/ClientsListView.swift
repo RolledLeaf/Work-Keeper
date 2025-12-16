@@ -160,7 +160,7 @@ struct ClientsListView: View {
                                 .padding(.leading, 20)
                             
                         TextField("Поиск клиента", text: $viewModel.searchText)
-                           
+                                .font(.custom(Montserrat.regular.rawValue, size: 16))
                             .onSubmit {
                                 hideKeyboard()
                             }

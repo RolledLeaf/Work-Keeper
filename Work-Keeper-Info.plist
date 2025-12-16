@@ -4,6 +4,7 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
+		<string>Montserrat-Black.ttf</string>
 		<string>SF-Pro-Display-Bold.otf</string>
 		<string>SF-Pro-Display-RegularItalic.otf</string>
 		<string>SF-Pro-Display-Regular.otf</string>
