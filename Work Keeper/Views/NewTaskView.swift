@@ -245,7 +245,7 @@ struct NewTaskView: View {
             missing.append("Имя клиента")
         }
         if viewModel.phoneDigits.isBlank {
-            missing.append("номер телефона")
+            missing.append("контакт")
         }
         if !viewModel.isRemote && viewModel.streetName.isBlank {
             missing.append("название улицы")
@@ -398,7 +398,7 @@ struct NewTaskView: View {
                             
                             Spacer()
                             
-                            Text("Номер телефона")
+                            Text("Контакт")
                                
                                 .foregroundColor(Color.custom(.textTitleGray))
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))

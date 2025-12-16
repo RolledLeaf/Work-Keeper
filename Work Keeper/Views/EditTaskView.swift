@@ -61,7 +61,7 @@ struct EditTaskView: View {
             missing.append("Имя клиента")
         }
         if viewModel.phoneDigits.isBlank {
-            missing.append("номер телефона")
+            missing.append("контакт")
         }
         if !viewModel.isRemote && viewModel.streetName.isBlank {
             missing.append("название улицы")
@@ -294,7 +294,7 @@ struct EditTaskView: View {
                             
                             Spacer()
                             
-                            Text("Номер телефона")
+                            Text("Контакт")
                                
                                 .foregroundColor(Color.custom(.textTitleGray))
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
@@ -996,8 +996,8 @@ struct EditTaskView: View {
         
         .alert(isPresented: $showEditTaskAlert) {
             if viewModel.isRemote == false {
-                Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя, номер телефона, название улицы и номер дома "), dismissButton: .default(Text("OK"))) } else {
-                    Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя и номер телефона"), dismissButton: .default(Text("OK")))
+                Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя, контакт, название улицы и номер дома "), dismissButton: .default(Text("OK"))) } else {
+                    Alert(title: Text("Ошибка"), message: Text("Зполните хотя бы имя и контакт"), dismissButton: .default(Text("OK")))
                 }
         }
        

@@ -353,7 +353,7 @@ struct EditClientView: View {
                         .frame(height: 21)
                     
                     HStack {
-                        Text("Номер телефона")
+                        Text("Контакт")
                             .foregroundColor(Color.custom(.textTitleGray))
                             .font(.system(size: 19, weight: .regular, design: .default))
                         Spacer()
