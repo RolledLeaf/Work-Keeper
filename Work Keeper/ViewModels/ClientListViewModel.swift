@@ -63,6 +63,7 @@ final class ClientsStatViewModel: ObservableObject {
 final class ClientsListViewModel: ObservableObject {
     @Published var clients: [Client] = []
     @Published var selectedClient: Client?
+    @Published var pickedAddress: Address?
     @Published var client: Client?
     @Published var firstName: String = ""
     @Published var lastName: String = ""
@@ -70,6 +71,7 @@ final class ClientsListViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var total: Int = 0
     @Published var sortSelection: SortOption = .lessCompleted
+    @Published var didPickNewAddress = false
     
     private var cancellables = Set<AnyCancellable>()
 
@@ -87,6 +89,11 @@ final class ClientsListViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
+    func pickClientWithNewAddress(_ client: Client) {
+        selectedClient = client
+        pickedAddress = nil
+        didPickNewAddress = true
+    }
     
     func applySearchUsingDB(debug: Bool = false) {
         print(" Applying search: \(searchText)")
@@ -183,6 +190,13 @@ final class ClientsListViewModel: ObservableObject {
     
     func pickClient(_ client: Client) {
         selectedClient = client
+        // если адрес не выбирали явно, сбрасываем предыдущий выбор
+        pickedAddress = nil
+    }
+
+    func pickClient(_ client: Client, address: Address) {
+        selectedClient = client
+        pickedAddress = address
     }
     
     func loadClients() {
@@ -219,8 +233,26 @@ final class CreateClientViewModel: ObservableObject {
     private let streetStore = StreetStore()
     private let addressStore = AddressStore()
     
+    /// Проверяет, что заполнены обязательные поля: имя и номер телефона
+    func hasRequiredNameAndPhone() -> Bool {
+        let name = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let phone = phoneDigits.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !name.isBlank && !phone.isBlank
+    }
+
+    /// Проверяет, что номер телефона не занят другим клиентом
+    func hasUniquePhone() -> Bool {
+        let normalizedPhone = phoneDigits.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Если номер пустой, считаем, что проверка уникальности не пройдена
+        guard !normalizedPhone.isBlank else { return false }
+
+        let existsAnother = store.hasClient(withPhone: normalizedPhone, excluding: nil)
+        return !existsAnother
+    }
+
+    /// Общая проверка перед созданием клиента
     func canCreateClient() -> Bool {
-        !firstName.isEmpty && !phoneDigits.isEmpty
+        hasRequiredNameAndPhone() && hasUniquePhone()
     }
     
     func createClient() {
@@ -232,7 +264,7 @@ final class CreateClientViewModel: ObservableObject {
             firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
             lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
             addresses: [],
-            phone: phoneDigits.isEmpty ? "" : "+7" + phoneDigits
+            phone: phoneDigits.isBlank ? "" : phoneDigits
         )
         
         // 3) Адрес, привязанный к клиенту
@@ -286,10 +318,9 @@ final class EditClientViewModel: ObservableObject {
         let rawPhone = client.phone ?? ""
         let digitsAll = rawPhone.filter { $0.isNumber }
         var nsn = digitsAll
-        if nsn.hasPrefix("7") { nsn.removeFirst() }     // убираем +7
-        if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
+     
         self.phoneDigits = nsn
-        self.phoneNumber = rawPhone // можно не использовать во View
+        self.phoneNumber = rawPhone
         
         self.client = client
         self.firstName = client.firstName ?? ""
@@ -324,13 +355,33 @@ final class EditClientViewModel: ObservableObject {
         }
     }
     
+    
+    
+    /// Проверяет, что заполнены обязательные поля: имя и номер телефона
+    func hasRequiredNameAndPhone() -> Bool {
+        let name = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let phone = phoneDigits.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !name.isBlank && !phone.isBlank
+    }
+
+    /// Проверяет, что номер телефона не занят другим клиентом
+    func hasUniquePhone() -> Bool {
+        let normalizedPhone = phoneDigits.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Если номер пустой, считаем, что проверка уникальности здесь не проходит
+        guard !normalizedPhone.isEmpty else { return false }
+
+        let existsAnother = store.hasClient(withPhone: normalizedPhone, excluding: client)
+        return !existsAnother
+    }
+
+    /// Общая проверка перед сохранением клиента
     func canUpdateClient() -> Bool {
-        !firstName.isEmpty && !phoneDigits.isEmpty
+        hasRequiredNameAndPhone() && hasUniquePhone()
     }
     
     func update() {
         // normalize phone
-        let phoneValue = phoneDigits.isEmpty ? "" : "+7" + phoneDigits
+        let phoneValue = phoneDigits.isEmpty ? "" : phoneDigits
 
         // Update client basic fields
         client.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)

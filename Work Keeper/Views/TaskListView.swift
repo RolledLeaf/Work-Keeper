@@ -8,6 +8,8 @@ private struct SectionHeaderOffsetKey: PreferenceKey {
     }
 }
 
+// MARK: - Filters
+
 struct TasksFilterView: View {
     @Binding var selectedFilters: Set<TaskStatus>
     
@@ -82,8 +84,8 @@ struct TasksFilterView: View {
 }
 
 struct TaskListView: View {
+    // MARK: - Properties
     @StateObject private var viewModel = TaskListViewModel()
-  
     @State private var selectedDate = Date()
     @State private var listScrollPosition: Date?
     @State private var showDeleteAlert = false
@@ -102,7 +104,7 @@ struct TaskListView: View {
     @State private var navigateToTaskView = false
     @State private var headerBaselineMinY: CGFloat? = nil
     @State private var lastCompletedTaskDescription: String = ""
-    @State private var lastCanceletedTaskDescription: String = ""
+    @State private var lastCanceledTaskDescription: String = ""
     @State private var lastScheduleTaskDescription: String = ""
     @State private var lastDeletedTaskDescription: String = ""
     @State private var lastEditedTaskDescription: String = ""
@@ -115,6 +117,47 @@ struct TaskListView: View {
     @State private var selectedTaskForEdit: TaskEntity?
     // Keep a reference to the ScrollViewProxy for scroll actions
     @State private var scrollProxy: ScrollViewProxy? = nil
+    
+    private var filterIcon: ImageResource {
+       
+        let all: Set<Status> = [.scheduled, .completed, .canceled]
+        
+           let selectedSet: Set<Status>
+           if let statuses = viewModel.selectedStatuses, !statuses.isEmpty {
+               selectedSet = Set(statuses)
+           } else {
+               selectedSet = all
+           }
+
+        if selectedSet == all {
+            return .init(name: "filterAll", bundle: .main)
+        }
+
+        if selectedSet == [.scheduled] {
+            return .init(name: "filterScheduled", bundle: .main)
+        }
+
+        if selectedSet == [.completed] {
+            return .init(name: "filterCompleted", bundle: .main)
+        }
+
+        if selectedSet == [.canceled] {
+            return .init(name: "filterCanceled", bundle: .main)
+        }
+
+        if selectedSet == [.completed, .canceled] {
+            return .init(name: "filterCompletedCanceled", bundle: .main)
+        }
+        
+        if selectedSet == [.scheduled, .canceled] {
+            return .init(name: "filterScheduledCanceled", bundle: .main)
+        }
+        
+       
+            return .init(name: "filterScheduledCompleted", bundle: .main)
+    
+    
+    }
    
     let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
     
@@ -145,12 +188,20 @@ struct TaskListView: View {
     func scrollToToday() {
        selectedDate = Date()
     }
-    
+
     @ViewBuilder
     private func mainContent(proxy: ScrollViewProxy) -> some View {
         ZStack {
-            Color.custom(.mainBackground).ignoresSafeArea()
-                .onTapGesture { hideKeyboard() }
+            
+            if viewModel.groupedTasksByDate.isEmpty {
+                Image(ImageResource(name: "noTasksBackgroung", bundle: .main))
+                      .resizable()
+                      .scaledToFit()
+                      .opacity(0.03)
+            } else {
+                Color.custom(.mainBackground).ignoresSafeArea()
+                    .onTapGesture { hideKeyboard() }
+            }
             
             VStack {
                 HStack {
@@ -158,7 +209,7 @@ struct TaskListView: View {
                     Button(action: {
                         showFilters = true
                     }) {
-                        Image(systemName: "slider.vertical.3")
+                        Image(filterIcon)
                             .font(.system(size: 30, weight: .regular))
                             .foregroundStyle(.pitchBlack)
                             .ifAvailableButtonStyleGlass()
@@ -194,95 +245,116 @@ struct TaskListView: View {
 
                     }
                 }
+                .frame(height: 30)
                 .padding(.leading, 3)
-                
+           
                 HStack {
+                    HStack {
+                        Image("magnifyingGlass")
+                        .resizable()
+                        .frame(width: 21, height: 21)
+                        .foregroundColor(Color.custom(.pitchBlack))
+                        .padding(.leading, 20)
+                    
                     TextField("Поиск задания", text: $viewModel.searchText)
+                            .font(.custom(Montserrat.regular.rawValue, size: 16))
                         .onChange(of: viewModel.searchText) { newValue in
                             print("[TaskListView] searchText changed:", newValue)
                         }
-                        .padding(9)
-                        .padding(.leading, 25)
                         .onSubmit {
                             hideKeyboard()
                         }
-                        .background(
-                            HStack {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.gray)
-                                Spacer()
-                                
-                                
-                            }
-                                .padding(.horizontal, 10)
+                    
+                    Button(action:  {
+                        viewModel.searchText = ""
+                        
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .resizable()
+                            .frame(width: 18, height: 18)
+                        
+                    }
+                    .opacity(viewModel.searchText.isEmpty ? 0 : 1)
+                    .padding(.trailing, 15)
+                }
+                    .frame(height: 50)
+                    .background(
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(Color.custom(.searchFieldGray))
                         )
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.custom(.searchFieldGray))
-                        )
+                    
                     
                     if !viewModel.searchText.isEmpty {
                         Button(action:  {
                             viewModel.searchText = ""
+                            hideKeyboard()
                         }) {
                             Image(systemName: "xmark.circle")
                                 .resizable()
-                                .frame(width: 25, height: 25)
+                                .frame(width: 45, height: 45)
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
-                        
                     }
                 }
+                .frame(height: 50)
                 
-                Text("Активные фильтры")
-                
-                HStack(spacing: 8) {
-                    Rectangle()
-                        .frame(width: 15, height: 15)
-                        .foregroundColor(Color.custom(.taskCompleteGreen))
-                        .opacity(viewModel.selectedFilters.contains(.completed) ? 1 : 0.3)
-                    
-                    Text("- выполнено")
-                        .font(.custom(SFPro.regular.rawValue, size: 14))
-                        .opacity(viewModel.selectedFilters.contains(.completed) ? 1 : 0.3)
-                    
-                    
-                    Rectangle()
-                        .frame(width: 15, height: 15)
-                        .foregroundColor(Color.custom(.taskViewYellow))
-                        .opacity(viewModel.selectedFilters.contains(.scheduled) ? 1 : 0.3)
-                    
-                    Text("- запланировано")
-                        .font(.custom(SFPro.regular.rawValue, size: 14))
-                        .opacity(viewModel.selectedFilters.contains(.scheduled) ? 1 : 0.3)
-                    
-                    
-                    Rectangle()
-                        .frame(width: 15, height: 15)
-                        .foregroundColor(Color.custom(.taskCanceledOrange))
-                        .opacity(viewModel.selectedFilters.contains(.canceled) ? 1 : 0.3)
-                    
-                    Text("- отменено")
-                        .font(.custom(SFPro.regular.rawValue, size: 14))
-                        .opacity(viewModel.selectedFilters.contains(.canceled) ? 1 : 0.3)
-                }
+                // MARK: - Placeholder or the List beginning
                 
                 if viewModel.groupedTasksByDate.isEmpty {
                     
-                    VStack {
-                        Image("noTasksPlaceholder")
-                            .imageScale(.large)
-                            .foregroundStyle(.tint)
-                            .frame(width: 266, height: 273)
-                            .padding(.leading, 65)
-                        
-                        Text("Заданий пока нет")
-                            .font(.custom(SFPro.regular.rawValue, size: 24))
-                            .fontWeight(.bold)
-                            .multilineTextAlignment(.center)
-                    }
                     
-                    Spacer()
+                       
+                        
+                    VStack {
+                        
+                        HStack {
+                            Text("ЗАДАНИЙ")
+                                .foregroundStyle(Color.custom(.taskViewYellow))
+                                .font(.custom(Montserrat.black.rawValue, size: 38))
+                            
+                                .multilineTextAlignment(.leading)
+                            Spacer()
+                        }
+                        .frame(height: 27)
+                        
+                        HStack {
+                            Text("ПОКА")
+                                .foregroundStyle(Color.custom(.taskCompleteGreen))
+                                .font(.custom(Montserrat.bold.rawValue, size: 38))
+                            
+                                .multilineTextAlignment(.leading)
+                            Spacer()
+                        }
+                        .frame(height: 27)
+                        
+                        HStack {
+                            Text("НЕТ")
+                                .foregroundStyle(Color.custom(.taskCanceledOrange))
+                                .font(.custom(Montserrat.regular.rawValue, size: 38))
+                            +
+                            Text("...")
+                                .foregroundStyle(Color.custom(.taskCanceledOrange))
+                                .font(.custom(Montserrat.black.rawValue, size: 38))
+                            Spacer()
+                        }
+                        .frame(height: 27)
+                        .multilineTextAlignment(.leading)
+                        
+                        HStack {
+                            Text("Создайте карточку задания, нажав на \nиконку “+“ в правом верхнем углу экрана")
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                                .font(.custom(Montserrat.medium.rawValue, size: 12))
+                                .multilineTextAlignment(.leading)
+                        }
+                        .frame(height: 30)
+                        .padding(.top, 18)
+                        Spacer()
+                    }
+                    .padding(.top, 192)
+                    .padding(.leading, 58)
+                    .padding(.trailing, 30)
+                
+                    
                 } else {
                     Spacer()
                         .frame(height: 20)
@@ -292,12 +364,45 @@ struct TaskListView: View {
                                 Section(header:
                                     ZStack {
                                         HStack {
-                                            Text(customDateFormatter.string(from: dateKey)).font(.headline)
+                                            let today = dayKey(Date())
+                                            let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today)
+                                            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)
+                                            
+                                            (
+                                                Text(customDateFormatter.string(from: dateKey))
+                                                    .font(.custom(Montserrat.regular.rawValue, size: 14))
+                                                    .foregroundStyle(Color.custom(.pitchBlack))
+                                                +
+                                                {
+                                                    if dateKey == today {
+                                                        return Text(" • Сегодня")
+                                                            .font(.custom(Montserrat.bold.rawValue, size: 14))
+                                                            .foregroundStyle(.pitchBlack)
+                                                    } else if dateKey == yesterday {
+                                                        return Text(" • Вчера")
+                                                            .font(.custom(Montserrat.regular.rawValue, size: 14))
+                                                            .foregroundStyle(.pitchBlack)
+                                                    } else if dateKey == tomorrow {
+                                                        return Text(" • Завтра")
+                                                            .font(.custom(Montserrat.regular.rawValue, size: 14))
+                                                            .foregroundStyle(.pitchBlack)
+                                                    } else {
+                                                        return Text("") // без хвоста
+                                                    }
+                                                }()
+                                            )
                                             Spacer()
                                             Text("\(viewModel.calculateDailyIncome(for: dateKey).formattedCurrency())")
-                                                .font(.custom(SFPro.bold.rawValue, size: 17))
+                                                .font(.custom(Montserrat.bold.rawValue, size: 17))
                                                 .foregroundStyle(viewModel.calculateDailyIncome(for: dateKey) > 0 ? Color.custom(.pitchBlack) : Color.custom(.taskTextGray))
+                                            +
+                                            Text(" ₽")
+                                                .font(.custom(Montserrat.regular.rawValue, size: 17))
+                                                .foregroundStyle(.pitchBlack)
+                                            
+                                               
                                         }
+                                        .frame(height: 17)
                                     }
                                     .background(
                                         GeometryReader { geo in
@@ -313,7 +418,7 @@ struct TaskListView: View {
                                     ) { task in
                                         TaskRow(viewModel: viewModel, task: task
                                         )
-                                        
+                                        .padding(.vertical, 6) // коррекция расстояния между ячейками
                                         .contentShape(Rectangle())
                                         .onTapGesture {
                                             selectedTask = task
@@ -462,8 +567,8 @@ struct TaskListView: View {
                         }
                         
                         .listStyle(PlainListStyle())
-                        .padding(.leading, -20)
-                        .padding(.trailing, -20)
+                        .padding(.leading, -16)
+                        .padding(.trailing, -17)
                         .navigationDestination(item: $selectedTask) { task in
                             TaskView(task: task)
                         }
@@ -476,13 +581,13 @@ struct TaskListView: View {
                 
                 
             }
-            .padding(.trailing, 16)
+            .padding(.trailing, 17)
             .padding(.leading, 16)
             
             if showPopup, let task = taskToCancel {
                 CancelTaskPopup(task: task, isPresented: $showPopup) { description in
                     
-                    lastCanceletedTaskDescription = description
+                    lastCanceledTaskDescription = description
                     viewModel.loadTasks()
                     loadSavedStatuses()
                     
@@ -526,13 +631,14 @@ struct TaskListView: View {
                 Button(action: {
                     selectedDate = Date()
                 }) {
-                    Image(systemName: "arrow.up")
+                    Image("arrowUp")
                         .resizable()
-                        .frame(width: 25, height: 25)
+                        .frame(width: 35, height: 20)
                 }
                 .padding(.trailing, 16)
                 .padding(.bottom, 24)
                 .transition(.scale.combined(with: .opacity))
+                .opacity(viewModel.groupedTasksByDate.isEmpty ? 0.0 : 1.0)
                 .ifAvailableButtonStyleGlass()
             }
         }
@@ -540,7 +646,7 @@ struct TaskListView: View {
         .overlay(alignment: .center) {
             Group {
                 if showCancelTaskNotification {
-                    CancelTaskConfirmationView(taskDescription: $lastCanceletedTaskDescription)
+                    CancelTaskConfirmationView(taskDescription: $lastCanceledTaskDescription)
                         .transition(.offset(y: 40).combined(with: .opacity))
                 } else if showDeleteTaskNotification {
                     DeleteTaskConfirmationView(taskDescription: $lastDeletedTaskDescription)

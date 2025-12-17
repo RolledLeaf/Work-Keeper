@@ -6,12 +6,45 @@
       "scale" : "1x"
     },
     {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "no address placeholder dark.svg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
       "filename" : "no address placeholder 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "no address placeholder dark 1.svg",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
       "filename" : "no address placeholder 2.svg",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "no address placeholder dark 2.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }

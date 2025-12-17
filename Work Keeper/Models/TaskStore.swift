@@ -13,6 +13,7 @@ final class TaskStore: NSObject, ObservableObject {
     
     func createTask(scheduledAt: Date,
                     client: Client,
+                    address: Address?,
                     description: String?,
                     isRemote: Bool,
                     status: Status,
@@ -23,6 +24,8 @@ final class TaskStore: NSObject, ObservableObject {
         
         
         let task = TaskEntity(context: context)
+        task.client = client
+        task.address = address
         task.id = UUID()
         task.scheduledAt = scheduledAt
         task.client = client
@@ -348,6 +351,7 @@ extension TaskEntity {
             statusString = newValue.rawValue
         }
     }
+    
 }
 
 

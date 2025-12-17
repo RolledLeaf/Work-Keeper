@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "call-icon 2.svg",
+      "filename" : "phone.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -12,11 +12,12 @@
           "value" : "dark"
         }
       ],
+      "filename" : "call-icon.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "call-icon 3.svg",
+      "filename" : "phone 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
@@ -27,11 +28,12 @@
           "value" : "dark"
         }
       ],
+      "filename" : "call-icon 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "call-icon 4.svg",
+      "filename" : "phone 2.svg",
       "idiom" : "universal",
       "scale" : "3x"
     },
@@ -42,6 +44,7 @@
           "value" : "dark"
         }
       ],
+      "filename" : "call-icon 2.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }
