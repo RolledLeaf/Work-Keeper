@@ -12,8 +12,9 @@ struct RootView: View {
                 TabBar() 
             }
         }
-        .task {
-            await auth.restoreSession()
+        .environmentObject(auth)   // ✅ вот сюда
+                .task {
+                    await auth.restoreSession()
         }
     }
 }

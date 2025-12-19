@@ -8,6 +8,41 @@ private struct SectionHeaderOffsetKey: PreferenceKey {
     }
 }
 
+// MARK: - Test button
+
+struct SupabaseStreetTestButton: View {
+    @EnvironmentObject var auth: AuthService
+
+    var body: some View {
+        Button("Test Supabase Streets") {
+            Task {
+                guard let ownerId = auth.session?.user.id else {
+                    print("❌ No session/user id")
+                    return
+                }
+
+                let store = RemoteStreetStore()
+
+                do {
+                    let created = try await store.create(name: "Тестовая улица", ownerId: ownerId)
+                    print("✅ Created:", created)
+
+                    let list = try await store.fetchAll(ownerId: ownerId)
+                    print("✅ Fetched:", list.map(\.name))
+
+                    try await store.softDelete(streetId: created.id, ownerId: ownerId)
+
+                    let list2 = try await store.fetchAll(ownerId: ownerId)
+                    print("✅ After delete:", list2.map(\.name))
+                } catch {
+                    print("❌ RemoteStreetStore error:", error)
+                }
+            }
+        }
+        .buttonStyle(.borderedProminent)
+    }
+}
+
 // MARK: - Filters
 
 struct TasksFilterView: View {
@@ -117,6 +152,8 @@ struct TaskListView: View {
     @State private var selectedTaskForEdit: TaskEntity?
     // Keep a reference to the ScrollViewProxy for scroll actions
     @State private var scrollProxy: ScrollViewProxy? = nil
+    
+    
     
     private var filterIcon: ImageResource {
        
@@ -234,6 +271,8 @@ struct TaskListView: View {
                     }
                     
                     Spacer()
+                    
+//                    SupabaseStreetTestButton() - тестовая кнопка. Удалить после реализации сетевого слоя
                     
                     Button(action: {
                         showNewTaskView = true
