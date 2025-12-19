@@ -365,7 +365,7 @@ struct EditTaskView: View {
                                 
                                 ZStack {
                                     Color.custom(.pureWhite)
-                                    TextField("", text: $viewModel.phoneDigits)
+                                    TextField("", text: $viewModel.phoneNumber)
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundColor(.custom(.pitchBlack))
                                         .padding(.leading, 16)

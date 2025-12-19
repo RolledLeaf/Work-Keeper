@@ -6,6 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B06605CD2EF5459A00A6FD1B /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = B06605CC2EF5459A00A6FD1B /* Auth */; };
+		B06605CF2EF5459A00A6FD1B /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = B06605CE2EF5459A00A6FD1B /* Functions */; };
+		B06605D12EF5459A00A6FD1B /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = B06605D02EF5459A00A6FD1B /* PostgREST */; };
+		B06605D32EF5459A00A6FD1B /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = B06605D22EF5459A00A6FD1B /* Realtime */; };
+		B06605D52EF5459A00A6FD1B /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = B06605D42EF5459A00A6FD1B /* Storage */; };
+		B06605D72EF5459A00A6FD1B /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = B06605D62EF5459A00A6FD1B /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B0E3F8102DEC4CC400C9604F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +38,33 @@
 		B0E3F8192DEC4CC400C9604F /* Work KeeperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Work KeeperUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B06606332EF5490600A6FD1B /* Exceptions for "Work Keeper" folder in "Work Keeper" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Network/Supabase.plist,
+			);
+			target = B0E3F7FE2DEC4CC300C9604F /* Work Keeper */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		B06606342EF5490600A6FD1B /* Exceptions for "Work Keeper" folder in "Compile Sources" phase from "Work Keeper" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = B0E3F7FB2DEC4CC300C9604F /* Sources */;
+			membershipExceptions = (
+				Network/Supabase.plist,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B0E3F8012DEC4CC300C9604F /* Work Keeper */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B06606332EF5490600A6FD1B /* Exceptions for "Work Keeper" folder in "Work Keeper" target */,
+				B06606342EF5490600A6FD1B /* Exceptions for "Work Keeper" folder in "Compile Sources" phase from "Work Keeper" target */,
+			);
 			path = "Work Keeper";
 			sourceTree = "<group>";
 		};
@@ -52,6 +85,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B06605D12EF5459A00A6FD1B /* PostgREST in Frameworks */,
+				B06605CF2EF5459A00A6FD1B /* Functions in Frameworks */,
+				B06605D72EF5459A00A6FD1B /* Supabase in Frameworks */,
+				B06605CD2EF5459A00A6FD1B /* Auth in Frameworks */,
+				B06605D52EF5459A00A6FD1B /* Storage in Frameworks */,
+				B06605D32EF5459A00A6FD1B /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +151,12 @@
 			);
 			name = "Work Keeper";
 			packageProductDependencies = (
+				B06605CC2EF5459A00A6FD1B /* Auth */,
+				B06605CE2EF5459A00A6FD1B /* Functions */,
+				B06605D02EF5459A00A6FD1B /* PostgREST */,
+				B06605D22EF5459A00A6FD1B /* Realtime */,
+				B06605D42EF5459A00A6FD1B /* Storage */,
+				B06605D62EF5459A00A6FD1B /* Supabase */,
 			);
 			productName = "Work Keeper";
 			productReference = B0E3F7FF2DEC4CC300C9604F /* Work Keeper.app */;
@@ -196,6 +241,9 @@
 			);
 			mainGroup = B0E3F7F62DEC4CC300C9604F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B06605CB2EF5459A00A6FD1B /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B0E3F8002DEC4CC300C9604F /* Products */;
 			projectDirPath = "";
@@ -563,6 +611,50 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B06605CB2EF5459A00A6FD1B /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B06605CC2EF5459A00A6FD1B /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B06605CB2EF5459A00A6FD1B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		B06605CE2EF5459A00A6FD1B /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B06605CB2EF5459A00A6FD1B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		B06605D02EF5459A00A6FD1B /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B06605CB2EF5459A00A6FD1B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		B06605D22EF5459A00A6FD1B /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B06605CB2EF5459A00A6FD1B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		B06605D42EF5459A00A6FD1B /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B06605CB2EF5459A00A6FD1B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		B06605D62EF5459A00A6FD1B /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B06605CB2EF5459A00A6FD1B /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B0E3F7F72DEC4CC300C9604F /* Project object */;
 }

@@ -7,7 +7,7 @@ struct Work_KeeperApp: App {
     let persistence = CoreDataStack.shared
     var body: some Scene {
         WindowGroup {
-            TabBar()
+            RootView()
                 .environment(\.managedObjectContext, persistence.context)
         }
     }
