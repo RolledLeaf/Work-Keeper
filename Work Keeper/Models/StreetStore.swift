@@ -21,6 +21,10 @@ final class StreetStore: NSObject, ObservableObject {
             } else {
                 let street = Street(context: context)
                 street.name = name
+                // Sync fields
+                street.remoteId = nil
+                street.deletedAt = nil
+                street.updatedAt = Date()
                 try context.save()
                 return street
             }
@@ -34,6 +38,7 @@ final class StreetStore: NSObject, ObservableObject {
     
     func fetchStreets() -> [Street] {
         let request: NSFetchRequest<Street> = Street.fetchRequest()
+        request.predicate = NSPredicate(format: "deletedAt == nil")
         request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         do {
             return try context.fetch(request)
@@ -46,7 +51,7 @@ final class StreetStore: NSObject, ObservableObject {
     func fetchStreets(matching name: String) -> [Street] {
        
         let request: NSFetchRequest<Street> = Street.fetchRequest()
-        request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", name)
+        request.predicate = NSPredicate(format: "name CONTAINS[cd] %@ AND deletedAt == nil", name)
         request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
         do {
             return try context.fetch(request)
@@ -58,6 +63,7 @@ final class StreetStore: NSObject, ObservableObject {
     
     func fetchStreets( ascending: Bool) -> [Street] {
         let request: NSFetchRequest<Street> = Street.fetchRequest()
+        request.predicate = NSPredicate(format: "deletedAt == nil")
         request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: ascending)]
         do {
             return try context.fetch(request)
@@ -70,6 +76,10 @@ final class StreetStore: NSObject, ObservableObject {
     func createStreet(name: String) {
         let street = Street(context: context)
         street.name = name
+        // Sync fields
+        street.remoteId = nil
+        street.deletedAt = nil
+        street.updatedAt = Date()
         
         do {
             try context.save()
@@ -79,17 +89,32 @@ final class StreetStore: NSObject, ObservableObject {
     }
     
     func deleteStreet(street: Street) {
-        context.delete(street)
+        // Soft delete for sync
+        street.deletedAt = Date()
+        street.updatedAt = Date()
         
         do {
             try context.save()
         } catch {
-            print("Unable to delete street: \(error)")
+            print("Unable to soft-delete street: \(error)")
+        }
+    }
+    
+    /// Permanent delete (debug / cleanup only)
+    func purgeStreet(street: Street) {
+        context.delete(street)
+        do {
+            try context.save()
+        } catch {
+            print("Unable to purge street: \(error)")
         }
     }
     
     func updateStreet(street: Street, name: String) {
         street.name = name
+        // Sync fields
+        street.deletedAt = nil
+        street.updatedAt = Date()
         
         do {
             try context.save()

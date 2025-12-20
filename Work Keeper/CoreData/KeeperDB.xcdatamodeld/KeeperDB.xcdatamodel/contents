@@ -9,7 +9,7 @@
         <attribute name="house" attributeType="String"/>
         <attribute name="isPrimary" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isPrivateHouse" attributeType="Boolean" usesScalarValueType="YES"/>
-        <attribute name="remoteId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="remoteId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="roomType" optional="YES" attributeType="String" defaultValueString="кв."/>
         <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="client" maxCount="1" deletionRule="Nullify" destinationEntity="Client" inverseName="address" inverseEntity="Client"/>
@@ -31,7 +31,7 @@
     <entity name="Street" representedClassName="Street" syncable="YES" codeGenerationType="class">
         <attribute name="deletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="name" attributeType="String"/>
-        <attribute name="remoteId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="remoteId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="address" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Address" inverseName="street" inverseEntity="Address"/>
     </entity>
@@ -44,7 +44,7 @@
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO" spotlightIndexingEnabled="YES"/>
         <attribute name="isRemote" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="paymentType" optional="YES" attributeType="String"/>
-        <attribute name="remoteId" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="remoteId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="scheduledAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="statusString" attributeType="String"/>
         <attribute name="taskDescription" optional="YES" attributeType="String"/>

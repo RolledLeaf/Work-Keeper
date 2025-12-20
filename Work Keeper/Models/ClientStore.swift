@@ -22,8 +22,12 @@ func createClient(firstName: String,
         client.lastName = lastName
     client.address = NSSet(array: addresses)
         client.phone = phone
-       
         
+        // Sync fields
+        client.remoteId = nil
+        client.deletedAt = nil
+        client.updatedAt = Date()
+       
         do {
             try context.save()
         } catch {
@@ -40,7 +44,7 @@ func createOrFetchClient(firstName: String,
                          comment: String?) -> Client {
     
     let request: NSFetchRequest<Client> = Client.fetchRequest()
-    request.predicate = NSPredicate(format: "firstName == %@ AND phone == %@", firstName, phone)
+    request.predicate = NSPredicate(format: "phone == %@ AND deletedAt == nil", phone)
     request.fetchLimit = 1
     
     do {
@@ -65,6 +69,7 @@ func createOrFetchClient(firstName: String,
     func fetchClients() -> [Client] {
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Client.firstName, ascending: true)]
+        request.predicate = NSPredicate(format: "deletedAt == nil")
         
         do {
             return try context.fetch(request)
@@ -79,6 +84,7 @@ func createOrFetchClient(firstName: String,
         print("Fetching and sorting clients...")
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: keypath, ascending: ascending)]
+        request.predicate = NSPredicate(format: "deletedAt == nil")
         
         do {
             return try context.fetch(request)
@@ -95,7 +101,12 @@ func createOrFetchClient(firstName: String,
         print("Fetching clients with no predicate...")
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = sortDescriptors
-        request.predicate = predicate
+        let notDeleted = NSPredicate(format: "deletedAt == nil")
+        if let predicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [notDeleted, predicate])
+        } else {
+            request.predicate = notDeleted
+        }
         if let limit = limit { request.fetchLimit = limit }
         if debug { print("[ClientStore] fetchClients(matching:) predicate:", predicate?.predicateFormat ?? "<none>") }
         do {
@@ -110,7 +121,11 @@ func createOrFetchClient(firstName: String,
         // Count clients who have at least one task with status scheduled or completed
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         // Predicate: ANY tasks.statusString IN {"scheduled", "completed"}
-      
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "ANY tasks.statusString IN %@", ["scheduled", "completed"]),
+            NSPredicate(format: "ANY tasks.deletedAt == nil")
+        ])
 
         do {
             let count = try context.count(for: request)
@@ -128,7 +143,8 @@ func createOrFetchClient(firstName: String,
         let request: NSFetchRequest<Client> = Client.fetchRequest()
 
         var predicates: [NSPredicate] = [
-            NSPredicate(format: "phone == %@", phone)
+            NSPredicate(format: "phone == %@", phone),
+            NSPredicate(format: "deletedAt == nil")
         ]
 
         if let excludingClient = excluding {
@@ -236,6 +252,10 @@ func createOrFetchClient(firstName: String,
         client.address = NSSet(array: addresses)
         client.phone = phone
         
+        // Sync fields
+        client.deletedAt = nil
+        client.updatedAt = Date()
+        
         
         do {
             try context.save()
@@ -245,28 +265,51 @@ func createOrFetchClient(firstName: String,
     }
     
 func deleteClient(_ client: Client) {
-    // 1) Удаляем адреса клиента (Address -> client является обязательной связью)
+    // Soft delete for sync (cascade)
+    let now = Date()
+
+    // 1) Soft-delete addresses
     if let addresses = client.address as? Set<Address> {
         for address in addresses {
-            context.delete(address)
+            address.deletedAt = now
+            address.updatedAt = now
         }
     }
 
-    // 2) Удаляем задачи клиента, если в модели Task.client стоит required
+    // 2) Soft-delete tasks
     if let tasks = client.tasks as? Set<TaskEntity> {
         for task in tasks {
-            context.delete(task)
+            task.deletedAt = now
+            task.updatedAt = now
         }
     }
 
-    // 3) Удаляем самого клиента
-    context.delete(client)
+    // 3) Soft-delete client
+    client.deletedAt = now
+    client.updatedAt = now
 
-    // 4) Сохраняем изменения
     do {
         try context.save()
     } catch {
-        print("❌ Error deleting client: \(error)")
+        print("❌ Error soft-deleting client: \(error)")
+    }
+}
+
+/// Permanent delete (debug / cleanup only)
+func purgeClient(_ client: Client) {
+    // Remove children first to satisfy required relationships
+    if let addresses = client.address as? Set<Address> {
+        for address in addresses { context.delete(address) }
+    }
+    if let tasks = client.tasks as? Set<TaskEntity> {
+        for task in tasks { context.delete(task) }
+    }
+    context.delete(client)
+
+    do {
+        try context.save()
+    } catch {
+        print("❌ Error purging client: \(error)")
     }
 }
     
@@ -285,6 +328,7 @@ func deleteClient(_ client: Client) {
 
         // Request dictionary results containing objectID and the computed count
         let req = NSFetchRequest<NSDictionary>(entityName: "Client")
+        req.predicate = NSPredicate(format: "deletedAt == nil")
         req.resultType = .dictionaryResultType
         req.propertiesToFetch = ["objectID", exprDesc]
         req.returnsDistinctResults = false

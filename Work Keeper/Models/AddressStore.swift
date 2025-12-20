@@ -28,6 +28,11 @@ final class AddressStore: NSObject {
         address.roomType = roomType
         address.entranceType = entranceType
         
+        // Sync fields
+        address.remoteId = nil
+        address.deletedAt = nil
+        address.updatedAt = Date()
+        
         
         return address
     }
@@ -53,7 +58,8 @@ final class AddressStore: NSObject {
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             NSPredicate(format: "client == %@", client),
             NSPredicate(format: "street == %@", street),
-            NSPredicate(format: "house == %@", house)
+            NSPredicate(format: "house == %@", house),
+            NSPredicate(format: "deletedAt == nil")
         ])
         
         request.fetchLimit = 1
@@ -74,6 +80,11 @@ final class AddressStore: NSObject {
                 )
                 address.client = client
                 address.isPrimary = isPrimary
+
+                // Sync fields
+                address.remoteId = nil
+                address.deletedAt = nil
+                address.updatedAt = Date()
 
                 if isPrimary {
                     if let addresses = client.address as? Set<Address> {
@@ -99,6 +110,11 @@ final class AddressStore: NSObject {
             )
             address.client = client
             address.isPrimary = isPrimary
+
+            // Sync fields
+            address.remoteId = nil
+            address.deletedAt = nil
+            address.updatedAt = Date()
             return address
         }
     }
@@ -120,6 +136,10 @@ final class AddressStore: NSObject {
         address.entranceType = entranceType
         address.roomType = roomType
         
+        // Sync fields
+        address.deletedAt = nil
+        address.updatedAt = Date()
+        
         do {
             try context.save()
         } catch {
@@ -129,16 +149,29 @@ final class AddressStore: NSObject {
     
  
     func deleteAddress(_ address: Address) {
+        // Soft delete for sync
+        address.deletedAt = Date()
+        address.updatedAt = Date()
+        do {
+            try context.save()
+        } catch {
+            print("Error soft-deleting address: \(error)")
+        }
+    }
+
+    /// Permanent delete (debug / cleanup only)
+    func purgeAddress(_ address: Address) {
         context.delete(address)
         do {
             try context.save()
         } catch {
-            print("Error deleting address: \(error)")
+            print("Error purging address: \(error)")
         }
     }
     
     func fetchAddresses() -> [Address] {
         let fetchRequest: NSFetchRequest<Address> = Address.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "deletedAt == nil")
         do {
             return try context.fetch(fetchRequest)
         } catch {

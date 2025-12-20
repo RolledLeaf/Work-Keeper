@@ -8,34 +8,116 @@ private struct SectionHeaderOffsetKey: PreferenceKey {
     }
 }
 
-// MARK: - Test button
+// MARK: - Test buttons
 
-struct SupabaseStreetTestButton: View {
+
+
+struct SupabaseAddressTestButton: View {
     @EnvironmentObject var auth: AuthService
 
     var body: some View {
         Button("Test Supabase Streets") {
             Task {
                 guard let ownerId = auth.session?.user.id else {
-                    print("❌ No session/user id")
+                    print("❌ No session / user id")
                     return
                 }
 
-                let store = RemoteStreetStore()
+                let streetStore = RemoteStreetStore()
+                let clientStore = RemoteClientStore()
+                let addressStore = RemoteAddressStore()
+
+                // Чтобы не ловить уникальность phone — делаем уникальный номер
+                let uniquePhone = "+7999" + String(Int(Date().timeIntervalSince1970)).suffix(7)
 
                 do {
-                    let created = try await store.create(name: "Тестовая улица", ownerId: ownerId)
-                    print("✅ Created:", created)
+                    // 1) Создаём тестовую улицу
+                    let street = try await streetStore.create(
+                        name: "Тестовая улица \(Int(Date().timeIntervalSince1970))",
+                        ownerId: ownerId
+                    )
+                    print("✅ Created street:", street.id, street.name)
 
-                    let list = try await store.fetchAll(ownerId: ownerId)
-                    print("✅ Fetched:", list.map(\.name))
+                    // 2) Создаём тестового клиента
+                    let client = try await clientStore.create(
+                        firstName: "Тест",
+                        lastName: "Клиент",
+                        phone: String(uniquePhone),
+                        comment: "Создан для Address теста",
+                        ownerId: ownerId
+                    )
+                    print("✅ Created client:", client.id, client.phone)
 
-                    try await store.softDelete(streetId: created.id, ownerId: ownerId)
+                    // 3) Создаём адрес #1 (primary = true)
+                    let insert1 = AddressInsertDTO(
+                        owner_id: ownerId,
+                        client_id: client.id,
+                        street_id: street.id,
+                        house: "10",
+                        apartment: "15",
+                        entrance: "1",
+                        entrance_type: "подъезд",
+                        room_type: "квартира",
+                        floor: "3",
+                        is_primary: true,
+                        is_private_house: false
+                    )
+                    let addr1 = try await addressStore.create(insert1)
+                    print("✅ Created addr1:", addr1.id, "is_primary:", addr1.is_primary)
 
-                    let list2 = try await store.fetchAll(ownerId: ownerId)
-                    print("✅ After delete:", list2.map(\.name))
+                    // 4) Создаём адрес #2 (primary = true) — должен снять primary с addr1
+                    let insert2 = AddressInsertDTO(
+                        owner_id: ownerId,
+                        client_id: client.id,
+                        street_id: street.id,
+                        house: "11",
+                        apartment: nil,
+                        entrance: nil,
+                        entrance_type: nil,
+                        room_type: nil,
+                        floor: "1",
+                        is_primary: true,
+                        is_private_house: true
+                    )
+                    let addr2 = try await addressStore.create(insert2)
+                    print("✅ Created addr2:", addr2.id, "is_primary:", addr2.is_primary)
+
+                    // 5) Fetch addresses by client → primary должен быть ровно один и это addr2
+                    let list = try await addressStore.fetchByClient(clientId: client.id)
+                    print("✅ Fetched addresses count:", list.count)
+
+                    let primary = list.filter { $0.is_primary }
+                    print("✅ Primary count:", primary.count, "Primary ids:", primary.map(\.id))
+
+                    if primary.count != 1 || primary.first?.id != addr2.id {
+                        print("❌ ERROR: primary address logic broken")
+                    } else {
+                        print("✅ Primary logic OK")
+                    }
+
+                    // 6) Soft delete addr2
+                    try await addressStore.softDelete(addressId: addr2.id)
+                    print("✅ Soft deleted addr2")
+
+                    let list2 = try await addressStore.fetchByClient(clientId: client.id)
+                    print("✅ After delete count:", list2.count, "ids:", list2.map(\.id))
+
+                    if list2.contains(where: { $0.id == addr2.id }) {
+                        print("❌ ERROR: deleted address still returned")
+                    } else {
+                        print("✅ Soft delete OK")
+                    }
+
+                    // 7) Cleanup (опционально, но рекомендую)
+                    // Мягко удаляем addr1, client и street, чтобы тестовые данные не копились
+                    try? await addressStore.softDelete(addressId: addr1.id)
+                    try? await clientStore.softDelete(clientId: client.id)
+                    try? await streetStore.softDelete(streetId: street.id, ownerId: ownerId)
+
+                    print("✅ Cleanup done")
+
                 } catch {
-                    print("❌ RemoteStreetStore error:", error)
+                    print("❌ Address test error:", error)
                 }
             }
         }
@@ -272,7 +354,8 @@ struct TaskListView: View {
                     
                     Spacer()
                     
-//                    SupabaseStreetTestButton() - тестовая кнопка. Удалить после реализации сетевого слоя
+                   
+                    SupabaseAddressTestButton() //тестовая кнопка. Удалить после реализации сетевого слоя
                     
                     Button(action: {
                         showNewTaskView = true

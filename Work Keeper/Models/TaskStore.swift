@@ -24,6 +24,10 @@ final class TaskStore: NSObject, ObservableObject {
         
         
         let task = TaskEntity(context: context)
+        // Sync fields
+        task.remoteId = nil
+        task.deletedAt = nil
+        task.updatedAt = Date()
         task.client = client
         task.address = address
         task.id = UUID()
@@ -61,6 +65,9 @@ final class TaskStore: NSObject, ObservableObject {
         task.extraPayment = extraPayment ?? 0
         task.paymentType = paymentType.rawValue
         task.totalAmount = task.contractAmount + (extraPayment ?? 0) - (cost ?? 0)
+        // Sync fields
+        task.deletedAt = nil
+        task.updatedAt = Date()
         do {
             try context.save()
         } catch {
@@ -71,6 +78,9 @@ final class TaskStore: NSObject, ObservableObject {
     func makeScheduled(_ task: TaskEntity, paymentType: PaymentType?) {
         task.status = .scheduled
         task.paymentType = paymentType?.rawValue
+        // Sync fields
+        task.deletedAt = nil
+        task.updatedAt = Date()
         do {
             try context.save()
         } catch {
@@ -85,6 +95,9 @@ final class TaskStore: NSObject, ObservableObject {
         task.cost = 0
         task.totalAmount = 0
         task.paymentType = paymentType?.rawValue
+        // Sync fields
+        task.deletedAt = nil
+        task.updatedAt = Date()
         do {
             try context.save()
         } catch {
@@ -107,11 +120,23 @@ final class TaskStore: NSObject, ObservableObject {
     }
      
     func deleteTask(_ task: TaskEntity) {
+        // Soft delete for sync
+        task.deletedAt = Date()
+        task.updatedAt = Date()
+        do {
+            try context.save()
+        } catch {
+            print("❌ Error deleting (soft) task: \(error)")
+        }
+    }
+
+    /// Permanent delete (use carefully, e.g. debug tools / cleanup)
+    func purgeTask(_ task: TaskEntity) {
         context.delete(task)
         do {
             try context.save()
         } catch {
-            print("❌ Error deleting task: \(error)")
+            print("❌ Error purging task: \(error)")
         }
     }
     
@@ -149,6 +174,10 @@ final class TaskStore: NSObject, ObservableObject {
         
         // Recalculate total
         task.totalAmount = task.contractAmount + task.extraPayment - task.cost
+        
+        // Sync fields
+        task.deletedAt = nil
+        task.updatedAt = Date()
         
         // Save changes
         do {

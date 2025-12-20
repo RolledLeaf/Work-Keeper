@@ -268,6 +268,8 @@ struct TaskRow: View {
                         .font(.custom(Montserrat.regular.rawValue, size: 25))
                         .foregroundStyle(.mainBlack)
                     Spacer()
+                    Image(paymentIconResource ?? ImageResource.init(name: "visa", bundle: .main))
+                        .padding(.trailing, 20)
                 }
                 .frame(height: 25)
                
