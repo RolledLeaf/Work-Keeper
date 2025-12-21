@@ -35,7 +35,7 @@ final class TaskListViewModel: ObservableObject {
         print("Task \(String(describing: task.taskDescription)) rescheduled to \(date)")
     }
     
-    
+   
     
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
@@ -64,6 +64,9 @@ final class TaskListViewModel: ObservableObject {
             .store(in: &cancelables)
     }
 
+    
+   
+    
     func calculateDailyIncome(for date: Date, debug: Bool = false) -> Double {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)

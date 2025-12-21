@@ -11,6 +11,8 @@ final class AuthService: ObservableObject {
     var userId: UUID? {
         session?.user.id
     }
+    
+    
 
     func restoreSession() async {
         // Поднимаем сохранённую сессию (если есть). В новых версиях SDK это async/throws.

@@ -1,4 +1,5 @@
 import Foundation
+
 import CoreData
 
 final class TaskStore: NSObject, ObservableObject {
@@ -9,8 +10,7 @@ final class TaskStore: NSObject, ObservableObject {
     init(context: NSManagedObjectContext = CoreDataStack.shared.context) {
         self.context = context
     }
-    
-    
+
     func createTask(scheduledAt: Date,
                     client: Client,
                     address: Address?,
