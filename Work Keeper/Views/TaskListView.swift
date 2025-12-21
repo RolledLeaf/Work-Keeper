@@ -26,98 +26,142 @@ struct SupabaseAddressTestButton: View {
                 let streetStore = RemoteStreetStore()
                 let clientStore = RemoteClientStore()
                 let addressStore = RemoteAddressStore()
+                let taskStore = RemoteTaskStore()
 
-                // Чтобы не ловить уникальность phone — делаем уникальный номер
-                let uniquePhone = "+7999" + String(Int(Date().timeIntervalSince1970)).suffix(7)
+                let ts = Int(Date().timeIntervalSince1970)
+                let uniquePhone = "+7999" + String(ts).suffix(7)
 
                 do {
-                    // 1) Создаём тестовую улицу
+                    // 1) Create street
                     let street = try await streetStore.create(
-                        name: "Тестовая улица \(Int(Date().timeIntervalSince1970))",
+                        name: "Тестовая улица \(ts)",
                         ownerId: ownerId
                     )
                     print("✅ Created street:", street.id, street.name)
 
-                    // 2) Создаём тестового клиента
+                    // 2) Create client
                     let client = try await clientStore.create(
                         firstName: "Тест",
-                        lastName: "Клиент",
+                        lastName: "Задача",
                         phone: String(uniquePhone),
-                        comment: "Создан для Address теста",
+                        comment: "Создан для Task теста",
                         ownerId: ownerId
                     )
                     print("✅ Created client:", client.id, client.phone)
 
-                    // 3) Создаём адрес #1 (primary = true)
-                    let insert1 = AddressInsertDTO(
-                        owner_id: ownerId,
-                        client_id: client.id,
-                        street_id: street.id,
-                        house: "10",
-                        apartment: "15",
-                        entrance: "1",
-                        entrance_type: "подъезд",
-                        room_type: "квартира",
-                        floor: "3",
-                        is_primary: true,
-                        is_private_house: false
+                    // 3) Create address #1 (primary=true)
+                    let addr1 = try await addressStore.create(
+                        AddressInsertDTO(
+                            owner_id: ownerId,
+                            client_id: client.id,
+                            street_id: street.id,
+                            house: "10",
+                            apartment: "15",
+                            entrance: "1",
+                            entrance_type: "подъезд",
+                            room_type: "квартира",
+                            floor: "3",
+                            is_primary: true,
+                            is_private_house: false
+                        )
                     )
-                    let addr1 = try await addressStore.create(insert1)
-                    print("✅ Created addr1:", addr1.id, "is_primary:", addr1.is_primary)
+                    print("✅ Created addr1:", addr1.id, "primary:", addr1.is_primary)
 
-                    // 4) Создаём адрес #2 (primary = true) — должен снять primary с addr1
-                    let insert2 = AddressInsertDTO(
-                        owner_id: ownerId,
-                        client_id: client.id,
-                        street_id: street.id,
-                        house: "11",
-                        apartment: nil,
-                        entrance: nil,
-                        entrance_type: nil,
-                        room_type: nil,
-                        floor: "1",
-                        is_primary: true,
-                        is_private_house: true
+                    // 4) Create address #2 (primary=true) -> should become the only primary
+                    let addr2 = try await addressStore.create(
+                        AddressInsertDTO(
+                            owner_id: ownerId,
+                            client_id: client.id,
+                            street_id: street.id,
+                            house: "11",
+                            apartment: nil,
+                            entrance: nil,
+                            entrance_type: nil,
+                            room_type: nil,
+                            floor: "1",
+                            is_primary: true,
+                            is_private_house: true
+                        )
                     )
-                    let addr2 = try await addressStore.create(insert2)
-                    print("✅ Created addr2:", addr2.id, "is_primary:", addr2.is_primary)
+                    print("✅ Created addr2:", addr2.id, "primary:", addr2.is_primary)
 
-                    // 5) Fetch addresses by client → primary должен быть ровно один и это addr2
-                    let list = try await addressStore.fetchByClient(clientId: client.id)
-                    print("✅ Fetched addresses count:", list.count)
+                    // Verify primary
+                    let addrs = try await addressStore.fetchByClient(clientId: client.id)
+                    let primaries = addrs.filter { $0.is_primary }
+                    print("✅ Addresses count:", addrs.count, "primary count:", primaries.count, "primary ids:", primaries.map(\.id))
 
-                    let primary = list.filter { $0.is_primary }
-                    print("✅ Primary count:", primary.count, "Primary ids:", primary.map(\.id))
+                    // 5) Create NON-remote task (requires address_id)
+                    let scheduledAt1 = Date()
+                    let t1 = try await taskStore.create(
+                        TaskInsertDTO(
+                            owner_id: ownerId,
+                            scheduled_at: scheduledAt1,
+                            task_description: "Сборка мебели (test)",
+                            payment_type: "cash",
+                            comment: "Non-remote task",
+                            is_remote: false,
+                            statusString: "scheduled",
+                            contract_amount: 5000,
+                            cost: 300,
+                            extra_payment: 200,
+                            client_id: client.id,
+                            address_id: addr2.id   // non-remote -> must have address_id
+                        )
+                    )
+                    print("✅ Created task1:", t1.id, "is_remote:", t1.is_remote, "address_id:", String(describing: t1.address_id))
 
-                    if primary.count != 1 || primary.first?.id != addr2.id {
-                        print("❌ ERROR: primary address logic broken")
+                    // 6) Create REMOTE task (address_id must be nil)
+                    let scheduledAt2 = Date().addingTimeInterval(3600)
+                    let t2 = try await taskStore.create(
+                        TaskInsertDTO(
+                            owner_id: ownerId,
+                            scheduled_at: scheduledAt2,
+                            task_description: "Консультация онлайн (test)",
+                            payment_type: "card",
+                            comment: "Remote task",
+                            is_remote: true,
+                            statusString: "completed",
+                            contract_amount: 1000,
+                            cost: 0,
+                            extra_payment: nil,
+                            client_id: client.id,
+                            address_id: nil        // remote -> must be nil
+                        )
+                    )
+                    print("✅ Created task2:", t2.id, "is_remote:", t2.is_remote, "address_id:", String(describing: t2.address_id))
+
+                    // 7) Fetch by client and show totals
+                    let tasksByClient = try await taskStore.fetchByClient(clientId: client.id)
+                    print("✅ Tasks by client:", tasksByClient.count, "ids:", tasksByClient.map(\.id))
+
+                    // 8) Fetch by date range (today -> +2 days)
+                    let from = Calendar.current.startOfDay(for: Date())
+                    let to = Calendar.current.date(byAdding: .day, value: 2, to: from)!
+                    let tasksRange = try await taskStore.fetch(from: from, to: to)
+                    print("✅ Tasks in range:", tasksRange.count)
+
+                    // 9) Soft delete task2
+                    try await taskStore.softDelete(taskId: t2.id)
+                    print("✅ Soft deleted task2")
+
+                    let tasksAfterDelete = try await taskStore.fetchByClient(clientId: client.id)
+                    if tasksAfterDelete.contains(where: { $0.id == t2.id }) {
+                        print("❌ ERROR: deleted task still returned")
                     } else {
-                        print("✅ Primary logic OK")
+                        print("✅ Soft delete OK (task2 not returned)")
                     }
 
-                    // 6) Soft delete addr2
-                    try await addressStore.softDelete(addressId: addr2.id)
-                    print("✅ Soft deleted addr2")
-
-                    let list2 = try await addressStore.fetchByClient(clientId: client.id)
-                    print("✅ After delete count:", list2.count, "ids:", list2.map(\.id))
-
-                    if list2.contains(where: { $0.id == addr2.id }) {
-                        print("❌ ERROR: deleted address still returned")
-                    } else {
-                        print("✅ Soft delete OK")
-                    }
-
-                    // 7) Cleanup (опционально, но рекомендую)
-                    // Мягко удаляем addr1, client и street, чтобы тестовые данные не копились
+                    // 10) Cleanup (soft delete the rest)
+                    try? await taskStore.softDelete(taskId: t1.id)
                     try? await addressStore.softDelete(addressId: addr1.id)
+                    try? await addressStore.softDelete(addressId: addr2.id)
                     try? await clientStore.softDelete(clientId: client.id)
                     try? await streetStore.softDelete(streetId: street.id, ownerId: ownerId)
 
                     print("✅ Cleanup done")
 
                 } catch {
-                    print("❌ Address test error:", error)
+                    print("❌ TaskStore test error:", error)
                 }
             }
         }
