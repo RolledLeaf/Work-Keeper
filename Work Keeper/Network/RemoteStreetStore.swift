@@ -23,6 +23,45 @@ final class RemoteStreetStore {
         // Дополнительная страховка (не обязательно, но полезно при отладке)
         return result.filter { $0.owner_id == ownerId }
     }
+    
+    func fetchAll(ownerId: UUID, includeDeleted: Bool = false) async throws -> [StreetDTO] {
+        // Keep this as a filter-capable builder until after conditional filters are applied.
+        var q = client
+            .from("streets")
+            .select()
+
+        if !includeDeleted {
+            // PostgREST null check: deleted_at IS NULL
+            q = q.filter("deleted_at", operator: "is", value: "null")
+        }
+
+        // Apply ordering after filters (do not reassign: order returns a TransformBuilder)
+        let result: [StreetDTO] = try await q
+            .order("name", ascending: true)
+            .execute()
+            .value
+
+        // Optional extra safety (RLS should already limit to the current user)
+        return result.filter { $0.owner_id == ownerId }
+    }
+    
+    // MARK: - Fetch by name (for Initial Upload de-duplication)
+
+    func fetchByName(ownerId: UUID, name: String) async throws -> StreetDTO? {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        let result: [StreetDTO] = try await client
+            .from("streets")
+            .select()
+            .eq("owner_id", value: ownerId.uuidString)
+            .eq("name", value: trimmed)
+            .limit(1)
+            .execute()
+            .value
+
+        return result.first
+    }
 
     // MARK: - Create
 

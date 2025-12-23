@@ -21,6 +21,25 @@ final class RemoteTaskStore {
             .execute()
             .value
     }
+    
+    func fetchAll(ownerId: UUID, includeDeleted: Bool = false) async throws -> [TaskDTO] {
+        // Keep this as a filter-capable builder until after conditional filters are applied.
+        var q = client
+            .from("tasks")
+            .select()
+
+        if !includeDeleted {
+            // PostgREST null check: deleted_at IS NULL
+            q = q.filter("deleted_at", operator: "is", value: "null")
+        }
+
+        // Apply ordering after filters (do not reassign: order returns a TransformBuilder)
+        let result: [TaskDTO] = try await q
+            .order("scheduled_at", ascending: false)
+            .execute()
+            .value
+        return result
+    }
 
     /// Все задачи клиента (например на карточке клиента)
     func fetchByClient(clientId: UUID) async throws -> [TaskDTO] {
@@ -31,6 +50,21 @@ final class RemoteTaskStore {
             .order("scheduled_at", ascending: false)
             .execute()
             .value
+    }
+
+    /// Fetch candidate tasks for a given owner+client+scheduled_at (exact timestamp match).
+    /// We do extra matching client-side to avoid overly complex server predicates.
+    func fetchCandidates(ownerId: UUID, clientId: UUID, scheduledAt: Date) async throws -> [TaskDTO] {
+        let rows: [TaskDTO] = try await client
+            .from("tasks")
+            .select()
+            .eq("owner_id", value: ownerId.uuidString)
+            .eq("client_id", value: clientId.uuidString)
+            .eq("scheduled_at", value: iso(scheduledAt))
+            .order("updated_at", ascending: false)
+            .execute()
+            .value
+        return rows
     }
 
     // MARK: - Create

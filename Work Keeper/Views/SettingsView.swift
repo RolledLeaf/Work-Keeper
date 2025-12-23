@@ -10,6 +10,30 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 16) {
+            Button("Pull (Supabase → CoreData)") {
+                Task {
+                    guard let ownerId = auth.session?.user.id else {
+                        resultMessage = "Нет активной сессии. Сначала войди в аккаунт."
+                        showResultAlert = true
+                        return
+                    }
+
+                    isUploading = true
+                    defer { isUploading = false }
+
+                    let service = PullSyncService(context: context)
+                    do {
+                        try await service.run(ownerId: ownerId, debug: true)
+                        resultMessage = "Pull завершён успешно."
+                    } catch {
+                        resultMessage = "Ошибка Pull: \(error.localizedDescription)"
+                    }
+                    showResultAlert = true
+                }
+            }
+            .buttonStyle(.bordered)
+            .disabled(isUploading)
+
             Button {
                 Task {
                     guard let ownerId = auth.session?.user.id else {
@@ -42,7 +66,7 @@ struct SettingsView: View {
             .buttonStyle(.borderedProminent)
             .disabled(isUploading)
 
-            Text("Загрузит локальные (оффлайн) данные в Supabase. Обычно достаточно выполнить один раз после включения облака.")
+            Text("Initial Upload загружает локальные (оффлайн) данные в Supabase. Обычно достаточно выполнить один раз после включения облака. Pull — подтягивает данные из Supabase в CoreData.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -52,7 +76,7 @@ struct SettingsView: View {
         }
         .padding()
         .navigationTitle("Настройки")
-        .alert("Initial Upload", isPresented: $showResultAlert) {
+        .alert("Синхронизация", isPresented: $showResultAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(resultMessage)

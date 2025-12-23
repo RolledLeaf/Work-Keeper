@@ -20,6 +20,44 @@ final class RemoteClientStore {
 
         return result.filter { $0.owner_id == ownerId }
     }
+    
+    func fetchAll(ownerId: UUID, includeDeleted: Bool = false) async throws -> [ClientDTO] {
+        // Keep this as a filter-capable builder until after conditional filters are applied.
+        var q = client
+            .from("clients")
+            .select()
+
+        if !includeDeleted {
+            // PostgREST null check: deleted_at IS NULL
+            q = q.filter("deleted_at", operator: "is", value: "null")
+        }
+
+        // Apply ordering after filters (do not reassign: order returns a TransformBuilder)
+        let result: [ClientDTO] = try await q
+            .order("first_name", ascending: true)
+            .execute()
+            .value
+
+        // Optional extra safety (RLS should already limit to the current user)
+        return result.filter { $0.owner_id == ownerId }
+    }
+
+    func fetchByPhone(ownerId: UUID, phone: String) async throws -> ClientDTO? {
+        let trimmed = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        // RLS should scope by owner, but we filter by owner_id too for safety.
+        let rows: [ClientDTO] = try await client
+            .from("clients")
+            .select()
+            .eq("owner_id", value: ownerId.uuidString)
+            .eq("phone", value: trimmed)
+            .limit(1)
+            .execute()
+            .value
+
+        return rows.first
+    }
 
     // MARK: - Create
 

@@ -62,7 +62,7 @@ final class TaskStore: NSObject, ObservableObject {
         task.comment = comment
         task.contractAmount = contractAmount
         task.cost = cost ?? 0
-        task.extraPayment = extraPayment ?? 0
+        task.extraPaymentValue = extraPayment ?? 0
         task.paymentType = paymentType.rawValue
         task.totalAmount = task.contractAmount + (extraPayment ?? 0) - (cost ?? 0)
         // Sync fields
@@ -148,7 +148,7 @@ final class TaskStore: NSObject, ObservableObject {
                     isRemote: Bool,
                     status: Status,
                     contractAmount: Double,
-                    extraPayment: Double?,
+                    extraPaymentValue: Double?,
                     paymentType: PaymentType,
                     cost: Double?) {
         
@@ -167,13 +167,13 @@ final class TaskStore: NSObject, ObservableObject {
         if let cost = cost {
             task.cost = cost
         }
-        if let extra = extraPayment {
-            task.extraPayment = extra
+        if let extra = extraPaymentValue {
+            task.extraPaymentValue = extra
         }
         task.paymentType = paymentType.rawValue
         
         // Recalculate total
-        task.totalAmount = task.contractAmount + task.extraPayment - task.cost
+        task.totalAmount = task.contractAmount + (task.extraPaymentValue ?? 0) - task.cost
         
         // Sync fields
         task.deletedAt = nil
@@ -381,6 +381,13 @@ extension TaskEntity {
         }
     }
     
+}
+
+extension TaskEntity {
+    var extraPaymentValue: Double? {
+        get { extraPayment?.doubleValue }
+        set { extraPayment = newValue.map(NSNumber.init(value:)) }
+    }
 }
 
 

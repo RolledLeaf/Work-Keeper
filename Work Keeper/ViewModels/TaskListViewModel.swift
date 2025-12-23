@@ -86,7 +86,7 @@ final class TaskListViewModel: ObservableObject {
 
         // суммируем доход
         let total = dailyTasks.reduce(0.0) { partial, task in
-            let income = task.contractAmount + task.extraPayment - task.cost
+            let income = task.contractAmount + (task.extraPaymentValue ?? 0) - task.cost
             return partial + income
         }
 
@@ -561,8 +561,8 @@ final class EditTaskViewModel: ObservableObject {
         } else {
             self.costText = ""
         }
-        if task.extraPayment > 0 {
-            self.extraPaymentText = String(format: "%.0f", task.extraPayment)
+        if task.extraPaymentValue ?? 0 > 0 {
+            self.extraPaymentText = String(format: "%.0f", task.extraPaymentValue ?? 0)
         } else {
             self.extraPaymentText = ""
         }
@@ -674,7 +674,7 @@ final class EditTaskViewModel: ObservableObject {
             isRemote: isRemote,
             status: status,
             contractAmount: contractAmount,
-            extraPayment: extraPayment,
+            extraPaymentValue: extraPayment,
             paymentType: paymentType ?? .none,
             cost: cost
         )

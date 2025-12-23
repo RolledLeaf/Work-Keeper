@@ -21,6 +21,47 @@ final class RemoteAddressStore {
             .value
         return result
     }
+    
+    /// Fetch candidate addresses for a given (owner, client, street, house).
+    /// We match optional fields client-side to avoid PostgREST null-filter quirks.
+    func fetchCandidates(ownerId: UUID, clientId: UUID, streetId: UUID, house: String) async throws -> [AddressDTO] {
+        let trimmedHouse = house.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHouse.isEmpty else { return [] }
+
+        let result: [AddressDTO] = try await client
+            .from("addresses")
+            .select()
+            .eq("owner_id", value: ownerId.uuidString)
+            .eq("client_id", value: clientId.uuidString)
+            .eq("street_id", value: streetId.uuidString)
+            .eq("house", value: trimmedHouse)
+            .order("updated_at", ascending: false)
+            .execute()
+            .value
+
+        return result
+    }
+
+    func fetchAll(ownerId: UUID, includeDeleted: Bool = false) async throws -> [AddressDTO] {
+        // Keep this as a filter-capable builder until after conditional filters are applied.
+        var q = client
+            .from("addresses")
+            .select()
+
+        if !includeDeleted {
+            // PostgREST null check: deleted_at IS NULL
+            q = q.filter("deleted_at", operator: "is", value: "null")
+        }
+
+        // Apply ordering after filters (do not reassign: order returns a TransformBuilder)
+        let result: [AddressDTO] = try await q
+            .order("updated_at", ascending: false)
+            .execute()
+            .value
+
+        // Optional extra safety (RLS should already limit to the current user)
+        return result.filter { $0.owner_id == ownerId }
+    }
 
     // MARK: - Create
 
