@@ -24,22 +24,29 @@ final class TaskStore: NSObject, ObservableObject {
         
         
         let task = TaskEntity(context: context)
+
         // Sync fields
         task.remoteId = nil
         task.deletedAt = nil
         task.updatedAt = Date()
-        task.client = client
-        task.address = address
+
+        // Core fields
         task.id = UUID()
         task.scheduledAt = scheduledAt
         task.client = client
         task.taskDescription = description
         task.isRemote = isRemote
         task.statusString = status.rawValue
+
+        // Address: for remote tasks we must not persist an Address relationship
+        task.address = isRemote ? nil : address
+
+        // Financials
         task.contractAmount = contractAmount
         task.cost = cost ?? 0
-        task.totalAmount = contractAmount - (cost ?? 0)
-        task.paymentType = PaymentType.none.rawValue
+        task.extraPaymentValue = nil
+        task.paymentType = paymentType.rawValue
+        task.totalAmount = task.contractAmount + (task.extraPaymentValue ?? 0) - task.cost
         
         do {
             try context.save()
@@ -62,7 +69,7 @@ final class TaskStore: NSObject, ObservableObject {
         task.comment = comment
         task.contractAmount = contractAmount
         task.cost = cost ?? 0
-        task.extraPaymentValue = extraPayment ?? 0
+        task.extraPaymentValue = extraPayment
         task.paymentType = paymentType.rawValue
         task.totalAmount = task.contractAmount + (extraPayment ?? 0) - (cost ?? 0)
         // Sync fields
@@ -93,6 +100,7 @@ final class TaskStore: NSObject, ObservableObject {
         task.comment = comment
         task.contractAmount = 0
         task.cost = 0
+        task.extraPaymentValue = nil
         task.totalAmount = 0
         task.paymentType = paymentType?.rawValue
         // Sync fields
@@ -164,12 +172,8 @@ final class TaskStore: NSObject, ObservableObject {
         
         // Update financials
         task.contractAmount = contractAmount
-        if let cost = cost {
-            task.cost = cost
-        }
-        if let extra = extraPaymentValue {
-            task.extraPaymentValue = extra
-        }
+        task.cost = cost ?? 0
+        task.extraPaymentValue = extraPaymentValue
         task.paymentType = paymentType.rawValue
         
         // Recalculate total

@@ -19,14 +19,14 @@ final class AddressStore: NSObject {
                            entranceType: String
     ) -> Address {
         let address = Address(context: context)
-        address.house = house
-        address.apartment = apartment
-        address.entrance = entrance
-        address.floor = floor
+        address.house = house.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.apartment = apartment?.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.entrance = entrance?.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.floor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
         address.isPrivateHouse = isPrivateHouse
         address.street = street
-        address.roomType = roomType
-        address.entranceType = entranceType
+        address.roomType = roomType.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.entranceType = entranceType.trimmingCharacters(in: .whitespacesAndNewlines)
         
         // Sync fields
         address.remoteId = nil
@@ -54,11 +54,24 @@ final class AddressStore: NSObject {
 
         let request: NSFetchRequest<Address> = Address.fetchRequest()
         
-        // Ищем адрес только внутри адресов ЭТОГО клиента и этой улицы/дома
+        let trimmedHouse = house.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedApt = (apartment ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEntrance = (entrance ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedFloor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedRoomType = roomType.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEntranceType = entranceType.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Match a specific address for this client by all identity fields
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             NSPredicate(format: "client == %@", client),
             NSPredicate(format: "street == %@", street),
-            NSPredicate(format: "house == %@", house),
+            NSPredicate(format: "house == %@", trimmedHouse),
+            NSPredicate(format: "(apartment == %@ OR (apartment == nil AND %@ == ''))", trimmedApt, trimmedApt),
+            NSPredicate(format: "(entrance == %@ OR (entrance == nil AND %@ == ''))", trimmedEntrance, trimmedEntrance),
+            NSPredicate(format: "floor == %@", trimmedFloor),
+            NSPredicate(format: "roomType == %@", trimmedRoomType),
+            NSPredicate(format: "entranceType == %@", trimmedEntranceType),
+            NSPredicate(format: "isPrivateHouse == %@", NSNumber(value: isPrivateHouse)),
             NSPredicate(format: "deletedAt == nil")
         ])
         
@@ -81,15 +94,11 @@ final class AddressStore: NSObject {
                 address.client = client
                 address.isPrimary = isPrimary
 
-                // Sync fields
-                address.remoteId = nil
-                address.deletedAt = nil
-                address.updatedAt = Date()
-
                 if isPrimary {
                     if let addresses = client.address as? Set<Address> {
                         for addr in addresses where addr != address {
                             addr.isPrimary = false
+                            addr.updatedAt = Date()
                         }
                     }
                 }
@@ -111,10 +120,6 @@ final class AddressStore: NSObject {
             address.client = client
             address.isPrimary = isPrimary
 
-            // Sync fields
-            address.remoteId = nil
-            address.deletedAt = nil
-            address.updatedAt = Date()
             return address
         }
     }
@@ -128,16 +133,15 @@ final class AddressStore: NSObject {
                        roomType: String,
                            entranceType: String
     ) {
-        address.house = house
-        address.apartment = apartment
-        address.entrance = entrance
-        address.floor = floor
+        address.house = house.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.apartment = apartment?.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.entrance = entrance?.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.floor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
         address.isPrivateHouse = isPrivateHouse
-        address.entranceType = entranceType
-        address.roomType = roomType
-        
+        address.entranceType = entranceType.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.roomType = roomType.trimmingCharacters(in: .whitespacesAndNewlines)
+
         // Sync fields
-        address.deletedAt = nil
         address.updatedAt = Date()
         
         do {

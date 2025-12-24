@@ -343,8 +343,8 @@ final class PullSyncService {
     /// Простейшее правило: применяем remote, только если remote.updated_at новее локального updatedAt.
     /// Если remote.updated_at нет (редко), считаем, что можно применить.
     private func shouldApplyRemoteUpdate(remoteUpdatedAt: Date?, localUpdatedAt: Date?) -> Bool {
-        guard let r = remoteUpdatedAt else { return true }
-        guard let l = localUpdatedAt else { return true }
+        let r = remoteUpdatedAt ?? .distantPast
+        let l = localUpdatedAt ?? .distantPast
         return r > l
     }
 }
