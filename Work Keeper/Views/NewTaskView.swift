@@ -409,7 +409,7 @@ struct NewTaskView: View {
                         }
                         .padding(.top, 16)
                         .padding(.leading, 36)
-                        .padding(.trailing, 69)
+                        .padding(.trailing, 126)
                         
                         HStack {
                             ZStack {
@@ -473,7 +473,7 @@ struct NewTaskView: View {
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundColor(.custom(.pitchBlack))
                                         .padding(.leading, 16)
-                                        .keyboardType(.phonePad)
+                                       
                                         .textContentType(.telephoneNumber)
                                         .onChange(of: viewModel.phoneDigits) { newValue in
                                             if newValue.count > maxPhoneNumberCharactersCount { viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))

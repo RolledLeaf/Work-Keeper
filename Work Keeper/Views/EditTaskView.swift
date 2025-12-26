@@ -365,11 +365,11 @@ struct EditTaskView: View {
                                 
                                 ZStack {
                                     Color.custom(.pureWhite)
-                                    TextField("", text: $viewModel.phoneNumber)
+                                    TextField("", text: $viewModel.phoneDigits)
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundColor(.custom(.pitchBlack))
                                         .padding(.leading, 16)
-                                        .keyboardType(.phonePad)
+                                        
                                         .textContentType(.telephoneNumber)
                                         .onChange(of: viewModel.phoneDigits) { newValue in
                                             if newValue.count > maxPhoneNumberCharactersCount { viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))

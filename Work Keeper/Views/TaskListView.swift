@@ -307,10 +307,7 @@ struct TaskListView: View {
                 // MARK: - Placeholder or the List beginning
                 
                 if viewModel.groupedTasksByDate.isEmpty {
-                    
-                    
-                       
-                        
+       
                     VStack {
                         
                         HStack {
@@ -441,6 +438,7 @@ struct TaskListView: View {
                                                 }) {
                                                     Image("cancel")
                                                     Text("Отменить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
                                                 .tint(Color.custom(.taskCanceledOrange))
                                                 
@@ -450,6 +448,7 @@ struct TaskListView: View {
                                                 }) {
                                                     Image("completed")
                                                     Text("Завершить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
                                                 .tint(Color.custom(.taskCompleteGreen))
                                                 
@@ -462,6 +461,7 @@ struct TaskListView: View {
                                                 }) {
                                                     Image("cancel")
                                                     Text("Отменить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
                                                 .tint(Color.custom(.taskCanceledOrange))
                                                 
@@ -470,7 +470,8 @@ struct TaskListView: View {
                                                     showSchedulePicker = true
                                                 }) {
                                                     Image("inProgress")
-                                                    Text("Запланировать")
+                                                    Text("Переназначить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
                                                 .tint(Color.custom(.taskViewYellow))
                                                 
@@ -480,7 +481,8 @@ struct TaskListView: View {
                                                     showSchedulePicker = true
                                                 }) {
                                                     Image("inProgress")
-                                                    Text("Запланировать")
+                                                    Text("Переназначить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
                                                 .tint(Color.custom(.taskViewYellow))
                                                 
@@ -490,6 +492,7 @@ struct TaskListView: View {
                                                 }) {
                                                     Image("completed")
                                                     Text("Завершить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
                                                 .tint(Color.custom(.taskCompleteGreen))
                                             }
@@ -501,6 +504,7 @@ struct TaskListView: View {
                                             }) {
                                                 Image("delete")
                                                 Text("Удалить")
+                                                    .font(.custom(Montserrat.regular.rawValue, size: 12))
                                             }
                                             .tint(Color.custom(.deleteButtonRed))
                                             
@@ -511,6 +515,7 @@ struct TaskListView: View {
                                             }) {
                                                 Image("edit")
                                                 Text("Редактировать")
+                                                    .font(.custom(Montserrat.regular.rawValue, size: 12))
                                             }
                                             .tint(Color.custom(.editButtonGray))
                                         }

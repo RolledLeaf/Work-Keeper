@@ -539,13 +539,9 @@ final class EditTaskViewModel: ObservableObject {
 
     // MARK: - Initialization
     init(task: TaskEntity) {
+        
         let rawPhone = task.client?.phone ?? ""
-        let digitsAll = rawPhone.filter { $0.isNumber }
-        var nsn = digitsAll
-        if nsn.hasPrefix("7") { nsn.removeFirst() }     // убираем +7
-        if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
-        self.phoneDigits = nsn
-        self.phoneNumber = rawPhone // можно не использовать во View
+        self.phoneDigits = rawPhone
         self.task = task
         // Populate from existing Task
         self.scheduledAt = task.scheduledAt ?? Date()

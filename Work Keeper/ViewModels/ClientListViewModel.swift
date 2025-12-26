@@ -45,9 +45,6 @@ final class ClientsStatViewModel: ObservableObject {
         print("loaded all clients count: \(allClientsCount)")
     }
     
-
-    
-    
     func loadMonthlyActive(year: Int,
                            onlyCompleted: Bool = false,
                            dateKey: String = "scheduledAt",
@@ -70,7 +67,7 @@ final class ClientsListViewModel: ObservableObject {
     @Published var phone: String = ""
     @Published var searchText: String = ""
     @Published var total: Int = 0
-    @Published var sortSelection: SortOption = .lessCompleted
+    @Published var sortSelection: SortOption = .nameAZ
     @Published var didPickNewAddress = false
     
     private var cancellables = Set<AnyCancellable>()
@@ -316,11 +313,9 @@ final class EditClientViewModel: ObservableObject {
     
     init(client: Client) {
         let rawPhone = client.phone ?? ""
-        let digitsAll = rawPhone.filter { $0.isNumber }
-        var nsn = digitsAll
+       
+        self.phoneDigits = rawPhone
      
-        self.phoneDigits = nsn
-        self.phoneNumber = rawPhone
         
         self.client = client
         self.firstName = client.firstName ?? ""

@@ -128,8 +128,7 @@ struct ClientsListView: View {
                             showSortOrderMenu = true
                         }) {
                             Image("sortAZ")
-                                .resizable()
-                                .frame(width: 31, height: 22)
+                                
                                 
                         }
                         .padding(.leading, 3)
