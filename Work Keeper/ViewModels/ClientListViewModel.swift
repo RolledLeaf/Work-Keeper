@@ -316,11 +316,9 @@ final class EditClientViewModel: ObservableObject {
        
         self.phoneDigits = rawPhone
      
-        
         self.client = client
         self.firstName = client.firstName ?? ""
         self.lastName = client.lastName ?? ""
-        
         
         //Populate client info
         self.firstName = client.firstName ?? ""

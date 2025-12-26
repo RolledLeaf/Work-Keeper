@@ -115,6 +115,7 @@ final class TaskStore: NSObject, ObservableObject {
     
     func fetchTasks() -> [TaskEntity] {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "deletedAt == nil")
         request.sortDescriptors = [
             NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)
         ]
@@ -220,6 +221,7 @@ final class TaskStore: NSObject, ObservableObject {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
 
         var predicates: [NSPredicate] = [
+            NSPredicate(format: "deletedAt == nil"),
             NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
         ]
         if let status { predicates.append(NSPredicate(format: "statusString == %@", status.rawValue)) }
@@ -240,7 +242,12 @@ final class TaskStore: NSObject, ObservableObject {
     ) -> [TaskEntity] {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         request.sortDescriptors = sortDescriptors
-        request.predicate = predicate
+        let notDeleted = NSPredicate(format: "deletedAt == nil")
+        if let predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [notDeleted, predicate])
+        } else {
+            request.predicate = notDeleted
+        }
         if let limit = limit { request.fetchLimit = limit }
 
         if debug {
@@ -277,6 +284,7 @@ final class TaskStore: NSObject, ObservableObject {
         request.sortDescriptors = [NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)]
 
         var predicates: [NSPredicate] = [
+            NSPredicate(format: "deletedAt == nil"),
             NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
         ]
         if let status { predicates.append(NSPredicate(format: "statusString == %@", status.rawValue)) }
@@ -317,7 +325,7 @@ final class TaskStore: NSObject, ObservableObject {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)]
 
-        var predicates: [NSPredicate] = []
+        var predicates: [NSPredicate] = [NSPredicate(format: "deletedAt == nil")]
         if let start = start, let end = end {
             predicates.append(NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, start as NSDate, dateKey, end as NSDate))
         }
@@ -349,6 +357,7 @@ final class TaskStore: NSObject, ObservableObject {
     @discardableResult
     func totalTasksCount(debug: Bool = false) -> Int {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "deletedAt == nil")
         do {
             let count = try context.count(for: request)
             if debug { print("[TaskStore] totalTaskCount =", count) }
@@ -362,7 +371,10 @@ final class TaskStore: NSObject, ObservableObject {
     @discardableResult
     func totalCanceled(debug: Bool = false) -> Int {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "statusString == %@", Status.canceled.rawValue)
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "statusString == %@", Status.canceled.rawValue)
+        ])
         do {
             let count = try context.count(for: request)
             if debug { print("[TaskListViewModel] totalCanceled =", count) }

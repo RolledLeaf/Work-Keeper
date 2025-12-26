@@ -102,8 +102,20 @@ final class PullSyncService {
 
     private func upsertStreets(_ remote: [StreetDTO], debug: Bool) async throws {
         if debug { print("⬇️ Streets remote count:", remote.count) }
+        if debug {
+            let delCount = remote.filter { $0.deleted_at != nil }.count
+            if delCount > 0 {
+                print("🗑️ Streets remote deleted_at count:", delCount)
+                if let sample = remote.first(where: { $0.deleted_at != nil }) {
+                    print("🗑️ Streets deleted sample:", sample.id, String(describing: sample.deleted_at), String(describing: sample.updated_at))
+                }
+            } else {
+                print("🗑️ Streets remote deleted_at count: 0")
+            }
+        }
 
-        try await context.perform { [self] in
+        try await context.perform { [weak self] in
+            guard let self else { return }
             for r in remote {
                 
                 // Defensive: CoreData Street.name is required.
@@ -118,14 +130,22 @@ final class PullSyncService {
                 
                 let local = self.findOrCreateStreet(remoteId: r.id)
 
-                if !self.shouldApplyRemoteUpdate(remoteUpdatedAt: r.updated_at, localUpdatedAt: local.updatedAt) {
+                if !self.shouldApplyRemoteUpdate(
+                    remoteUpdatedAt: r.updated_at,
+                    remoteDeletedAt: r.deleted_at,
+                    localUpdatedAt: local.updatedAt,
+                    localDeletedAt: local.deletedAt
+                ) {
                     continue
                 }
 
                 local.name = trimmedName
                 local.remoteId = r.id
                 local.deletedAt = r.deleted_at
-                local.updatedAt = r.updated_at ?? Date()
+                if debug, let d = r.deleted_at {
+                    print("🗑️ Apply remote deleted_at -> local. remoteId=\(r.id) deletedAt=\(d)")
+                }
+                local.updatedAt = r.updated_at ?? r.deleted_at ?? Date()
             }
 
             try self.purgeInvalidStreets(debug: debug)
@@ -137,7 +157,19 @@ final class PullSyncService {
 
     private func upsertClients(_ remote: [ClientDTO], debug: Bool) async throws {
         if debug { print("⬇️ Clients remote count:", remote.count) }
-        try await context.perform { [self] in
+        if debug {
+            let delCount = remote.filter { $0.deleted_at != nil }.count
+            if delCount > 0 {
+                print("🗑️ Clients remote deleted_at count:", delCount)
+                if let sample = remote.first(where: { $0.deleted_at != nil }) {
+                    print("🗑️ Clients deleted sample:", sample.id, String(describing: sample.deleted_at), String(describing: sample.updated_at))
+                }
+            } else {
+                print("🗑️ Clients remote deleted_at count: 0")
+            }
+        }
+        try await context.perform { [weak self] in
+            guard let self else { return }
             for r in remote {
                 let first = r.first_name.trimmingCharacters(in: .whitespacesAndNewlines)
                 let phone = r.phone.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -150,7 +182,12 @@ final class PullSyncService {
 
                 let local = self.findOrCreateClient(remoteId: r.id)
 
-                if !self.shouldApplyRemoteUpdate(remoteUpdatedAt: r.updated_at, localUpdatedAt: local.updatedAt) {
+                if !self.shouldApplyRemoteUpdate(
+                    remoteUpdatedAt: r.updated_at,
+                    remoteDeletedAt: r.deleted_at,
+                    localUpdatedAt: local.updatedAt,
+                    localDeletedAt: local.deletedAt
+                ) {
                     continue
                 }
 
@@ -161,7 +198,10 @@ final class PullSyncService {
 
                 local.remoteId = r.id
                 local.deletedAt = r.deleted_at
-                local.updatedAt = r.updated_at ?? Date()
+                if debug, let d = r.deleted_at {
+                    print("🗑️ Apply remote deleted_at -> local. remoteId=\(r.id) deletedAt=\(d)")
+                }
+                local.updatedAt = r.updated_at ?? r.deleted_at ?? Date()
             }
 
             try self.purgeInvalidClients(debug: debug)
@@ -171,8 +211,20 @@ final class PullSyncService {
 
     private func upsertAddresses(_ remote: [AddressDTO], debug: Bool) async throws {
         if debug { print("⬇️ Addresses remote count:", remote.count) }
+        if debug {
+            let delCount = remote.filter { $0.deleted_at != nil }.count
+            if delCount > 0 {
+                print("🗑️ Addresses remote deleted_at count:", delCount)
+                if let sample = remote.first(where: { $0.deleted_at != nil }) {
+                    print("🗑️ Addresses deleted sample:", sample.id, String(describing: sample.deleted_at), String(describing: sample.updated_at))
+                }
+            } else {
+                print("🗑️ Addresses remote deleted_at count: 0")
+            }
+        }
 
-        try await context.perform {
+        try await context.perform { [weak self] in
+            guard let self else { return }
             // кэш для быстрых связей
             let streetByRemoteId = self.buildStreetIndex()
             let clientByRemoteId = self.buildClientIndex()
@@ -183,7 +235,12 @@ final class PullSyncService {
 
                 let local = self.findOrCreateAddress(remoteId: r.id)
 
-                if !self.shouldApplyRemoteUpdate(remoteUpdatedAt: r.updated_at, localUpdatedAt: local.updatedAt) {
+                if !self.shouldApplyRemoteUpdate(
+                    remoteUpdatedAt: r.updated_at,
+                    remoteDeletedAt: r.deleted_at,
+                    localUpdatedAt: local.updatedAt,
+                    localDeletedAt: local.deletedAt
+                ) {
                     continue
                 }
 
@@ -201,17 +258,33 @@ final class PullSyncService {
 
                 local.remoteId = r.id
                 local.deletedAt = r.deleted_at
-                local.updatedAt = r.updated_at ?? Date()
+                if debug, let d = r.deleted_at {
+                    print("🗑️ Apply remote deleted_at -> local. remoteId=\(r.id) deletedAt=\(d)")
+                }
+                local.updatedAt = r.updated_at ?? r.deleted_at ?? Date()
             }
 
+            try self.purgeInvalidAddresses(debug: debug)
             try self.context.saveIfNeeded()
         }
     }
 
     private func upsertTasks(_ remote: [TaskDTO], debug: Bool) async throws {
         if debug { print("⬇️ Tasks remote count:", remote.count) }
+        if debug {
+            let delCount = remote.filter { $0.deleted_at != nil }.count
+            if delCount > 0 {
+                print("🗑️ Tasks remote deleted_at count:", delCount)
+                if let sample = remote.first(where: { $0.deleted_at != nil }) {
+                    print("🗑️ Tasks deleted sample:", sample.id, String(describing: sample.deleted_at), String(describing: sample.updated_at))
+                }
+            } else {
+                print("🗑️ Tasks remote deleted_at count: 0")
+            }
+        }
 
-        try await context.perform { [self] in
+        try await context.perform { [weak self] in
+            guard let self else { return }
             let clientByRemoteId = self.buildClientIndex()
             let addressByRemoteId = self.buildAddressIndex()
 
@@ -232,14 +305,23 @@ final class PullSyncService {
 
                 let local = self.findOrCreateTask(remoteId: r.id)
 
-                if !self.shouldApplyRemoteUpdate(remoteUpdatedAt: r.updated_at, localUpdatedAt: local.updatedAt) {
+                if !self.shouldApplyRemoteUpdate(
+                    remoteUpdatedAt: r.updated_at,
+                    remoteDeletedAt: r.deleted_at,
+                    localUpdatedAt: local.updatedAt,
+                    localDeletedAt: local.deletedAt
+                ) {
                     continue
                 }
 
                 local.client = client
 
                 if let addrId = r.address_id {
-                    local.address = addressByRemoteId[addrId]
+                    guard let addr = addressByRemoteId[addrId] else {
+                        if debug { print("⚠️ Skip remote Task: address_id has no local mapping. remoteId=\(r.id) address_id=\(addrId)") }
+                        continue
+                    }
+                    local.address = addr
                 } else {
                     local.address = nil
                 }
@@ -250,6 +332,10 @@ final class PullSyncService {
                 local.comment = r.comment
 
                 local.isRemote = r.is_remote
+                if local.isRemote == false, local.address == nil {
+                    if debug { print("⚠️ Skip remote Task: non-remote but address is nil after mapping. remoteId=\(r.id)") }
+                    continue
+                }
                 local.statusString = r.statusString
 
                 local.contractAmount = r.contract_amount
@@ -260,7 +346,10 @@ final class PullSyncService {
 
                 local.remoteId = r.id
                 local.deletedAt = r.deleted_at
-                local.updatedAt = r.updated_at ?? Date()
+                if debug, let d = r.deleted_at {
+                    print("🗑️ Apply remote deleted_at -> local. remoteId=\(r.id) deletedAt=\(d)")
+                }
+                local.updatedAt = r.updated_at ?? r.deleted_at ?? Date()
             }
 
             try self.purgeInvalidTasks(debug: debug)
@@ -270,11 +359,25 @@ final class PullSyncService {
 
     // MARK: - CoreData find/create
 
+    // Helper to ensure CoreData objects have a required local `id: UUID` if needed.
+    private func ensureLocalIdIfNeeded(_ object: NSManagedObject) {
+        // Some entities (e.g., Client/TaskEntity) have a required local `id: UUID`.
+        // Placeholders created during Pull must satisfy CoreData validation before save.
+        let attrs = object.entity.attributesByName
+        guard attrs.keys.contains("id") else { return }
+        if object.value(forKey: "id") == nil {
+            object.setValue(UUID(), forKey: "id")
+        }
+    }
+
     private func findOrCreateStreet(remoteId: UUID) -> Street {
         if let existing = fetchOne(Street.self, remoteId: remoteId) { return existing }
         let s = Street(context: context)
         s.remoteId = remoteId
-        s.updatedAt = Date()
+        s.deletedAt = nil
+        // New placeholder should be treated as very old so remote snapshot always applies
+        s.updatedAt = .distantPast
+        ensureLocalIdIfNeeded(s)
         return s
     }
 
@@ -282,7 +385,9 @@ final class PullSyncService {
         if let existing = fetchOne(Client.self, remoteId: remoteId) { return existing }
         let c = Client(context: context)
         c.remoteId = remoteId
-        c.updatedAt = Date()
+        c.deletedAt = nil
+        c.updatedAt = .distantPast
+        ensureLocalIdIfNeeded(c)
         return c
     }
 
@@ -290,7 +395,9 @@ final class PullSyncService {
         if let existing = fetchOne(Address.self, remoteId: remoteId) { return existing }
         let a = Address(context: context)
         a.remoteId = remoteId
-        a.updatedAt = Date()
+        a.deletedAt = nil
+        a.updatedAt = .distantPast
+        ensureLocalIdIfNeeded(a)
         return a
     }
 
@@ -298,7 +405,9 @@ final class PullSyncService {
         if let existing = fetchOne(TaskEntity.self, remoteId: remoteId) { return existing }
         let t = TaskEntity(context: context)
         t.remoteId = remoteId
-        t.updatedAt = Date()
+        t.deletedAt = nil
+        t.updatedAt = .distantPast
+        ensureLocalIdIfNeeded(t)
         return t
     }
 
@@ -340,17 +449,44 @@ final class PullSyncService {
 
     // MARK: - Conflict rule
 
-    /// Простейшее правило: применяем remote, только если remote.updated_at новее локального updatedAt.
-    /// Если remote.updated_at нет (редко), считаем, что можно применить.
-    private func shouldApplyRemoteUpdate(remoteUpdatedAt: Date?, localUpdatedAt: Date?) -> Bool {
-        let r = remoteUpdatedAt ?? .distantPast
-        let l = localUpdatedAt ?? .distantPast
-        return r > l
+    /// Apply remote snapshot only if the remote record is newer than the local record.
+    /// We treat `deleted_at` as an update too, because some soft-delete flows may not bump `updated_at`.
+    private func shouldApplyRemoteUpdate(
+        remoteUpdatedAt: Date?,
+        remoteDeletedAt: Date?,
+        localUpdatedAt: Date?,
+        localDeletedAt: Date?
+    ) -> Bool {
+        let rUpdated = remoteUpdatedAt ?? .distantPast
+        let rDeleted = remoteDeletedAt ?? .distantPast
+        let remoteStamp = max(rUpdated, rDeleted)
+
+        let lUpdated = localUpdatedAt ?? .distantPast
+        let lDeleted = localDeletedAt ?? .distantPast
+        let localStamp = max(lUpdated, lDeleted)
+
+        return remoteStamp > localStamp
     }
 }
 
 private extension NSManagedObjectContext {
     func saveIfNeeded() throws {
-        if hasChanges { try save() }
+        guard hasChanges else { return }
+        do {
+            try save()
+        } catch {
+            // Print CoreData validation details for easier debugging
+            if let nsError = error as NSError? {
+                if let detailed = nsError.userInfo["NSDetailedErrors"] as? [NSError], !detailed.isEmpty {
+                    print("❌ CoreData save failed with \(detailed.count) detailed error(s):")
+                    for e in detailed {
+                        print("  -", e)
+                    }
+                } else {
+                    print("❌ CoreData save failed:", nsError)
+                }
+            }
+            throw error
+        }
     }
 }

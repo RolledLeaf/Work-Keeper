@@ -150,7 +150,7 @@ final class TaskListViewModel: ObservableObject {
     func applyCurrentFiltersUsingDB(debug: Bool = false) {
         print("[TaskListViewModel] applyCurrentFiltersUsingDB called with searchText:", searchText)
         
-        var andPreds: [NSPredicate] = []
+        var andPreds: [NSPredicate] = [NSPredicate(format: "deletedAt == nil")]
         
         if let statuses = selectedStatuses, !statuses.isEmpty {
             let raw = statuses.map { $0.rawValue }

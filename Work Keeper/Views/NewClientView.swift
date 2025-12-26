@@ -371,7 +371,6 @@ struct NewClientView: View {
                             .font(.system(size: 21, weight: .regular, design: .default))
                             .foregroundColor(.black)
                             .padding(.leading, 5)
-                            .keyboardType(.phonePad)
                             .focused($focusedField, equals: .phoneNumber)
                             .textContentType(.telephoneNumber)
                             .onChange(of: viewModel.phoneDigits) { newValue in
