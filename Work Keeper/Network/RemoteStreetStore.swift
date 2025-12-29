@@ -94,6 +94,44 @@ final class RemoteStreetStore {
         return created
     }
 
+    // MARK: - Update
+
+    private struct StreetUpdateDTO: Encodable {
+        let name: String
+    }
+
+    func update(streetId: UUID, ownerId: UUID, name: String) async throws -> StreetDTO {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw NSError(
+                domain: "RemoteStreetStore",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "Street name must not be empty"]
+            )
+        }
+
+        let payload = StreetUpdateDTO(name: trimmed)
+
+        let rows: [StreetDTO] = try await client
+            .from("streets")
+            .update(payload)
+            .eq("id", value: streetId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
+            .select()
+            .execute()
+            .value
+
+        guard let first = rows.first else {
+            throw NSError(
+                domain: "RemoteStreetStore",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "Update street returned no rows"]
+            )
+        }
+
+        return first
+    }
+
     // MARK: - Soft delete
 
     func softDelete(streetId: UUID, ownerId: UUID) async throws {
@@ -113,5 +151,16 @@ final class RemoteStreetStore {
                 userInfo: [NSLocalizedDescriptionKey: "Soft delete did not update any rows. Check that owner_id matches auth.uid() and that the row isn't already deleted."]
             )
         }
+    }
+
+    func softDelete(streetId: UUID, ownerId: UUID, deletedAt: Date) async throws {
+        struct Payload: Encodable { let deleted_at: String }
+
+        _ = try await client
+            .from("streets")
+            .update(Payload(deleted_at: deletedAt.iso8601String))
+            .eq("id", value: streetId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
+            .execute()
     }
 }

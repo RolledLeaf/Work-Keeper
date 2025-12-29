@@ -71,6 +71,18 @@ struct SettingsView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
+            
+            Button("Push Streets") {
+                Task {
+                    guard let ownerId = auth.session?.user.id else { return }
+                    let service = InitialUploadService(context: context)
+                    do {
+                        try await service.pushStreets(ownerId: ownerId, debug: true)
+                    } catch {
+                        print("❌ Streets push error:", error)
+                    }
+                }
+            }
 
             Spacer()
         }

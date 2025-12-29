@@ -13,6 +13,7 @@ final class InitialUploadService {
         self.context = context
     }
 
+
     // MARK: - Public
 
     /// Запусти после логина, когда есть session.user.id
@@ -25,6 +26,19 @@ final class InitialUploadService {
         try await uploadTasks(ownerId: ownerId, debug: debug)
 
         if debug { print("✅ InitialUpload finished") }
+    }
+
+    /// Incremental push for Streets (create/update/soft-delete).
+    /// Uses a local lastPushAt checkpoint stored in UserDefaults.
+    func pushStreets(ownerId: UUID, debug: Bool = true) async throws {
+        let syncStartedAt = Date()
+        let since = loadLastPushAtStreets()
+        if debug { print("⬆️ Streets Push started. since=\(since)") }
+
+        try await pushStreets(ownerId: ownerId, since: since, debug: debug)
+
+        saveLastPushAtStreets(syncStartedAt)
+        if debug { print("✅ Streets Push finished") }
     }
 
     // MARK: - Streets
@@ -65,6 +79,75 @@ final class InitialUploadService {
                 s.updatedAt = Date()
             }
             try await saveIfNeeded()
+        }
+    }
+
+    /// Push streets changed since `since`.
+    /// - Creates: remoteId == nil
+    /// - Updates: remoteId != nil && deletedAt == nil && updatedAt > since
+    /// - Soft-deletes: remoteId != nil && deletedAt != nil && updatedAt > since
+    private func pushStreets(ownerId: UUID, since: Date, debug: Bool) async throws {
+        // 1) Create new local streets that were never uploaded.
+        let toCreate: [Street] = try await fetch(Street.self, predicate: NSPredicate(format: "deletedAt == nil AND remoteId == nil"))
+        if debug { print("⬆️ Streets to CREATE:", toCreate.count) }
+
+        for s in toCreate {
+            let trimmed = (s.name ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { continue }
+
+            // Avoid remote unique constraint violation: link if exists.
+            if let existing = try await streetStore.fetchByName(ownerId: ownerId, name: trimmed) {
+                if debug { print("ℹ️ Link existing remote street during push:", trimmed) }
+                try await context.perform {
+                    s.remoteId = existing.id
+                    s.updatedAt = Date()
+                }
+                try await saveIfNeeded()
+                continue
+            }
+
+            let created = try await streetStore.create(name: trimmed, ownerId: ownerId)
+            try await context.perform {
+                s.remoteId = created.id
+                // Prefer server timestamp if available
+                s.updatedAt = created.updated_at ?? Date()
+            }
+            try await saveIfNeeded()
+        }
+
+        // 2) Update edited streets.
+        let toUpdate: [Street] = try await fetch(Street.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "remoteId != nil"),
+            NSPredicate(format: "updatedAt > %@", since as NSDate)
+        ]))
+        if debug { print("⬆️ Streets to UPDATE:", toUpdate.count) }
+
+        for s in toUpdate {
+            guard let rid = s.remoteId else { continue }
+            let trimmed = (s.name ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { continue }
+
+            let updated = try await streetStore.update(streetId: rid, ownerId: ownerId, name: trimmed)
+            try await context.perform {
+                s.updatedAt = updated.updated_at ?? Date()
+            }
+            try await saveIfNeeded()
+        }
+
+        // 3) Soft-delete locally deleted streets.
+        let toDelete: [Street] = try await fetch(Street.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "deletedAt != nil"),
+            NSPredicate(format: "remoteId != nil"),
+            NSPredicate(format: "updatedAt > %@", since as NSDate)
+        ]))
+        if debug { print("⬆️ Streets to SOFT-DELETE:", toDelete.count) }
+
+        for s in toDelete {
+            guard let rid = s.remoteId else { continue }
+            let deletedAt = s.deletedAt ?? Date()
+            try await streetStore.softDelete(streetId: rid, ownerId: ownerId, deletedAt: deletedAt)
+            // No local changes needed; keep deletedAt as is.
         }
     }
 
