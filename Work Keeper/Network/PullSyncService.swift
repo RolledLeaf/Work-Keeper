@@ -150,6 +150,7 @@ final class PullSyncService {
                     print("🗑️ Apply remote deleted_at -> local. remoteId=\(r.id) deletedAt=\(d)")
                 }
                 local.updatedAt = r.updated_at ?? r.deleted_at ?? Date()
+                local.needsSync = false
             }
 
             try self.purgeInvalidStreets(debug: debug)

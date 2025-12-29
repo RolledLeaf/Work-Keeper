@@ -35,6 +35,7 @@ final class StreetStore: NSObject, ObservableObject {
                 street.remoteId = nil
                 street.deletedAt = nil
                 street.updatedAt = Date()
+                street.needsSync = true
                 try context.save()
                 return street
             }
@@ -46,6 +47,7 @@ final class StreetStore: NSObject, ObservableObject {
             street.remoteId = nil
             street.deletedAt = nil
             street.updatedAt = Date()
+            street.needsSync = true
             do {
                 try context.save()
             } catch {
@@ -105,6 +107,7 @@ final class StreetStore: NSObject, ObservableObject {
         street.remoteId = nil
         street.deletedAt = nil
         street.updatedAt = Date()
+        street.needsSync = true
         
         do {
             try context.save()
@@ -117,6 +120,7 @@ final class StreetStore: NSObject, ObservableObject {
         // Soft delete for sync
         street.deletedAt = Date()
         street.updatedAt = Date()
+        street.needsSync = true
         
         do {
             try context.save()
@@ -144,11 +148,13 @@ final class StreetStore: NSObject, ObservableObject {
         street.name = trimmed
         // Sync fields
         street.updatedAt = Date()
+        street.needsSync = true
 
         do {
             try context.save()
         } catch {
             print("Error updating street: \(error)")
+            return
         }
     }
     

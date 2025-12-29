@@ -82,13 +82,17 @@ final class InitialUploadService {
         }
     }
 
-    /// Push streets changed since `since`.
-    /// - Creates: remoteId == nil
-    /// - Updates: remoteId != nil && deletedAt == nil && updatedAt > since
-    /// - Soft-deletes: remoteId != nil && deletedAt != nil && updatedAt > since
+    /// Push streets changed since `since`, using needsSync flag.
     private func pushStreets(ownerId: UUID, since: Date, debug: Bool) async throws {
+        // NOTE: `updatedAt` is a business/merge timestamp and must NOT be used as a dirty flag.
+        // We push only objects explicitly marked as needing sync.
+
         // 1) Create new local streets that were never uploaded.
-        let toCreate: [Street] = try await fetch(Street.self, predicate: NSPredicate(format: "deletedAt == nil AND remoteId == nil"))
+        let toCreate: [Street] = try await fetch(Street.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "remoteId == nil")
+        ]))
         if debug { print("⬆️ Streets to CREATE:", toCreate.count) }
 
         for s in toCreate {
@@ -100,7 +104,8 @@ final class InitialUploadService {
                 if debug { print("ℹ️ Link existing remote street during push:", trimmed) }
                 try await context.perform {
                     s.remoteId = existing.id
-                    s.updatedAt = Date()
+                    s.updatedAt = existing.updated_at ?? Date()
+                    s.needsSync = false
                 }
                 try await saveIfNeeded()
                 continue
@@ -111,15 +116,16 @@ final class InitialUploadService {
                 s.remoteId = created.id
                 // Prefer server timestamp if available
                 s.updatedAt = created.updated_at ?? Date()
+                s.needsSync = false
             }
             try await saveIfNeeded()
         }
 
         // 2) Update edited streets.
         let toUpdate: [Street] = try await fetch(Street.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
             NSPredicate(format: "deletedAt == nil"),
-            NSPredicate(format: "remoteId != nil"),
-            NSPredicate(format: "updatedAt > %@", since as NSDate)
+            NSPredicate(format: "remoteId != nil")
         ]))
         if debug { print("⬆️ Streets to UPDATE:", toUpdate.count) }
 
@@ -131,15 +137,16 @@ final class InitialUploadService {
             let updated = try await streetStore.update(streetId: rid, ownerId: ownerId, name: trimmed)
             try await context.perform {
                 s.updatedAt = updated.updated_at ?? Date()
+                s.needsSync = false
             }
             try await saveIfNeeded()
         }
 
         // 3) Soft-delete locally deleted streets.
         let toDelete: [Street] = try await fetch(Street.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
             NSPredicate(format: "deletedAt != nil"),
-            NSPredicate(format: "remoteId != nil"),
-            NSPredicate(format: "updatedAt > %@", since as NSDate)
+            NSPredicate(format: "remoteId != nil")
         ]))
         if debug { print("⬆️ Streets to SOFT-DELETE:", toDelete.count) }
 
@@ -147,7 +154,14 @@ final class InitialUploadService {
             guard let rid = s.remoteId else { continue }
             let deletedAt = s.deletedAt ?? Date()
             try await streetStore.softDelete(streetId: rid, ownerId: ownerId, deletedAt: deletedAt)
-            // No local changes needed; keep deletedAt as is.
+
+            // Mark as synced after successful remote soft-delete.
+            try await context.perform {
+                s.needsSync = false
+                // Keep local deletedAt; updatedAt becomes the moment we confirmed sync.
+                s.updatedAt = Date()
+            }
+            try await saveIfNeeded()
         }
     }
 
