@@ -13,7 +13,8 @@ final class ClientStore: NSObject, ObservableObject {
     func createClient(firstName: String,
                       lastName: String?,
                       addresses: [Address],
-                      phone: String
+                      phone: String,
+                      comment: String?
     ) -> Client {
         
         let client = Client(context: context)
@@ -22,11 +23,13 @@ final class ClientStore: NSObject, ObservableObject {
         client.lastName = lastName
         client.address = NSSet(array: addresses)
         client.phone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+        client.comment = comment
         
         // Sync fields
         client.remoteId = nil
         client.deletedAt = nil
         client.updatedAt = Date()
+        client.needsSync = true
         
         do {
             try context.save()
@@ -54,15 +57,16 @@ final class ClientStore: NSObject, ObservableObject {
                 return createClient(firstName: firstName,
                                     lastName: lastName,
                                     addresses: addresses,
-                                    phone: phone
+                                    phone: phone, comment: comment
                 )
+                
             }
         } catch {
             print("Error in createOrFetchClient: \(error)")
             return createClient(firstName: firstName,
                                 lastName: lastName,
                                 addresses: addresses,
-                                phone: phone)
+                                phone: phone, comment: comment)
         }
     }
     
@@ -256,6 +260,7 @@ final class ClientStore: NSObject, ObservableObject {
         // Sync fields
         //        client.deletedAt = nil - убрал чтобы случайно не "воскресить" клиента локально
         client.updatedAt = Date()
+        client.needsSync = true
         
         do {
             try context.save()
@@ -273,6 +278,7 @@ final class ClientStore: NSObject, ObservableObject {
             for address in addresses {
                 address.deletedAt = now
                 address.updatedAt = now
+                address.needsSync = true
             }
         }
         
@@ -281,12 +287,14 @@ final class ClientStore: NSObject, ObservableObject {
             for task in tasks {
                 task.deletedAt = now
                 task.updatedAt = now
+                task.needsSync = true
             }
         }
         
         // 3) Soft-delete client
         client.deletedAt = now
         client.updatedAt = now
+        client.needsSync = true
         
         do {
             try context.save()

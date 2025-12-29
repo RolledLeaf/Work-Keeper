@@ -84,6 +84,42 @@ struct SettingsView: View {
                 }
             }
 
+            Button("Push Clients") {
+                Task {
+                    guard let ownerId = auth.session?.user.id else { return }
+                    let service = InitialUploadService(context: context)
+                    do {
+                        try await service.pushClients(ownerId: ownerId, debug: true)
+                    } catch {
+                        print("❌ Clients push error:", error)
+                    }
+                }
+            }
+
+            Button("Push Addresses") {
+                Task {
+                    guard let ownerId = auth.session?.user.id else { return }
+                    let service = InitialUploadService(context: context)
+                    do {
+                        try await service.pushAddresses(ownerId: ownerId, debug: true)
+                    } catch {
+                        print("❌ Addresses push error:", error)
+                    }
+                }
+            }
+
+            Button("Push Tasks") {
+                Task {
+                    guard let ownerId = auth.session?.user.id else { return }
+                    let service = InitialUploadService(context: context)
+                    do {
+                        try await service.pushTasks(ownerId: ownerId, debug: true)
+                    } catch {
+                        print("❌ Tasks push error:", error)
+                    }
+                }
+            }
+
             Spacer()
         }
         .padding()

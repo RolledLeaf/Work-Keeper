@@ -41,6 +41,41 @@ final class InitialUploadService {
         if debug { print("✅ Streets Push finished") }
     }
 
+    func pushClients(ownerId: UUID, debug: Bool = true) async throws {
+        let syncStartedAt = Date()
+        let since = loadLastPushAtClients()
+        if debug { print("⬆️ Clients Push started. since=\(since)") }
+
+        try await pushClients(ownerId: ownerId, since: since, debug: debug)
+
+        saveLastPushAtClients(syncStartedAt)
+        if debug { print("✅ Clients Push finished") }
+    }
+
+    func pushAddresses(ownerId: UUID, debug: Bool = true) async throws {
+        let syncStartedAt = Date()
+        let since = loadLastPushAtAddresses()
+        if debug { print("⬆️ Addresses Push started. since=\(since)") }
+
+        try await pushAddresses(ownerId: ownerId, since: since, debug: debug)
+
+        saveLastPushAtAddresses(syncStartedAt)
+        if debug { print("✅ Addresses Push finished") }
+    }
+
+    func pushTasks(ownerId: UUID, debug: Bool = true) async throws {
+        let syncStartedAt = Date()
+        let since = loadLastPushAtTasks()
+        if debug { print("⬆️ Tasks Push started. since=\(since)") }
+
+        try await pushTasks(ownerId: ownerId, since: since, debug: debug)
+
+        saveLastPushAtTasks(syncStartedAt)
+        if debug { print("✅ Tasks Push finished") }
+    }
+    
+    
+
     // MARK: - Streets
 
     private func uploadStreets(ownerId: UUID, debug: Bool) async throws {
@@ -66,7 +101,8 @@ final class InitialUploadService {
                 if debug { print("ℹ️ Link existing remote street:", trimmed) }
                 try await context.perform {
                     s.remoteId = existing.id
-                    s.updatedAt = Date()
+                    s.updatedAt = existing.updated_at ?? Date()
+                    s.needsSync = false
                 }
                 try await saveIfNeeded()
                 continue
@@ -76,7 +112,8 @@ final class InitialUploadService {
             let created = try await streetStore.create(name: trimmed, ownerId: ownerId)
             try await context.perform {
                 s.remoteId = created.id
-                s.updatedAt = Date()
+                s.updatedAt = created.updated_at ?? Date()
+                s.needsSync = false
             }
             try await saveIfNeeded()
         }
@@ -167,6 +204,102 @@ final class InitialUploadService {
 
     // MARK: - Clients
 
+    /// Push clients changed since `since`, using needsSync flag.
+    private func pushClients(ownerId: UUID, since: Date, debug: Bool) async throws {
+        _ = since // checkpoint is kept for logging; dirty tracking uses needsSync.
+
+        // CREATE
+        let toCreate: [Client] = try await fetch(Client.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "remoteId == nil")
+        ]))
+        if debug { print("⬆️ Clients to CREATE:", toCreate.count) }
+
+        for c in toCreate {
+            let first = (c.firstName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let rawPhone = (c.phone ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !first.isEmpty, !rawPhone.isEmpty else { continue }
+
+            // Link by unique phone if already exists
+            if let existing = try await clientStore.fetchByPhone(ownerId: ownerId, phone: rawPhone) {
+                if debug { print("ℹ️ Link existing remote client during push. phone:", rawPhone) }
+                try await context.perform {
+                    c.remoteId = existing.id
+                    c.updatedAt = existing.updated_at ?? Date()
+                    c.needsSync = false
+                }
+                try await saveIfNeeded()
+                continue
+            }
+
+            let created = try await clientStore.create(
+                firstName: first,
+                lastName: c.lastName,
+                phone: rawPhone,
+                comment: c.comment,
+                ownerId: ownerId
+            )
+
+            try await context.perform {
+                c.remoteId = created.id
+                c.updatedAt = created.updated_at ?? Date()
+                c.needsSync = false
+            }
+            try await saveIfNeeded()
+        }
+
+        // UPDATE
+        let toUpdate: [Client] = try await fetch(Client.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "remoteId != nil")
+        ]))
+        if debug { print("⬆️ Clients to UPDATE:", toUpdate.count) }
+
+        for c in toUpdate {
+            guard let rid = c.remoteId else { continue }
+            let first = (c.firstName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let rawPhone = (c.phone ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !first.isEmpty, !rawPhone.isEmpty else { continue }
+
+            let updated = try await clientStore.update(
+                clientId: rid,
+                ownerId: ownerId,
+                firstName: first,
+                lastName: c.lastName,
+                phone: rawPhone,
+                comment: c.comment
+            )
+
+            try await context.perform {
+                c.updatedAt = updated.updated_at ?? Date()
+                c.needsSync = false
+            }
+            try await saveIfNeeded()
+        }
+
+        // SOFT DELETE
+        let toDelete: [Client] = try await fetch(Client.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt != nil"),
+            NSPredicate(format: "remoteId != nil")
+        ]))
+        if debug { print("⬆️ Clients to SOFT-DELETE:", toDelete.count) }
+
+        for c in toDelete {
+            guard let rid = c.remoteId else { continue }
+            let deletedAt = c.deletedAt ?? Date()
+            try await clientStore.softDelete(clientId: rid, ownerId: ownerId, deletedAt: deletedAt)
+
+            try await context.perform {
+                c.needsSync = false
+                c.updatedAt = Date()
+            }
+            try await saveIfNeeded()
+        }
+    }
+
     private func uploadClients(ownerId: UUID, debug: Bool) async throws {
         let clients: [Client] = try await fetch(Client.self, predicate: NSPredicate(format: "deletedAt == nil AND remoteId == nil"))
         if debug { print("⬆️ Clients to upload:", clients.count) }
@@ -202,7 +335,8 @@ final class InitialUploadService {
                 if debug { print("ℹ️ Link existing remote client. phone:", rawPhone) }
                 try await context.perform {
                     c.remoteId = existing.id
-                    c.updatedAt = Date()
+                    c.updatedAt = existing.updated_at ?? Date()
+                    c.needsSync = false
                 }
                 try await saveIfNeeded()
                 continue
@@ -220,12 +354,159 @@ final class InitialUploadService {
             try await context.perform {
                 c.remoteId = created.id
                 c.updatedAt = Date()
+                c.needsSync = false
             }
             try await saveIfNeeded()
         }
     }
 
     // MARK: - Addresses
+
+    /// Push addresses changed since `since`, using needsSync flag.
+    private func pushAddresses(ownerId: UUID, since: Date, debug: Bool) async throws {
+        _ = since
+
+        // CREATE
+        let toCreate: [Address] = try await fetch(Address.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "remoteId == nil")
+        ]))
+        if debug { print("⬆️ Addresses to CREATE:", toCreate.count) }
+
+        for a in toCreate {
+            guard let client = a.client, let clientId = client.remoteId else { continue }
+            guard let street = a.street, let streetId = street.remoteId else { continue }
+            let house = (a.house ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !house.isEmpty else { continue }
+
+            // Try to link an existing remote address candidate
+            let candidates = try await addressStore.fetchCandidates(ownerId: ownerId, clientId: clientId, streetId: streetId, house: house)
+            func norm(_ s: String?) -> String { (s ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+            let apt = norm(a.apartment)
+
+            let match = candidates.first(where: {
+                return norm($0.apartment) == apt
+                    && norm($0.entrance) == norm(a.entrance)
+                    && norm($0.entrance_type) == norm(a.entranceType)
+                    && norm($0.room_type) == norm(a.roomType)
+                    && norm($0.floor) == norm(a.floor)
+                    && $0.is_private_house == a.isPrivateHouse
+            })
+
+            if let existing = match {
+                // Ensure remote primary if needed
+                if a.isPrimary {
+                    try await addressStore.update(
+                        addressId: existing.id,
+                        ownerId: ownerId,
+                        clientId: clientId,
+                        payload: AddressUpdateDTO(
+                            street_id: streetId,
+                            house: house,
+                            apartment: a.apartment,
+                            entrance: a.entrance,
+                            entrance_type: a.entranceType,
+                            room_type: a.roomType,
+                            floor: a.floor,
+                            is_primary: true,
+                            is_private_house: a.isPrivateHouse
+                        )
+                    )
+                }
+
+                try await context.perform {
+                    a.remoteId = existing.id
+                    a.updatedAt = existing.updated_at ?? Date()
+                    a.needsSync = false
+                }
+                try await saveIfNeeded()
+                continue
+            }
+
+            let payload = AddressInsertDTO(
+                owner_id: ownerId,
+                client_id: clientId,
+                street_id: streetId,
+                house: house,
+                apartment: a.apartment,
+                entrance: a.entrance,
+                entrance_type: a.entranceType,
+                room_type: a.roomType,
+                floor: a.floor,
+                is_primary: a.isPrimary,
+                is_private_house: a.isPrivateHouse
+            )
+
+            let created = try await addressStore.create(payload)
+
+            try await context.perform {
+                a.remoteId = created.id
+                a.updatedAt = created.updated_at ?? Date()
+                a.needsSync = false
+            }
+            try await saveIfNeeded()
+        }
+
+        // UPDATE
+        let toUpdate: [Address] = try await fetch(Address.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "remoteId != nil")
+        ]))
+        if debug { print("⬆️ Addresses to UPDATE:", toUpdate.count) }
+
+        for a in toUpdate {
+            guard let rid = a.remoteId else { continue }
+            guard let client = a.client, let clientId = client.remoteId else { continue }
+            guard let street = a.street, let streetId = street.remoteId else { continue }
+            let house = (a.house ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !house.isEmpty else { continue }
+
+            let updated = try await addressStore.update(
+                addressId: rid,
+                ownerId: ownerId,
+                clientId: clientId,
+                payload: AddressUpdateDTO(
+                    street_id: streetId,
+                    house: house,
+                    apartment: a.apartment,
+                    entrance: a.entrance,
+                    entrance_type: a.entranceType,
+                    room_type: a.roomType,
+                    floor: a.floor,
+                    is_primary: a.isPrimary,
+                    is_private_house: a.isPrivateHouse
+                )
+            )
+
+            try await context.perform {
+                a.updatedAt = updated.updated_at ?? Date()
+                a.needsSync = false
+            }
+            try await saveIfNeeded()
+        }
+
+        // SOFT DELETE
+        let toDelete: [Address] = try await fetch(Address.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt != nil"),
+            NSPredicate(format: "remoteId != nil")
+        ]))
+        if debug { print("⬆️ Addresses to SOFT-DELETE:", toDelete.count) }
+
+        for a in toDelete {
+            guard let rid = a.remoteId else { continue }
+            let deletedAt = a.deletedAt ?? Date()
+            try await addressStore.softDelete(addressId: rid, ownerId: ownerId, deletedAt: deletedAt)
+
+            try await context.perform {
+                a.needsSync = false
+                a.updatedAt = Date()
+            }
+            try await saveIfNeeded()
+        }
+    }
 
     private func uploadAddresses(ownerId: UUID, debug: Bool) async throws {
         let addresses: [Address] = try await fetch(Address.self, predicate: NSPredicate(format: "deletedAt == nil AND remoteId == nil"))
@@ -282,6 +563,7 @@ final class InitialUploadService {
                 if a.isPrimary {
                     try await addressStore.update(
                         addressId: existing.id,
+                        ownerId: ownerId,
                         clientId: clientId,
                         payload: AddressUpdateDTO(
                             street_id: streetId,
@@ -299,7 +581,8 @@ final class InitialUploadService {
 
                 try await context.perform {
                     a.remoteId = existing.id
-                    a.updatedAt = Date()
+                    a.updatedAt = existing.updated_at ?? Date()
+                    a.needsSync = false
                 }
                 try await saveIfNeeded()
                 continue
@@ -324,13 +607,166 @@ final class InitialUploadService {
 
             try await context.perform {
                 a.remoteId = created.id
-                a.updatedAt = Date()
+                a.updatedAt = created.updated_at ?? Date()
+                a.needsSync = false
             }
             try await saveIfNeeded()
         }
     }
 
     // MARK: - Tasks
+
+    /// Push tasks changed since `since`, using needsSync flag.
+    private func pushTasks(ownerId: UUID, since: Date, debug: Bool) async throws {
+        _ = since
+
+        // CREATE
+        let toCreate: [TaskEntity] = try await fetch(TaskEntity.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "remoteId == nil")
+        ]))
+        if debug { print("⬆️ Tasks to CREATE:", toCreate.count) }
+
+        for t in toCreate {
+            guard let client = t.client, let clientId = client.remoteId else { continue }
+            guard let scheduledAt = t.scheduledAt else { continue }
+            let status = (t.statusString ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !status.isEmpty else { continue }
+
+            let allowedStatuses: Set<String> = ["scheduled", "completed", "canceled"]
+            guard allowedStatuses.contains(status) else { continue }
+
+            let isRemote = t.isRemote
+            let addressId: UUID?
+            if isRemote {
+                addressId = nil
+            } else {
+                guard let addr = t.address, let rid = addr.remoteId else { continue }
+                addressId = rid
+            }
+
+            // De-dup/link candidates similarly to initial upload
+            let candidates = try await taskStore.fetchCandidates(ownerId: ownerId, clientId: clientId, scheduledAt: scheduledAt)
+            let desc = (t.taskDescription ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let descKey = desc.lowercased()
+            let addrKey = addressId?.uuidString ?? "<nil>"
+
+            let match = candidates.first(where: { r in
+                let rStatus = r.statusString.trimmingCharacters(in: .whitespacesAndNewlines)
+                let rDesc = (r.task_description ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                let rAddr = r.address_id?.uuidString ?? "<nil>"
+                return rStatus == status
+                    && r.is_remote == isRemote
+                    && rAddr == addrKey
+                    && rDesc == descKey
+            })
+
+            if let existing = match {
+                try await context.perform {
+                    t.remoteId = existing.id
+                    t.updatedAt = existing.updated_at ?? Date()
+                    t.needsSync = false
+                }
+                try await saveIfNeeded()
+                continue
+            }
+
+            let payload = TaskInsertDTO(
+                owner_id: ownerId,
+                scheduled_at: scheduledAt,
+                task_description: t.taskDescription,
+                payment_type: t.paymentType,
+                comment: t.comment,
+                is_remote: isRemote,
+                statusString: status,
+                contract_amount: t.contractAmount,
+                cost: t.cost,
+                extra_payment: t.extraPaymentValue,
+                client_id: clientId,
+                address_id: addressId
+            )
+
+            let created = try await taskStore.create(payload)
+
+            try await context.perform {
+                t.remoteId = created.id
+                t.updatedAt = created.updated_at ?? Date()
+                t.needsSync = false
+            }
+            try await saveIfNeeded()
+        }
+
+        // UPDATE
+        let toUpdate: [TaskEntity] = try await fetch(TaskEntity.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "remoteId != nil")
+        ]))
+        if debug { print("⬆️ Tasks to UPDATE:", toUpdate.count) }
+
+        for t in toUpdate {
+            guard let rid = t.remoteId else { continue }
+            guard let client = t.client, let clientId = client.remoteId else { continue }
+            guard let scheduledAt = t.scheduledAt else { continue }
+            let status = (t.statusString ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !status.isEmpty else { continue }
+
+            let allowedStatuses: Set<String> = ["scheduled", "completed", "canceled"]
+            guard allowedStatuses.contains(status) else { continue }
+
+            let isRemote = t.isRemote
+            let addressId: UUID?
+            if isRemote {
+                addressId = nil
+            } else {
+                guard let addr = t.address, let ridAddr = addr.remoteId else { continue }
+                addressId = ridAddr
+            }
+
+            let payload = TaskUpdateDTO(
+                scheduled_at: scheduledAt,
+                task_description: t.taskDescription,
+                payment_type: t.paymentType,
+                comment: t.comment,
+                is_remote: isRemote,
+                statusString: status,
+                contract_amount: t.contractAmount,
+                cost: t.cost,
+                extra_payment: t.extraPaymentValue,
+                client_id: clientId,
+                address_id: addressId
+            )
+
+            let updated = try await taskStore.update(taskId: rid, ownerId: ownerId, payload: payload)
+
+            try await context.perform {
+                t.updatedAt = updated.updated_at ?? Date()
+                t.needsSync = false
+            }
+            try await saveIfNeeded()
+        }
+
+        // SOFT DELETE
+        let toDelete: [TaskEntity] = try await fetch(TaskEntity.self, predicate: NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "needsSync == YES"),
+            NSPredicate(format: "deletedAt != nil"),
+            NSPredicate(format: "remoteId != nil")
+        ]))
+        if debug { print("⬆️ Tasks to SOFT-DELETE:", toDelete.count) }
+
+        for t in toDelete {
+            guard let rid = t.remoteId else { continue }
+            let deletedAt = t.deletedAt ?? Date()
+            try await taskStore.softDelete(taskId: rid, ownerId: ownerId, deletedAt: deletedAt)
+
+            try await context.perform {
+                t.needsSync = false
+                t.updatedAt = Date()
+            }
+            try await saveIfNeeded()
+        }
+    }
 
     private func uploadTasks(ownerId: UUID, debug: Bool) async throws {
         let tasks: [TaskEntity] = try await fetch(TaskEntity.self, predicate: NSPredicate(format: "deletedAt == nil AND remoteId == nil"))
@@ -403,7 +839,8 @@ final class InitialUploadService {
                 if debug { print("ℹ️ Link existing remote task. id=\(existing.id)") }
                 try await context.perform {
                     t.remoteId = existing.id
-                    t.updatedAt = Date()
+                    t.updatedAt = existing.updated_at ?? Date()
+                    t.needsSync = false
                 }
                 try await saveIfNeeded()
                 continue
@@ -429,7 +866,8 @@ final class InitialUploadService {
 
             try await context.perform {
                 t.remoteId = created.id
-                t.updatedAt = Date()
+                t.updatedAt = created.updated_at ?? Date()
+                t.needsSync = false
             }
             try await saveIfNeeded()
         }

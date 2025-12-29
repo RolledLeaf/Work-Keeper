@@ -101,13 +101,14 @@ final class RemoteTaskStore {
 
     // MARK: - Update
 
-    func update(taskId: UUID, payload: TaskUpdateDTO) async throws -> TaskDTO {
+    func update(taskId: UUID, ownerId: UUID, payload: TaskUpdateDTO) async throws -> TaskDTO {
         try validateRemoteFlag(isRemote: payload.is_remote, addressId: payload.address_id)
 
         let updated: TaskDTO = try await client
             .from("tasks")
             .update(payload)
             .eq("id", value: taskId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
             .select()
             .single()
             .execute()
@@ -133,6 +134,18 @@ final class RemoteTaskStore {
                 userInfo: [NSLocalizedDescriptionKey: "Task was not deleted (owner mismatch or already deleted)."]
             )
         }
+    }
+
+    /// Soft delete by updating `deleted_at` (used by incremental push).
+    func softDelete(taskId: UUID, ownerId: UUID, deletedAt: Date) async throws {
+        struct Payload: Encodable { let deleted_at: String }
+
+        _ = try await client
+            .from("tasks")
+            .update(Payload(deleted_at: deletedAt.iso8601String))
+            .eq("id", value: taskId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
+            .execute()
     }
 
     // MARK: - Helpers

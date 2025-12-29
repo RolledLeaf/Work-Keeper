@@ -207,6 +207,8 @@ final class PullSyncService {
                     print("🗑️ Apply remote deleted_at -> local. remoteId=\(r.id) deletedAt=\(d)")
                 }
                 local.updatedAt = r.updated_at ?? r.deleted_at ?? Date()
+                local.needsSync = false
+              
             }
 
             try self.purgeInvalidClients(debug: debug)
@@ -267,6 +269,7 @@ final class PullSyncService {
                     print("🗑️ Apply remote deleted_at -> local. remoteId=\(r.id) deletedAt=\(d)")
                 }
                 local.updatedAt = r.updated_at ?? r.deleted_at ?? Date()
+                local.needsSync = false
             }
 
             try self.purgeInvalidAddresses(debug: debug)
@@ -315,6 +318,7 @@ final class PullSyncService {
                     remoteDeletedAt: r.deleted_at,
                     localUpdatedAt: local.updatedAt,
                     localDeletedAt: local.deletedAt
+                    
                 ) {
                     continue
                 }
@@ -355,6 +359,7 @@ final class PullSyncService {
                     print("🗑️ Apply remote deleted_at -> local. remoteId=\(r.id) deletedAt=\(d)")
                 }
                 local.updatedAt = r.updated_at ?? r.deleted_at ?? Date()
+                local.needsSync = false
             }
 
             try self.purgeInvalidTasks(debug: debug)
@@ -382,6 +387,7 @@ final class PullSyncService {
         s.deletedAt = nil
         // New placeholder should be treated as very old so remote snapshot always applies
         s.updatedAt = .distantPast
+        s.needsSync = false
         ensureLocalIdIfNeeded(s)
         return s
     }
@@ -392,6 +398,7 @@ final class PullSyncService {
         c.remoteId = remoteId
         c.deletedAt = nil
         c.updatedAt = .distantPast
+        c.needsSync = false
         ensureLocalIdIfNeeded(c)
         return c
     }
@@ -402,6 +409,7 @@ final class PullSyncService {
         a.remoteId = remoteId
         a.deletedAt = nil
         a.updatedAt = .distantPast
+        a.needsSync = false
         ensureLocalIdIfNeeded(a)
         return a
     }
@@ -412,6 +420,7 @@ final class PullSyncService {
         t.remoteId = remoteId
         t.deletedAt = nil
         t.updatedAt = .distantPast
+        t.needsSync = false
         ensureLocalIdIfNeeded(t)
         return t
     }

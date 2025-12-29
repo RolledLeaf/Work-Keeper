@@ -32,7 +32,7 @@ final class AddressStore: NSObject {
         address.remoteId = nil
         address.deletedAt = nil
         address.updatedAt = Date()
-        
+        address.needsSync = true
         
         return address
     }
@@ -93,12 +93,19 @@ final class AddressStore: NSObject {
                 )
                 address.client = client
                 address.isPrimary = isPrimary
+                address.remoteId = nil
+                address.deletedAt = nil
+                address.updatedAt = Date()
+                address.needsSync = true
 
                 if isPrimary {
                     if let addresses = client.address as? Set<Address> {
                         for addr in addresses where addr != address {
-                            addr.isPrimary = false
-                            addr.updatedAt = Date()
+                            if addr.isPrimary {
+                                addr.isPrimary = false
+                                addr.updatedAt = Date()
+                                addr.needsSync = true
+                            }
                         }
                     }
                 }
@@ -143,6 +150,7 @@ final class AddressStore: NSObject {
 
         // Sync fields
         address.updatedAt = Date()
+        address.needsSync = true
         
         do {
             try context.save()
@@ -156,6 +164,7 @@ final class AddressStore: NSObject {
         // Soft delete for sync
         address.deletedAt = Date()
         address.updatedAt = Date()
+        address.needsSync = true
         do {
             try context.save()
         } catch {

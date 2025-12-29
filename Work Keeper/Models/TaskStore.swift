@@ -29,6 +29,7 @@ final class TaskStore: NSObject, ObservableObject {
         task.remoteId = nil
         task.deletedAt = nil
         task.updatedAt = Date()
+        task.needsSync = true
 
         // Core fields
         task.id = UUID()
@@ -47,6 +48,8 @@ final class TaskStore: NSObject, ObservableObject {
         task.extraPaymentValue = nil
         task.paymentType = paymentType.rawValue
         task.totalAmount = task.contractAmount + (task.extraPaymentValue ?? 0) - task.cost
+        
+       
         
         do {
             try context.save()
@@ -75,6 +78,7 @@ final class TaskStore: NSObject, ObservableObject {
         // Sync fields
         task.deletedAt = nil
         task.updatedAt = Date()
+        task.needsSync = true
         do {
             try context.save()
         } catch {
@@ -88,6 +92,7 @@ final class TaskStore: NSObject, ObservableObject {
         // Sync fields
         task.deletedAt = nil
         task.updatedAt = Date()
+        task.needsSync = true
         do {
             try context.save()
         } catch {
@@ -106,6 +111,7 @@ final class TaskStore: NSObject, ObservableObject {
         // Sync fields
         task.deletedAt = nil
         task.updatedAt = Date()
+        task.needsSync = true
         do {
             try context.save()
         } catch {
@@ -132,6 +138,7 @@ final class TaskStore: NSObject, ObservableObject {
         // Soft delete for sync
         task.deletedAt = Date()
         task.updatedAt = Date()
+        task.needsSync = true
         do {
             try context.save()
         } catch {
@@ -183,6 +190,7 @@ final class TaskStore: NSObject, ObservableObject {
         // Sync fields
         task.deletedAt = nil
         task.updatedAt = Date()
+        task.needsSync = true
         
         // Save changes
         do {

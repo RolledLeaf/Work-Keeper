@@ -261,7 +261,8 @@ final class CreateClientViewModel: ObservableObject {
             firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
             lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
             addresses: [],
-            phone: phoneDigits.isBlank ? "" : phoneDigits
+            phone: phoneDigits.isBlank ? "" : phoneDigits,
+            comment: comment
         )
         
         // 3) Адрес, привязанный к клиенту

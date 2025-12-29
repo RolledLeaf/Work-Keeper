@@ -94,6 +94,7 @@ final class RemoteClientStore {
 
     func update(
         clientId: UUID,
+        ownerId: UUID,
         firstName: String,
         lastName: String?,
         phone: String,
@@ -111,6 +112,7 @@ final class RemoteClientStore {
             .from("clients")
             .update(payload)
             .eq("id", value: clientId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
             .select()
             .single()
             .execute()
@@ -136,5 +138,17 @@ final class RemoteClientStore {
                 userInfo: [NSLocalizedDescriptionKey: "Client was not deleted (owner mismatch or already deleted)."]
             )
         }
+    }
+
+    /// Soft delete by updating `deleted_at` (used by incremental push).
+    func softDelete(clientId: UUID, ownerId: UUID, deletedAt: Date) async throws {
+        struct Payload: Encodable { let deleted_at: String }
+
+        _ = try await client
+            .from("clients")
+            .update(Payload(deleted_at: deletedAt.iso8601String))
+            .eq("id", value: clientId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
+            .execute()
     }
 }

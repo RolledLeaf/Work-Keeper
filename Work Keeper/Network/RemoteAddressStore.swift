@@ -113,7 +113,7 @@ final class RemoteAddressStore {
 
     // MARK: - Update
 
-    func update(addressId: UUID, clientId: UUID, payload: AddressUpdateDTO) async throws -> AddressDTO {
+    func update(addressId: UUID, ownerId: UUID, clientId: UUID, payload: AddressUpdateDTO) async throws -> AddressDTO {
         // IMPORTANT: never update with is_primary = true directly.
         // Update the fields first with is_primary = false, then set primary via RPC if needed.
         let safeUpdate = AddressUpdateDTO(
@@ -132,6 +132,7 @@ final class RemoteAddressStore {
             .from("addresses")
             .update(safeUpdate)
             .eq("id", value: addressId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
             .execute()
 
         if payload.is_primary {
@@ -158,6 +159,18 @@ final class RemoteAddressStore {
                 userInfo: [NSLocalizedDescriptionKey: "Address was not deleted (owner mismatch or already deleted)."]
             )
         }
+    }
+
+    /// Soft delete by updating `deleted_at` (used by incremental push).
+    func softDelete(addressId: UUID, ownerId: UUID, deletedAt: Date) async throws {
+        struct Payload: Encodable { let deleted_at: String }
+
+        _ = try await client
+            .from("addresses")
+            .update(Payload(deleted_at: deletedAt.iso8601String))
+            .eq("id", value: addressId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
+            .execute()
     }
 
     // MARK: - Helpers
