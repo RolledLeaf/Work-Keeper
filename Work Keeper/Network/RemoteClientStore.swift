@@ -10,36 +10,38 @@ final class RemoteClientStore {
 
     // MARK: - Fetch
 
-    func fetchAll(ownerId: UUID) async throws -> [ClientDTO] {
-        let result: [ClientDTO] = try await client
-            .from("clients")
-            .select()
-            .order("first_name", ascending: true)
+    func fetchChanges(ownerId: UUID, since: Date) async throws -> [ClientDTO] {
+        // Use RPC for incremental sync (views can't use RLS in our setup).
+        // The function enforces owner_id = auth.uid() server-side.
+        struct Params: Encodable { let p_since: String }
+
+        let rows: [ClientDTO] = try await client
+            .rpc("get_client_changes", params: Params(p_since: since.iso8601String))
             .execute()
             .value
 
-        return result.filter { $0.owner_id == ownerId }
+        // Extra safety: keep only expected owner (should already be enforced by RPC)
+        return rows.filter { $0.owner_id == ownerId }
     }
+    
     
     func fetchAll(ownerId: UUID, includeDeleted: Bool = false) async throws -> [ClientDTO] {
         // Keep this as a filter-capable builder until after conditional filters are applied.
         var q = client
             .from("clients")
             .select()
+            .eq("owner_id", value: ownerId.uuidString)
 
         if !includeDeleted {
-            // PostgREST null check: deleted_at IS NULL
-            q = q.filter("deleted_at", operator: "is", value: "null")
+          q = q.filter("deleted_at", operator: "is", value: "null")
         }
 
-        // Apply ordering after filters (do not reassign: order returns a TransformBuilder)
         let result: [ClientDTO] = try await q
-            .order("first_name", ascending: true)
-            .execute()
-            .value
+          .order("first_name", ascending: true)
+          .execute()
+          .value
 
-        // Optional extra safety (RLS should already limit to the current user)
-        return result.filter { $0.owner_id == ownerId }
+        return result
     }
 
     func fetchByPhone(ownerId: UUID, phone: String) async throws -> ClientDTO? {

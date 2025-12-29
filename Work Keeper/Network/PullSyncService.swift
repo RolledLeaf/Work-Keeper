@@ -20,17 +20,21 @@ final class PullSyncService {
         if debug { print("⬇️ PullSync started. ownerId:", ownerId) }
 
         // порядок важен из-за связей
-        let streets = try await fetchAllStreets(ownerId: ownerId)
+        let syncStartedAt = Date()
+        let since = loadLastPullAt()
+        let streets = try await streetStore.fetchStreetChanges(ownerId: ownerId, since: since)
         try await upsertStreets(streets, debug: debug)
-
-        let clients = try await fetchAllClients(ownerId: ownerId)
+       
+        let clients = try await clientStore.fetchChanges(ownerId: ownerId, since: since)
         try await upsertClients(clients, debug: debug)
 
-        let addresses = try await fetchAllAddresses(ownerId: ownerId)
+        let addresses = try await addressStore.fetchChanges(ownerId: ownerId, since: since)
         try await upsertAddresses(addresses, debug: debug)
 
-        let tasks = try await fetchAllTasks(ownerId: ownerId)
+        let tasks = try await taskStore.fetchChanges(ownerId: ownerId, since: since)
         try await upsertTasks(tasks, debug: debug)
+
+        saveLastPullAt(syncStartedAt)
 
         if debug { print("✅ PullSync finished") }
     }
@@ -149,7 +153,7 @@ final class PullSyncService {
             }
 
             try self.purgeInvalidStreets(debug: debug)
-            try self.purgeInvalidAddresses(debug: debug)
+           
 
             try self.context.saveIfNeeded()
         }

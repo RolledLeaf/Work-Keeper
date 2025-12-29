@@ -10,6 +10,20 @@ final class RemoteAddressStore {
 
     // MARK: - Fetch
 
+    func fetchChanges(ownerId: UUID, since: Date) async throws -> [AddressDTO] {
+        // RLS is not supported on views in our Supabase setup, so we use an RPC.
+        // The function enforces owner_id = auth.uid() server-side.
+        struct Params: Encodable { let p_since: String }
+
+        let rows: [AddressDTO] = try await client
+            .rpc("get_address_changes", params: Params(p_since: since.iso8601String))
+            .execute()
+            .value
+
+        // Extra safety: keep only expected owner (should already be enforced by RPC)
+        return rows.filter { $0.owner_id == ownerId }
+    }
+    
     func fetchByClient(clientId: UUID) async throws -> [AddressDTO] {
         let result: [AddressDTO] = try await client
             .from("addresses")

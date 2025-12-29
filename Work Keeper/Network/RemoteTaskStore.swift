@@ -10,6 +10,21 @@ final class RemoteTaskStore {
 
     // MARK: - Fetch
 
+    func fetchChanges(ownerId: UUID, since: Date) async throws -> [TaskDTO] {
+        // RLS is not supported on views in our Supabase setup, so we use an RPC.
+        // The function enforces owner_id = auth.uid() server-side.
+        struct Params: Encodable { let p_since: String }
+
+        let rows: [TaskDTO] = try await client
+            .rpc("get_task_changes", params: Params(p_since: since.iso8601String))
+            .execute()
+            .value
+
+        // Extra safety: keep only expected owner (should already be enforced by RPC)
+        return rows.filter { $0.owner_id == ownerId }
+    }
+    
+    
     /// Задачи за период (удобно для календаря / списка по датам)
     func fetch(from: Date, to: Date) async throws -> [TaskDTO] {
         try await client

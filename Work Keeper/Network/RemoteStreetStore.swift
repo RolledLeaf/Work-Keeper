@@ -9,6 +9,20 @@ final class RemoteStreetStore {
     }
 
     // MARK: - Fetch
+    
+    func fetchStreetChanges(ownerId: UUID, since: Date) async throws -> [StreetDTO] {
+        // Use RPC for incremental sync (views can't use RLS in our setup).
+        // The function enforces owner_id = auth.uid() server-side.
+        struct Params: Encodable { let p_since: String }
+
+        let rows: [StreetDTO] = try await client
+            .rpc("get_street_changes", params: Params(p_since: since.iso8601String))
+            .execute()
+            .value
+
+        // Extra safety: keep only expected owner (should already be enforced by RPC)
+        return rows.filter { $0.owner_id == ownerId }
+    }
 
     func fetchAll(ownerId: UUID) async throws -> [StreetDTO] {
         // RLS уже фильтрует по owner_id и deleted_at is null (через policy),
