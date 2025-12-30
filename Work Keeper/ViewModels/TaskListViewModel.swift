@@ -328,9 +328,16 @@ final class CreateTaskViewModel: ObservableObject {
             comment: comment.isEmpty ? nil : comment
         )
 
-        let hasAddress = client.addressesArray.count > 0
-       
-            let street = streetStore.createOrFetchStreet(name: streetName)
+        // Для удалённого задания адрес не обязателен и не должен создаваться.
+        var taskAddress: Address? = nil
+
+        if !isRemote {
+            let hasAddress = client.addressesArray.count > 0
+
+            guard let street = streetStore.createOrFetchStreet(name: streetName) else {
+                print("❌ saveTask: streetName is empty for non-remote task")
+                return
+            }
 
             let address = addressStore.createOrFetchAddress(
                 house: house,
@@ -340,20 +347,21 @@ final class CreateTaskViewModel: ObservableObject {
                 isPrivateHouse: isPrivateHouse,
                 street: street,
                 client: client,
-                isPrimary: !hasAddress ? true : false, // 👈 при создании задания НЕ трогаем primary
+                isPrimary: !hasAddress ? true : false,
                 roomType: roomType ?? "кв.",
                 entranceType: entranceType ?? "под."
             )
 
             // link the address with the client
             client.addToAddress(address)
-    
+            taskAddress = address
+        }
 
         // Создаём задачу
         taskStore.createTask(
             scheduledAt: scheduledAt,
             client: client,
-            address: address,        // 👈 новый параметр
+            address: taskAddress,
             description: description,
             isRemote: isRemote,
             status: status,
@@ -630,7 +638,10 @@ final class EditTaskViewModel: ObservableObject {
         
         // Обновляем адрес, привязанный к задаче (а не обязательно primary-адрес клиента)
         if !isRemote {
-            let street = streetStore.createOrFetchStreet(name: streetName)
+            guard let street = streetStore.createOrFetchStreet(name: streetName) else {
+                print("❌ update: streetName is empty for non-remote task")
+                return false
+            }
 
             if let existingAddress = task.address {
                 existingAddress.street = street

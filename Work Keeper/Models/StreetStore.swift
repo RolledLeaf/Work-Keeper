@@ -9,13 +9,12 @@ final class StreetStore: NSObject, ObservableObject {
         self.context = context
     }
     
-    func createOrFetchStreet(name: String) -> Street {
+    func createOrFetchStreet(name: String) -> Street? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             // Avoid creating an invalid Street (name is required)
             print("⚠️ createOrFetchStreet: empty name")
-            // Return a temporary in-memory object (NOT saved) so callers can handle this case safely.
-            return Street(context: context)
+            return nil
         }
         let request: NSFetchRequest<Street> = Street.fetchRequest()
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [

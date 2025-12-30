@@ -253,24 +253,54 @@ final class CreateClientViewModel: ObservableObject {
     }
     
     func createClient() {
-        // 1) Улица
-        let street = streetStore.createOrFetchStreet(name: streetName.trimmingCharacters(in: .whitespacesAndNewlines))
-        
-        // 2) Клиент (пока без адресов)
+        let trimmedFirstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedLastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedStreetName = streetName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedBuilding = building.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedApartment = apartment.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEntrance = entrance.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedFloor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // 1) Клиент (может быть создан без адреса — например, если он всегда на удалёнке)
         let client = store.createClient(
-            firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
-            lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
+            firstName: trimmedFirstName,
+            lastName: trimmedLastName,
             addresses: [],
             phone: phoneDigits.isBlank ? "" : phoneDigits,
             comment: comment
         )
-        
-        // 3) Адрес, привязанный к клиенту
+
+        // 2) Если улица не указана — адрес не создаём
+        guard !trimmedStreetName.isBlank else {
+            // Сохраняем/обновляем базовые поля клиента (включая comment через createClient)
+            store.updateClient(
+                client,
+                firstName: client.firstName ?? "",
+                lastName: client.lastName,
+                addresses: [],
+                phone: client.phone ?? ""
+            )
+            return
+        }
+
+        // 3) Улица + адрес
+        guard let street = streetStore.createOrFetchStreet(name: trimmedStreetName) else {
+            print("❌ createClient: invalid streetName")
+            store.updateClient(
+                client,
+                firstName: client.firstName ?? "",
+                lastName: client.lastName,
+                addresses: [],
+                phone: client.phone ?? ""
+            )
+            return
+        }
+
         let address = addressStore.createOrFetchAddress(
-            house: building.trimmingCharacters(in: .whitespacesAndNewlines),
-            apartment: apartment.trimmingCharacters(in: .whitespacesAndNewlines),
-            entrance: entrance.trimmingCharacters(in: .whitespacesAndNewlines),
-            floor: floor,
+            house: trimmedBuilding,
+            apartment: trimmedApartment,
+            entrance: trimmedEntrance,
+            floor: trimmedFloor,
             isPrivateHouse: isPrivateHouse,
             street: street,
             client: client,
@@ -278,8 +308,8 @@ final class CreateClientViewModel: ObservableObject {
             roomType: roomType,
             entranceType: entranceType
         )
-        
-        // 4) Обновляем клиента, чтобы адрес точно оказался в его наборе адресов и сохранился комментарий
+
+        // 4) Обновляем клиента, чтобы адрес оказался в его наборе адресов
         store.updateClient(
             client,
             firstName: client.firstName ?? "",
@@ -382,14 +412,28 @@ final class EditClientViewModel: ObservableObject {
         client.lastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
         client.phone = phoneValue
 
-        // Prepare an array of addresses to persist (we will update existing primary address or create a new one)
+        // Prepare an array of addresses to persist.
+        // Address is optional: if streetName is empty, we do not touch/create addresses.
         var resultingAddresses: [Address] = []
 
-        if let existingPrimary = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
-            // Ensure street entity exists and assign
-            let streetObj = streetStore.createOrFetchStreet(name: streetName.trimmingCharacters(in: .whitespacesAndNewlines))
-            existingPrimary.street = streetObj
+        let trimmedStreetName = streetName.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        // If no street provided, keep existing addresses as-is (or none) and only update basic client fields.
+        guard !trimmedStreetName.isBlank else {
+            resultingAddresses = (client.address as? Set<Address>)?.sorted(by: { ($0.street?.name ?? "") < ($1.street?.name ?? "") }) ?? []
+            store.updateClient(client, firstName: client.firstName ?? "", lastName: client.lastName, addresses: resultingAddresses, phone: client.phone ?? "")
+            return
+        }
+
+        guard let streetObj = streetStore.createOrFetchStreet(name: trimmedStreetName) else {
+            print("❌ updateClient: invalid streetName")
+            resultingAddresses = (client.address as? Set<Address>)?.sorted(by: { ($0.street?.name ?? "") < ($1.street?.name ?? "") }) ?? []
+            store.updateClient(client, firstName: client.firstName ?? "", lastName: client.lastName, addresses: resultingAddresses, phone: client.phone ?? "")
+            return
+        }
+
+        if let existingPrimary = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
+            existingPrimary.street = streetObj
             existingPrimary.house = house.trimmingCharacters(in: .whitespacesAndNewlines)
             existingPrimary.apartment = apartment.trimmingCharacters(in: .whitespacesAndNewlines)
             existingPrimary.entrance = entrance.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -400,8 +444,6 @@ final class EditClientViewModel: ObservableObject {
 
             resultingAddresses = [existingPrimary]
         } else {
-            // No primary address exists — create one and attach to client
-            let streetObj = streetStore.createOrFetchStreet(name: streetName.trimmingCharacters(in: .whitespacesAndNewlines))
             let newAddress = addressStore.createOrFetchAddress(
                 house: buildingSafe(house),
                 apartment: apartment.trimmingCharacters(in: .whitespacesAndNewlines),
