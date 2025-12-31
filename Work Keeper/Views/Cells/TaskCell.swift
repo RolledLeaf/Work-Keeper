@@ -270,8 +270,8 @@ struct TaskRow: View {
                     Spacer()
                     Image(paymentIconResource ?? ImageResource.init(name: "cash", bundle: .main))
                         .padding(.trailing, 20)
-                        
                         .frame(width: 25, height: 25)
+                        .opacity(task.status == .completed ? 1 : 0)
                 }
                 .frame(height: 25)
                
