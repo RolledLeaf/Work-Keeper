@@ -7,33 +7,10 @@ struct SettingsView: View {
     @State private var isUploading = false
     @State private var showResultAlert = false
     @State private var resultMessage = ""
+    private var syncTrigger: SyncService.Trigger = .manual
 
     var body: some View {
         VStack(spacing: 16) {
-            Button("Pull (Supabase → CoreData)") {
-                Task {
-                    guard let ownerId = auth.session?.user.id else {
-                        resultMessage = "Нет активной сессии. Сначала войди в аккаунт."
-                        showResultAlert = true
-                        return
-                    }
-
-                    isUploading = true
-                    defer { isUploading = false }
-
-                    let service = PullSyncService(context: context)
-                    do {
-                        try await service.run(ownerId: ownerId, debug: true)
-                        resultMessage = "Pull завершён успешно."
-                    } catch {
-                        resultMessage = "Ошибка Pull: \(error.localizedDescription)"
-                    }
-                    showResultAlert = true
-                }
-            }
-            .buttonStyle(.bordered)
-            .disabled(isUploading)
-
             Button {
                 Task {
                     guard let ownerId = auth.session?.user.id else {
@@ -45,12 +22,16 @@ struct SettingsView: View {
                     isUploading = true
                     defer { isUploading = false }
 
-                    let service = InitialUploadService(context: context)
-                    do {
-                        try await service.run(ownerId: ownerId, debug: true)
-                        resultMessage = "Initial Upload завершён успешно."
-                    } catch {
-                        resultMessage = "Ошибка Initial Upload: \(error.localizedDescription)"
+                    let sync = SyncService(context: context)
+                    await sync.syncAll(ownerId: ownerId, trigger: syncTrigger, debug: true)
+
+                    switch sync.phase {
+                    case .success:
+                        resultMessage = "Синхронизация завершена успешно."
+                    case .failure(let msg):
+                        resultMessage = "Ошибка синхронизации: \(msg)"
+                    default:
+                        resultMessage = ""
                     }
                     showResultAlert = true
                 }
@@ -59,66 +40,12 @@ struct SettingsView: View {
                     if isUploading {
                         ProgressView()
                     }
-                    Text(isUploading ? "Загрузка…" : "Initial Upload")
+                    Text(isUploading ? "Синхронизация…" : "Sync All")
                 }
                 .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(isUploading)
-
-            Text("Initial Upload загружает локальные (оффлайн) данные в Supabase. Обычно достаточно выполнить один раз после включения облака. Pull — подтягивает данные из Supabase в CoreData.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-            
-            Button("Push Streets") {
-                Task {
-                    guard let ownerId = auth.session?.user.id else { return }
-                    let service = InitialUploadService(context: context)
-                    do {
-                        try await service.pushStreets(ownerId: ownerId, debug: true)
-                    } catch {
-                        print("❌ Streets push error:", error)
-                    }
-                }
-            }
-
-            Button("Push Clients") {
-                Task {
-                    guard let ownerId = auth.session?.user.id else { return }
-                    let service = InitialUploadService(context: context)
-                    do {
-                        try await service.pushClients(ownerId: ownerId, debug: true)
-                    } catch {
-                        print("❌ Clients push error:", error)
-                    }
-                }
-            }
-
-            Button("Push Addresses") {
-                Task {
-                    guard let ownerId = auth.session?.user.id else { return }
-                    let service = InitialUploadService(context: context)
-                    do {
-                        try await service.pushAddresses(ownerId: ownerId, debug: true)
-                    } catch {
-                        print("❌ Addresses push error:", error)
-                    }
-                }
-            }
-
-            Button("Push Tasks") {
-                Task {
-                    guard let ownerId = auth.session?.user.id else { return }
-                    let service = InitialUploadService(context: context)
-                    do {
-                        try await service.pushTasks(ownerId: ownerId, debug: true)
-                    } catch {
-                        print("❌ Tasks push error:", error)
-                    }
-                }
-            }
 
             Spacer()
         }

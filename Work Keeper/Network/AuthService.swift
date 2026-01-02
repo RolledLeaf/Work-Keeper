@@ -6,19 +6,24 @@ final class AuthService: ObservableObject {
     @Published private(set) var session: Session?
     @Published var authError: String?
 
+    init() {
+        Task { [weak self] in
+            await self?.restoreSession()
+        }
+    }
+
     private let client = SupabaseManager.shared.client
     
     var userId: UUID? {
         session?.user.id
     }
     
-    
-
     func restoreSession() async {
         // Поднимаем сохранённую сессию (если есть). В новых версиях SDK это async/throws.
         authError = nil
         do {
             session = try await client.auth.session
+            print("session is valid")
         } catch {
             // Если сессии нет или она невалидна — это не критическая ошибка.
             session = nil
