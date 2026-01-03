@@ -87,6 +87,7 @@ struct TasksFilterView: View {
 struct TaskListView: View {
     // MARK: - Properties
     @StateObject private var viewModel = TaskListViewModel()
+    @EnvironmentObject private var syncService: SyncService
     @State private var selectedDate = Date()
     @State private var listScrollPosition: Date?
     @State private var showDeleteAlert = false
@@ -103,6 +104,7 @@ struct TaskListView: View {
     @State private var showFilters = false
     @State private var showPopup = false
     @State private var navigateToTaskView = false
+    @State private var isSpinning = false
     @State private var headerBaselineMinY: CGFloat? = nil
     @State private var lastCompletedTaskDescription: String = ""
     @State private var lastCanceledTaskDescription: String = ""
@@ -302,7 +304,51 @@ struct TaskListView: View {
                         }
                     }
                 }
-                .frame(height: 50)
+                
+                switch syncService.phase {
+                case .syncing:
+                    HStack {
+                        Spacer()
+                        Text("синхронизация")
+                            .font(.custom(Montserrat.regular.rawValue, size: 11))
+                        Image("sync")
+                            .resizable()
+                            .frame(width: 15, height: 15)
+                            .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                            .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
+                            .onAppear { isSpinning = true }
+                            .onDisappear { isSpinning = false }
+                    }
+                    .frame(height: 15)
+
+                case .success:
+                    HStack {
+                        Spacer()
+                        Text("синхронизировано")
+                            .font(.custom(Montserrat.regular.rawValue, size: 11))
+                        Image("syncCompleted")
+                            .resizable()
+                            .frame(width: 15, height: 15)
+                    }
+                    .frame(height: 15)
+
+                case .failure:
+                    HStack {
+                        Spacer()
+                        Text("ошибка синхронизации")
+                            .font(.custom(Montserrat.regular.rawValue, size: 11))
+                        Image("syncError")
+                            .resizable()
+                            .frame(width: 15, height: 15)
+                    }
+                    .frame(height: 15)
+
+                case .idle:
+                    // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
+                    Spacer().frame(height: 15)
+                }
+                
+               
                 
                 // MARK: - Placeholder or the List beginning
                 
@@ -624,6 +670,14 @@ struct TaskListView: View {
                     .onAppear {
                         self.scrollProxy = proxy
                     }
+            }
+        }
+        .onChange(of: syncService.phase) { newPhase in
+            switch newPhase {
+            case .syncing:
+                isSpinning = true
+            default:
+                isSpinning = false
             }
         }
         .onChange(of: viewModel.didScheduleTask) { newValue in

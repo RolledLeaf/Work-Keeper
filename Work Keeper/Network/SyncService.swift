@@ -26,7 +26,7 @@ final class SyncService: ObservableObject {
     private var isRunning = false
     
     // Auto cooldown
-        private let autoCooldown: TimeInterval = 120 // 2 minutes
+        private let autoCooldown: TimeInterval = 10 // sec
         private let lastAutoSyncKey = "sync.lastAutoSyncAt"
     
     init(context: NSManagedObjectContext) {
