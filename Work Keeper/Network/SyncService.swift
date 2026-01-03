@@ -35,10 +35,29 @@ final class SyncService: ObservableObject {
         self.uploadService = InitialUploadService(context: context)
     }
     
+    
     private var lastAutoSyncAt: Date? {
          get { UserDefaults.standard.object(forKey: lastAutoSyncKey) as? Date }
          set { UserDefaults.standard.set(newValue, forKey: lastAutoSyncKey) }
      }
+    
+    func runManualSync(
+           auth: AuthService,
+           debug: Bool = false
+       ) {
+           guard let ownerId = auth.session?.user.id else {
+               if debug { print("⚠️ ManualSync skipped: no ownerId") }
+               return
+           }
+
+           Task {
+               await syncAll(
+                   ownerId: ownerId,
+                   trigger: .manual,
+                   debug: debug
+               )
+           }
+       }
     
     /// Главный вход: сервер -> локально (Pull), затем локально -> сервер (Push).
        func syncAll(ownerId: UUID, trigger: Trigger, debug: Bool = true) async {

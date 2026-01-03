@@ -88,6 +88,7 @@ struct TaskListView: View {
     // MARK: - Properties
     @StateObject private var viewModel = TaskListViewModel()
     @EnvironmentObject private var syncService: SyncService
+    @EnvironmentObject private var auth: AuthService
     @State private var selectedDate = Date()
     @State private var listScrollPosition: Date?
     @State private var showDeleteAlert = false
@@ -658,6 +659,7 @@ struct TaskListView: View {
                             showCancelTaskNotification = false
                         }
                     }
+                    syncService.runManualSync(auth: auth, debug: true)
                 }
             }
         }
@@ -689,6 +691,7 @@ struct TaskListView: View {
                     withAnimation { showScheduleTaskNotification = false }
                     viewModel.didScheduleTask = false
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             }
         }
         .overlay(alignment: .bottomTrailing) {
@@ -749,6 +752,8 @@ struct TaskListView: View {
                 }
                 
                 viewModel.loadTasks()
+
+                syncService.runManualSync(auth: auth, debug: true)
             })
         }
         
@@ -766,6 +771,7 @@ struct TaskListView: View {
                         showEditTaskNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             })
         }
         
@@ -778,6 +784,7 @@ struct TaskListView: View {
                 viewModel.scheduleTask(task, at: chosenDate)
             }
                                .presentationDetents([.fraction(0.25)])
+            
         }
         
         .sheet(item: $selectedTaskForComplete, onDismiss: {
@@ -798,6 +805,7 @@ struct TaskListView: View {
                         showCompleteTaskNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             }
         }
         .popover(isPresented: $showFilters) {
@@ -871,6 +879,7 @@ struct TaskListView: View {
                         showDeleteTaskNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
                 
             }
             Button("Отмена", role: .cancel) {

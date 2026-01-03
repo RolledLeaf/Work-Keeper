@@ -229,6 +229,9 @@ struct NewTaskView: View {
     
     @Environment(\.dismiss)
     private var dismiss
+
+    @EnvironmentObject private var syncService: SyncService
+    @EnvironmentObject private var auth: AuthService
     
     enum Field {
         case house
@@ -1046,6 +1049,11 @@ struct NewTaskView: View {
         .onAppear {
             phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
             previousPhoneMasked = phoneMasked
+
+            // Inject sync dependencies (if user is logged in)
+            if let ownerId = auth.session?.user.id {
+                viewModel.configureSync(syncService: syncService, ownerId: ownerId)
+            }
         }
         
         .sheet(isPresented: $showStreetsView, onDismiss: {

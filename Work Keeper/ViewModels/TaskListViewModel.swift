@@ -260,6 +260,7 @@ final class TaskListViewModel: ObservableObject {
 
 // MARK: - Task View Models Managments
 
+@MainActor
 final class CreateTaskViewModel: ObservableObject {
     @Published var scheduledAt: Date = Date()
     @Published var streetName: String = ""
@@ -303,6 +304,18 @@ final class CreateTaskViewModel: ObservableObject {
     private let addressStore = AddressStore()
     private let clientStore = ClientStore()
     private let taskStore = TaskStore()
+
+    // MARK: - Sync (optional)
+    private var syncService: SyncService?
+    private var ownerId: UUID?
+
+    /// You can inject sync dependencies later (e.g. from a View's onAppear)
+    func configureSync(syncService: SyncService, ownerId: UUID) {
+        self.syncService = syncService
+        self.ownerId = ownerId
+    }
+
+    init() {}
     
   
     func canSaveTask() -> Bool {
@@ -399,8 +412,6 @@ final class CreateTaskViewModel: ObservableObject {
              🧾 Статус: \(status.rawValue)
              """)
         }
-
-      
     }
     
     private func maskRU(fromDigits s: String) -> String {
