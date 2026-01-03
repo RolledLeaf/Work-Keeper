@@ -109,7 +109,9 @@ struct ClientsListView: View {
     @State private var clientToEdit: Client?
     @State private var client: Client?
     
-    
+    // MARK: - Sync Objects
+    @EnvironmentObject private var syncService: SyncService
+    @EnvironmentObject private var auth: AuthService
 
     
     var body: some View {
@@ -285,6 +287,7 @@ struct ClientsListView: View {
                         showAddClientNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
                 viewModel.loadUserDefaultsAndSort()
             })
         }
@@ -303,6 +306,7 @@ struct ClientsListView: View {
                         showEditClientNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             })
         }
         
@@ -334,6 +338,7 @@ struct ClientsListView: View {
                         showDeleteClientNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             }
                 
             Button("Нет", role: .cancel) {}
