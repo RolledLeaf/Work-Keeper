@@ -227,7 +227,7 @@ struct ClientsListView: View {
                                         Image("delete")
                                         Text("Удалить")
                                     }
-                                    .tint(Color.custom(.deleteButtonRed))
+                                    .tint(Color.custom(.pureWhite))
                                     
                                     Button(action: {
                                         clientToEdit = client
@@ -236,7 +236,7 @@ struct ClientsListView: View {
                                         Image("edit")
                                         Text("Редактировать")
                                     }
-                                    .tint(Color.custom(.editButtonGray))
+                                    .tint(Color.custom(.pureWhite))
                                 }
                                 .listRowBackground(Color.custom(.mainBackground))
                                 .listRowSeparator(.hidden)

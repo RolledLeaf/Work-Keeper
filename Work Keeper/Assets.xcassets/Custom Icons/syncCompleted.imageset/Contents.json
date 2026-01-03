@@ -1,17 +1,50 @@
 {
   "images" : [
     {
-      "filename" : "tick.png",
+      "filename" : "syncComplete.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "tick 1.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "syncComplete Dark.svg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "syncComplete 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "tick 2.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "syncComplete Dark 1.svg",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "syncComplete 2.svg",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "syncComplete Dark 2.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }

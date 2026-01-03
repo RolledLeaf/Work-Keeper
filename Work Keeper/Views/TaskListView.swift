@@ -314,7 +314,7 @@ struct TaskListView: View {
                             .font(.custom(Montserrat.regular.rawValue, size: 11))
                         Image("sync")
                             .resizable()
-                            .frame(width: 15, height: 15)
+                            .frame(width: 13.55, height: 15)
                             .rotationEffect(.degrees(isSpinning ? 360 : 0))
                             .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
                             .onAppear { isSpinning = true }
@@ -329,7 +329,7 @@ struct TaskListView: View {
                             .font(.custom(Montserrat.regular.rawValue, size: 11))
                         Image("syncCompleted")
                             .resizable()
-                            .frame(width: 15, height: 15)
+                            .frame(width: 13.55, height: 15)
                     }
                     .frame(height: 15)
 
@@ -340,7 +340,7 @@ struct TaskListView: View {
                             .font(.custom(Montserrat.regular.rawValue, size: 11))
                         Image("syncError")
                             .resizable()
-                            .frame(width: 15, height: 15)
+                            .frame(width: 13.55, height: 15)
                     }
                     .frame(height: 15)
 
@@ -487,7 +487,7 @@ struct TaskListView: View {
                                                     Text("Отменить")
                                                         .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskCanceledOrange))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                                 Button(action: {
                                                     selectedTaskForComplete = task
@@ -497,7 +497,7 @@ struct TaskListView: View {
                                                     Text("Завершить")
                                                         .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskCompleteGreen))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                             case .completed:
                                                 Button(action: {
@@ -510,7 +510,7 @@ struct TaskListView: View {
                                                     Text("Отменить")
                                                         .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskCanceledOrange))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                                 Button(action: {
                                                     selectedTaskForSchedule = task
@@ -520,7 +520,7 @@ struct TaskListView: View {
                                                     Text("Переназначить")
                                                         .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskViewYellow))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                             case .canceled:
                                                 Button(action: {
@@ -531,7 +531,7 @@ struct TaskListView: View {
                                                     Text("Переназначить")
                                                         .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskViewYellow))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                                 Button(action: {
                                                     selectedTaskForComplete = task
@@ -541,7 +541,7 @@ struct TaskListView: View {
                                                     Text("Завершить")
                                                         .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskCompleteGreen))
+                                                .tint(Color.custom(.pureWhite))
                                             }
                                         }
                                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
@@ -550,10 +550,13 @@ struct TaskListView: View {
                                                 showDeleteAlert = true
                                             }) {
                                                 Image("delete")
+                                                    .resizable()
+                                                    .frame(width: 30, height: 30)
                                                 Text("Удалить")
                                                     .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                                    .foregroundStyle(Color.red)
                                             }
-                                            .tint(Color.custom(.deleteButtonRed))
+                                            .tint(Color.custom(.pureWhite))
                                             
                                             
                                             Button(action: {
@@ -561,10 +564,13 @@ struct TaskListView: View {
                                                 showEditTaskView = true
                                             }) {
                                                 Image("edit")
-                                                Text("Редактировать")
+                                                    .resizable()
+                                                    .frame(width: 30, height: 30)
+                                                Text("Изменить")
                                                     .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                                    .foregroundStyle(Color.custom(.pitchBlack))
                                             }
-                                            .tint(Color.custom(.editButtonGray))
+                                            .tint(Color.custom(.pureWhite))
                                         }
                                     }
                                 }
