@@ -183,6 +183,7 @@ struct ClientsListView: View {
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(Color.custom(.searchFieldGray))
                                 )
+                            .ifAvailableGlassStyle(in: .capsule, interactive: true)
                         if !viewModel.searchText.isEmpty {
                             Button(action:  {
                                 viewModel.searchText = ""

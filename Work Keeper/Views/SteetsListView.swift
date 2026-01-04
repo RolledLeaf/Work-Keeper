@@ -105,6 +105,7 @@ struct StreetsListView: View {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color.custom(.searchFieldGray))
                     )
+                    
                 
                 if !viewModel.searchText.isEmpty {
                     Button(action:  {

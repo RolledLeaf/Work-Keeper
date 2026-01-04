@@ -273,6 +273,7 @@ struct TaskListView: View {
                         .onSubmit {
                             hideKeyboard()
                         }
+                        
                     
                     Button(action:  {
                         viewModel.searchText = ""
@@ -291,7 +292,7 @@ struct TaskListView: View {
                         RoundedRectangle(cornerRadius: 30)
                             .fill(Color.custom(.searchFieldGray))
                         )
-                    
+                    .ifAvailableGlassStyle(in: .capsule, interactive: true)
                     
                     if !viewModel.searchText.isEmpty {
                         Button(action:  {
