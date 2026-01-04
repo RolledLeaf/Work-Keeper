@@ -400,18 +400,21 @@ extension Client {
     var scheduledTasksCount: Int {
         (tasks as? Set<TaskEntity>)?
             .filter { $0.status == .scheduled }
+            .filter { $0.deletedAt == nil }
             .count ?? 0
     }
     
     var completedTasksCount: Int {
         (tasks as? Set<TaskEntity>)?
             .filter { $0.status == .completed }
+            .filter { $0.deletedAt == nil }
             .count ?? 0
     }
     
     var canceledTasksCount: Int {
         (tasks as? Set<TaskEntity>)?
             .filter { $0.status == .canceled }
+            .filter { $0.deletedAt == nil }
             .count ?? 0
     }
     

@@ -851,10 +851,7 @@ struct TaskListView: View {
         
         
         .onAppear {
-            
             loadSavedStatuses()
-            
-            // Скролл к сегодняшнему (оставляем как есть)
             let today = dayKey(Date())
             let keys = Array(viewModel.groupedTasksByDate.keys)
             if keys.contains(today) {

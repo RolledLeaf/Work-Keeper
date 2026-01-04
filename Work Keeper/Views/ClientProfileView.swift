@@ -291,8 +291,10 @@ struct ClientProfileView: View {
                 let defaultDate = Date()
                 
                 let clientTasks = (client.tasks as? Set<TaskEntity>)?.sorted(by: { ($0.scheduledAt ?? defaultDate) > ($1.scheduledAt ?? defaultDate) }) ?? []
+                
+                let actualTasks = clientTasks.filter { $0.deletedAt == nil }
 
-                if clientTasks.isEmpty {
+                if actualTasks.isEmpty {
                     VStack(spacing: 12) {
                         Image("noTasksPlaceholder")
                             .padding(.leading, 50)
@@ -303,7 +305,7 @@ struct ClientProfileView: View {
                     .padding(.top, 8)
                 } else {
                     List {
-                        ForEach(clientTasks) { task in
+                        ForEach(actualTasks) { task in
                             ClientTaskCell(task: task)
                                 .listRowSeparator(.hidden)
                                 .contentShape(Rectangle())
