@@ -18,7 +18,8 @@ struct TaskRow: View {
     
     var clientTasksCount: Int {
         guard let tasks = task.client?.tasks as? Set<TaskEntity> else { return 0 }
-        return tasks.count
+        let actualTasks = tasks.filter { $0.deletedAt == nil }
+        return actualTasks.count
     }
     
     

@@ -20,6 +20,13 @@ final class IncomeViewModel: ObservableObject {
         print("[IncomeViewModel] loadTotal() called")
     }
     
+    func loadForYear(_ year: Int) {
+        yearIncome = totalIncome(context: context, year: year, month: nil, onlyCompleted: true)
+        monthlyIncome = (1...12).map { m in
+              totalIncome(context: context, year: year, month: m, onlyCompleted: true)
+          }
+      }
+    
     func refreshAll() {
         total = totalIncomeAllTime(context: context, onlyCompleted: true)
         }
@@ -51,11 +58,6 @@ final class IncomeViewModel: ObservableObject {
         monthlyIncome = temp
     }
     
-    func loadForYear(_ year: Int) {
-        yearIncome = totalIncome(context: context, year: year, month: nil, onlyCompleted: true)
-        monthlyIncome = (1...12).map { m in
-              totalIncome(context: context, year: year, month: m, onlyCompleted: true)
-          }
-      }
+    
   
 }
