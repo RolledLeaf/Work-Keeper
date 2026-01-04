@@ -418,6 +418,13 @@ extension Client {
             .count ?? 0
     }
     
+    var totalTasksCount: Int {
+        (tasks as? Set<TaskEntity>)?
+            .filter { $0.deletedAt == nil }
+            .count ?? 0
+        
+    }
+    
     var formattedAddress: String {
         guard let address = address?.allObjects.first as? Address else { return "Адрес не указан" }
         return "\(address.street?.name ?? "") \(address.house ?? "")"
@@ -448,11 +455,6 @@ extension Client {
             .reduce(0, +) ?? 0
     }
     
-    
-    
-    var totalTasksCount: Int {
-        (tasks as? Set<TaskEntity>)?.count ?? 0
-    }
-    
+   
     
 }
