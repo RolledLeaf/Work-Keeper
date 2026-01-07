@@ -73,21 +73,10 @@ struct ClientsView: View {
                   
                     HStack {
                         Spacer()
-                        Text("Клиенты с активными заданиями")
+                        Text("Клиенты с выполненными заданиями")
                             .font(Font.custom(SFPro.bold.rawValue, size: 20))
                             .foregroundColor(.primary)
                         Spacer()
-                    }
-                    
-                    HStack {
-                        Rectangle()
-                            .frame(width: 15, height: 15)
-                            .foregroundColor(Color.custom(.taskCompleteGreen))
-                        
-                        
-                        Rectangle()
-                            .frame(width: 15, height: 15)
-                            .foregroundColor(Color.custom(.taskViewYellow))
                     }
                     
                 }

@@ -127,7 +127,7 @@ final class ClientStore: NSObject, ObservableObject {
         // Predicate: ANY tasks.statusString IN {"scheduled", "completed"}
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             NSPredicate(format: "deletedAt == nil"),
-            NSPredicate(format: "ANY tasks.statusString IN %@", ["scheduled", "completed"]),
+            NSPredicate(format: "ANY tasks.statusString IN %@", ["completed"]),
             NSPredicate(format: "ANY tasks.deletedAt == nil")
         ])
         
@@ -198,7 +198,7 @@ final class ClientStore: NSObject, ObservableObject {
                 NSPredicate(format: "%K != nil", "client")
             ]
             if onlyCompleted {
-                preds.append(NSPredicate(format: "statusString in %@", ["completed", "scheduled"]))
+                preds.append(NSPredicate(format: "statusString in %@", ["completed"]))
             }
             return NSCompoundPredicate(andPredicateWithSubpredicates: preds)
         }()

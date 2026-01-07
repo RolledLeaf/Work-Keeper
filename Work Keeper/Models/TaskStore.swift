@@ -365,7 +365,13 @@ final class TaskStore: NSObject, ObservableObject {
     @discardableResult
     func totalTasksCount(debug: Bool = false) -> Int {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "deletedAt == nil")
+        
+        let predicates: [NSPredicate] = [
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "statusString == %@", Status.completed.rawValue)
+        ]
+        
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
         do {
             let count = try context.count(for: request)
             if debug { print("[TaskStore] totalTaskCount =", count) }

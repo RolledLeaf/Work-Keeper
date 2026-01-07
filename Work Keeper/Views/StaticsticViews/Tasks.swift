@@ -17,7 +17,7 @@ struct TasksView: View {
             VStack {
                 
                 List {
-                   
+                   TextHeaderView()
                     TaskStatRow(viewModel: viewModel, title: months[0], year: year, monthIndex: 0)
                         .listRowSeparator(.hidden)
                     
@@ -30,36 +30,25 @@ struct TasksView: View {
                 ZStack {
                     Color.white
                    
-                        HStack {
+                    HStack(spacing: 6) {
                             Text("Выполнено: ")
                                 .font(Font.custom(SFPro.bold.rawValue, size: 22))
-                             
-                            
-                            Spacer()
-                                .frame(width: 30)
                             
                             Text("\(viewModel.tasksCount)")
                                 .font(Font.custom(SFPro.bold.rawValue, size: 22))
 
                             Spacer()
-                                .frame(width: 60)
                             
                             Text("Отмены: ")
                                 .font(Font.custom(SFPro.bold.rawValue, size: 22))
-                               
-                            
-                            Spacer()
-                                .frame(width: 30)
+   
                             Text("\(viewModel.canceledTasksCount)")
                                 .font(Font.custom(SFPro.bold.rawValue, size: 22))
                                 .foregroundColor(Color.custom(.taskCanceledOrange))
-                                
-                                
                     }
-     
                 }
                 .frame(height: 50)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 20)
                 .overlay(
                     RoundedRectangle(cornerRadius: 5)
                         .stroke(Color.gray.opacity(0.5), lineWidth: 1)
@@ -88,6 +77,27 @@ struct TasksView: View {
         }
        
     }
+    
+    struct TextHeaderView: View {
+        var body: some View {
+            ZStack {
+                
+                VStack {
+                  
+                    HStack {
+                        Spacer()
+                        Text("Заданий выполнено")
+                            .font(Font.custom(SFPro.bold.rawValue, size: 20))
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+                    
+                }
+                .padding(.vertical, 6)
+            }
+        }
+    }
+    
     private func format(_ value: Int) -> String {
         let f = NumberFormatter()
         f.numberStyle = .decimal
