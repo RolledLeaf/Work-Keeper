@@ -6,7 +6,7 @@ struct RootView: View {
     var body: some View {
         switch auth.state {
         case .loading:
-            ProgressView("Загрузка…")
+            SplashView()
 
         case .unauthenticated:
             AuthView()
