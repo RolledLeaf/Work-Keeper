@@ -26,8 +26,30 @@ final class SyncService: ObservableObject {
     private var isRunning = false
     
     // Auto cooldown
-        private let autoCooldown: TimeInterval = 10 // sec
-        private let lastAutoSyncKey = "sync.lastAutoSyncAt"
+    private let autoCooldown: TimeInterval = 10 // sec
+
+    /// Per-owner cooldown checkpoint to avoid mixing when switching accounts.
+    private func lastAutoSyncKey(ownerId: UUID) -> String {
+        "sync.lastAutoSyncAt.\(ownerId.uuidString)"
+    }
+    
+    private var phaseResetTask: Task<Void, Never>?
+      
+      private func schedulePhaseReset(after seconds: Double) {
+          // отменяем предыдущий таймер
+          phaseResetTask?.cancel()
+
+          phaseResetTask = Task { [weak self] in
+              // sleep может бросить CancellationError — нам ок, просто выходим
+              try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+              guard let self else { return }
+
+              // важный guard: если сейчас снова syncing — не сбрасываем
+              if case .syncing = self.phase { return }
+
+              self.phase = .idle
+          }
+      }
     
     init(context: NSManagedObjectContext) {
         self.context = context
@@ -35,11 +57,21 @@ final class SyncService: ObservableObject {
         self.uploadService = InitialUploadService(context: context)
     }
     
+
+    /// Ensures the Supabase SDK has an active session (so requests are authenticated).
+    private func ensureSupabaseSessionReady(debug: Bool) async throws {
+        // Supabase client auth.session is async/throwing in current SDKs.
+        _ = try await SupabaseManager.shared.client.auth.session
+        if debug { print("🔐 Supabase session is ready") }
+    }
     
-    private var lastAutoSyncAt: Date? {
-         get { UserDefaults.standard.object(forKey: lastAutoSyncKey) as? Date }
-         set { UserDefaults.standard.set(newValue, forKey: lastAutoSyncKey) }
-     }
+    private func loadLastAutoSyncAt(ownerId: UUID) -> Date? {
+        UserDefaults.standard.object(forKey: lastAutoSyncKey(ownerId: ownerId)) as? Date
+    }
+
+    private func saveLastAutoSyncAt(_ date: Date?, ownerId: UUID) {
+        UserDefaults.standard.set(date, forKey: lastAutoSyncKey(ownerId: ownerId))
+    }
     
     func runManualSync(
            auth: AuthService,
@@ -66,23 +98,27 @@ final class SyncService: ObservableObject {
                return
            }
            
-           if trigger == .auto, let last = lastAutoSyncAt {
-                    let elapsed = Date().timeIntervalSince(last)
-                    if elapsed < autoCooldown {
-                        if debug {
-                            let left = Int(autoCooldown - elapsed)
-                            print("⏱️ SyncService: auto cooldown, skip (\(left)s left)")
-                        }
-                        return
-                    }
-                }
+           if trigger == .auto, let last = loadLastAutoSyncAt(ownerId: ownerId) {
+               let elapsed = Date().timeIntervalSince(last)
+               if elapsed < autoCooldown {
+                   if debug {
+                       let left = Int(autoCooldown - elapsed)
+                       print("⏱️ SyncService: auto cooldown, skip (\(left)s left)")
+                   }
+                   return
+               }
+           }
 
            isRunning = true
+           phaseResetTask?.cancel()
            phase = .syncing
            defer { isRunning = false }
 
            do {
                if debug { print("🔄 SyncAll started") }
+
+               // Ensure the SDK session is actually attached to requests.
+               try await ensureSupabaseSessionReady(debug: debug)
 
                // 1) Pull: применяем изменения с сервера локально
                try await pullService.run(ownerId: ownerId, debug: debug)
@@ -96,15 +132,16 @@ final class SyncService: ObservableObject {
 
                let doneAt = Date()
                phase = .success(doneAt)
-               
+               schedulePhaseReset(after: 2.0)
                if trigger == .auto {
-                   lastAutoSyncAt = doneAt
+                   saveLastAutoSyncAt(doneAt, ownerId: ownerId)
                }
                
                if debug { print("✅ SyncAll finished at \(doneAt)") }
 
            } catch {
                phase = .failure(error.localizedDescription)
+               schedulePhaseReset(after: 3.0)
                if debug { print("❌ SyncAll error:", error) }
            }
        }

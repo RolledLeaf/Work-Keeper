@@ -87,8 +87,11 @@ struct TasksFilterView: View {
 struct TaskListView: View {
     // MARK: - Properties
     @StateObject private var viewModel = TaskListViewModel()
+    
     @EnvironmentObject private var syncService: SyncService
     @EnvironmentObject private var auth: AuthService
+    @EnvironmentObject private var networkMonitor: NetworkMonitor
+    
     @State private var selectedDate = Date()
     @State private var listScrollPosition: Date?
     @State private var showDeleteAlert = false
@@ -106,6 +109,8 @@ struct TaskListView: View {
     @State private var showPopup = false
     @State private var navigateToTaskView = false
     @State private var isSpinning = false
+    @State private var syncReloadTask: Task<Void, Never>? = nil
+    
     @State private var headerBaselineMinY: CGFloat? = nil
     @State private var lastCompletedTaskDescription: String = ""
     @State private var lastCanceledTaskDescription: String = ""
@@ -121,6 +126,9 @@ struct TaskListView: View {
     @State private var selectedTaskForEdit: TaskEntity?
     // Keep a reference to the ScrollViewProxy for scroll actions
     @State private var scrollProxy: ScrollViewProxy? = nil
+   
+    
+        
     
     
     
@@ -307,49 +315,62 @@ struct TaskListView: View {
                     }
                 }
                 
-                switch syncService.phase {
-                case .syncing:
+                if !networkMonitor.isOnline {
                     HStack {
                         Spacer()
-                        Text("синхронизация")
+                        Text("Нет сети, работа оффлайн")
                             .font(.custom(Montserrat.regular.rawValue, size: 11))
-                        Image("sync")
-                            .resizable()
-                            .frame(width: 13.55, height: 15)
-                            .rotationEffect(.degrees(isSpinning ? 360 : 0))
-                            .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
-                            .onAppear { isSpinning = true }
-                            .onDisappear { isSpinning = false }
+                            .foregroundColor(.secondary)
+                        Image(systemName: "wifi.slash")
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
                     }
                     .frame(height: 15)
 
-                case .success:
-                    HStack {
-                        Spacer()
-                        Text("синхронизировано")
-                            .font(.custom(Montserrat.regular.rawValue, size: 11))
-                        Image("syncCompleted")
-                            .resizable()
-                            .frame(width: 13.55, height: 15)
+                } else {
+                    switch syncService.phase {
+                    case .syncing:
+                        HStack {
+                            Spacer()
+                            Text("синхронизация")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            Image("sync")
+                                .resizable()
+                                .frame(width: 13.55, height: 15)
+                                .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                                .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
+                                .onAppear { isSpinning = true }
+                                .onDisappear { isSpinning = false }
+                        }
+                        .frame(height: 15)
+                        
+                    case .success:
+                        HStack {
+                            Spacer()
+                            Text("синхронизировано")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            Image("syncCompleted")
+                                .resizable()
+                                .frame(width: 13.55, height: 15)
+                        }
+                        .frame(height: 15)
+                        
+                    case .failure:
+                        HStack {
+                            Spacer()
+                            Text("ошибка синхронизации")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            Image("syncError")
+                                .resizable()
+                                .frame(width: 13.55, height: 15)
+                        }
+                        .frame(height: 15)
+                        
+                    case .idle:
+                        // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
+                        Spacer().frame(height: 15)
                     }
-                    .frame(height: 15)
-
-                case .failure:
-                    HStack {
-                        Spacer()
-                        Text("ошибка синхронизации")
-                            .font(.custom(Montserrat.regular.rawValue, size: 11))
-                        Image("syncError")
-                            .resizable()
-                            .frame(width: 13.55, height: 15)
-                    }
-                    .frame(height: 15)
-
-                case .idle:
-                    // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
-                    Spacer().frame(height: 15)
                 }
-                
                
                 
                 // MARK: - Placeholder or the List beginning
@@ -685,6 +706,19 @@ struct TaskListView: View {
             switch newPhase {
             case .syncing:
                 isSpinning = true
+
+            case .success:
+                isSpinning = false
+
+                // After a successful sync, re-apply current DB filters so UI reflects
+                // remote changes (e.g., deletedAt applied during Pull).
+                syncReloadTask?.cancel()
+                syncReloadTask = Task { @MainActor in
+                    // small delay to let CoreData saves settle (safe, avoids race)
+                    try? await Task.sleep(nanoseconds: 150_000_000) // 0.15s
+                    viewModel.applyCurrentFiltersUsingDB(debug: false)
+                }
+
             default:
                 isSpinning = false
             }

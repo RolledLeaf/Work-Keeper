@@ -18,26 +18,55 @@ final class PullSyncService {
     /// Pull all remote data into CoreData (upsert + soft-delete)
     func run(ownerId: UUID, debug: Bool = true) async throws {
         if debug { print("⬇️ PullSync started. ownerId:", ownerId) }
-
+        
         // порядок важен из-за связей
         let syncStartedAt = Date()
-        let since = loadLastPullAt()
-        let streets = try await streetStore.fetchStreetChanges(ownerId: ownerId, since: since)
+        let since = loadLastPullAt(ownerId: ownerId)
+        
+        let isFirstPull = (since == .distantPast)
+        if debug {
+            print("⏱️ Pull since:", since)
+            print("🆕 isFirstPull:", isFirstPull)
+        }
+        
+        let streets: [StreetDTO]
+        if isFirstPull {
+            streets = try await fetchAllStreets(ownerId: ownerId)
+        } else {
+            streets = try await streetStore.fetchStreetChanges(ownerId: ownerId, since: since)
+        }
         try await upsertStreets(streets, debug: debug)
-       
-        let clients = try await clientStore.fetchChanges(ownerId: ownerId, since: since)
+        
+        let clients: [ClientDTO]
+        if isFirstPull {
+            clients = try await fetchAllClients(ownerId: ownerId)
+        } else {
+            clients = try await clientStore.fetchChanges(ownerId: ownerId, since: since)
+        }
         try await upsertClients(clients, debug: debug)
-
-        let addresses = try await addressStore.fetchChanges(ownerId: ownerId, since: since)
+        
+        let addresses: [AddressDTO]
+        if isFirstPull {
+            addresses = try await fetchAllAddresses(ownerId: ownerId)
+        } else {
+            addresses = try await addressStore.fetchChanges(ownerId: ownerId, since: since)
+        }
         try await upsertAddresses(addresses, debug: debug)
-
-        let tasks = try await taskStore.fetchChanges(ownerId: ownerId, since: since)
+        
+        let tasks: [TaskDTO]
+        if isFirstPull {
+            tasks = try await fetchAllTasks(ownerId: ownerId)
+        } else {
+            tasks = try await taskStore.fetchChanges(ownerId: ownerId, since: since)
+        }
         try await upsertTasks(tasks, debug: debug)
-
-        saveLastPullAt(syncStartedAt)
-
-        if debug { print("✅ PullSync finished") }
-    }
+            
+            saveLastPullAt(syncStartedAt, ownerId: ownerId)
+            
+            if debug { print("✅ PullSync finished") }
+        
+        }
+    
 
     // MARK: - Remote fetches
 
@@ -133,12 +162,15 @@ final class PullSyncService {
 
                 
                 let local = self.findOrCreateStreet(remoteId: r.id)
-
                 if !self.shouldApplyRemoteUpdate(
                     remoteUpdatedAt: r.updated_at,
                     remoteDeletedAt: r.deleted_at,
                     localUpdatedAt: local.updatedAt,
-                    localDeletedAt: local.deletedAt
+                    localDeletedAt: local.deletedAt,
+                    localNeedsSync: local.needsSync,
+                    entity: "Street",
+                    remoteId: r.id,
+                    debug: debug
                 ) {
                     continue
                 }
@@ -191,7 +223,11 @@ final class PullSyncService {
                     remoteUpdatedAt: r.updated_at,
                     remoteDeletedAt: r.deleted_at,
                     localUpdatedAt: local.updatedAt,
-                    localDeletedAt: local.deletedAt
+                    localDeletedAt: local.deletedAt,
+                    localNeedsSync: local.needsSync,
+                    entity: "Client",
+                    remoteId: r.id,
+                    debug: debug
                 ) {
                     continue
                 }
@@ -246,7 +282,11 @@ final class PullSyncService {
                     remoteUpdatedAt: r.updated_at,
                     remoteDeletedAt: r.deleted_at,
                     localUpdatedAt: local.updatedAt,
-                    localDeletedAt: local.deletedAt
+                    localDeletedAt: local.deletedAt,
+                    localNeedsSync: local.needsSync,
+                    entity: "Address",
+                    remoteId: r.id,
+                    debug: debug
                 ) {
                     continue
                 }
@@ -317,8 +357,11 @@ final class PullSyncService {
                     remoteUpdatedAt: r.updated_at,
                     remoteDeletedAt: r.deleted_at,
                     localUpdatedAt: local.updatedAt,
-                    localDeletedAt: local.deletedAt
-                    
+                    localDeletedAt: local.deletedAt,
+                    localNeedsSync: local.needsSync,
+                    entity: "Task",
+                    remoteId: r.id,
+                    debug: debug
                 ) {
                     continue
                 }
@@ -463,14 +506,41 @@ final class PullSyncService {
 
     // MARK: - Conflict rule
 
-    /// Apply remote snapshot only if the remote record is newer than the local record.
-    /// We treat `deleted_at` as an update too, because some soft-delete flows may not bump `updated_at`.
+    /// Conflict rules for applying remote updates:
+    /// 1. Delete wins: remote soft-delete always applies (even over local unsynced edits).
+    /// 2. If local.needsSync == true, do not apply remote non-delete updates (preserve local unsynced changes).
+    /// 3. Otherwise, use LWW by timestamp (max of updated_at/deleted_at).
     private func shouldApplyRemoteUpdate(
         remoteUpdatedAt: Date?,
         remoteDeletedAt: Date?,
         localUpdatedAt: Date?,
-        localDeletedAt: Date?
+        localDeletedAt: Date?,
+        localNeedsSync: Bool,
+        entity: String,
+        remoteId: UUID,
+        debug: Bool
     ) -> Bool {
+        // Rule 1: delete wins. If remote is soft-deleted, we always apply it locally
+        // (even if the user has local unsynced edits), to avoid "resurrection".
+        if let rDel = remoteDeletedAt {
+            if debug {
+                print("🧠 [Conflict] \(entity) \(remoteId): Rule#1 DELETE wins (remote.deleted_at=\(rDel))")
+            }
+            return true
+        }
+
+        // Rule 2: if local has unsynced changes, don't overwrite them with a remote non-delete update.
+        // We'll push local changes later and converge on the next pull.
+        if localNeedsSync {
+            if debug {
+                let rUp = remoteUpdatedAt ?? .distantPast
+                let lUp = localUpdatedAt ?? .distantPast
+                print("🧠 [Conflict] \(entity) \(remoteId): Rule#2 LOCAL needsSync -> skip remote update (remote.updated_at=\(rUp), local.updatedAt=\(lUp))")
+            }
+            return false
+        }
+
+        // Rule 3: otherwise, apply remote snapshot only if it's newer than local.
         let rUpdated = remoteUpdatedAt ?? .distantPast
         let rDeleted = remoteDeletedAt ?? .distantPast
         let remoteStamp = max(rUpdated, rDeleted)
@@ -479,7 +549,11 @@ final class PullSyncService {
         let lDeleted = localDeletedAt ?? .distantPast
         let localStamp = max(lUpdated, lDeleted)
 
-        return remoteStamp > localStamp
+        let apply = remoteStamp > localStamp
+        if debug {
+            print("🧠 [Conflict] \(entity) \(remoteId): Rule#3 LWW -> \(apply ? "APPLY" : "SKIP") (remoteStamp=\(remoteStamp), localStamp=\(localStamp))")
+        }
+        return apply
     }
 }
 

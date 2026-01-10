@@ -25,23 +25,14 @@ final class RemoteTaskStore {
     }
     
     
-    /// Задачи за период (удобно для календаря / списка по датам)
-    func fetch(from: Date, to: Date) async throws -> [TaskDTO] {
-        try await client
-            .from("tasks")
-            .select()
-            .gte("scheduled_at", value: iso(from))
-            .lt("scheduled_at", value: iso(to))
-            .order("scheduled_at", ascending: true)
-            .execute()
-            .value
-    }
+
     
     func fetchAll(ownerId: UUID, includeDeleted: Bool = false) async throws -> [TaskDTO] {
         // Keep this as a filter-capable builder until after conditional filters are applied.
         var q = client
             .from("tasks")
             .select()
+            .eq("owner_id", value: ownerId.uuidString)
 
         if !includeDeleted {
             // PostgREST null check: deleted_at IS NULL
@@ -57,11 +48,18 @@ final class RemoteTaskStore {
     }
 
     /// Все задачи клиента (например на карточке клиента)
-    func fetchByClient(clientId: UUID) async throws -> [TaskDTO] {
-        try await client
+    func fetchByClient(ownerId: UUID, clientId: UUID, includeDeleted: Bool = false) async throws -> [TaskDTO] {
+        var q = client
             .from("tasks")
             .select()
+            .eq("owner_id", value: ownerId.uuidString)
             .eq("client_id", value: clientId.uuidString)
+
+        if !includeDeleted {
+            q = q.filter("deleted_at", operator: "is", value: "null")
+        }
+
+        return try await q
             .order("scheduled_at", ascending: false)
             .execute()
             .value
@@ -167,3 +165,24 @@ final class RemoteTaskStore {
         ISO8601DateFormatter().string(from: date)
     }
 }
+
+
+   /// Задачи за период (удобно для календаря / списка по датам)
+//    func fetch(ownerId: UUID, from: Date, to: Date, includeDeleted: Bool = false) async throws -> [TaskDTO] {
+//        // Keep this as a filter-capable builder until after conditional filters are applied.
+//        var q = client
+//            .from("tasks")
+//            .select()
+//            .eq("owner_id", value: ownerId.uuidString)
+//            .gte("scheduled_at", value: iso(from))
+//            .lt("scheduled_at", value: iso(to))
+//
+//        if !includeDeleted {
+//            q = q.filter("deleted_at", operator: "is", value: "null")
+//        }
+//
+//        return try await q
+//            .order("scheduled_at", ascending: true)
+//            .execute()
+//            .value
+//    }

@@ -32,45 +32,45 @@ final class InitialUploadService {
     /// Uses a local lastPushAt checkpoint stored in UserDefaults.
     func pushStreets(ownerId: UUID, debug: Bool = true) async throws {
         let syncStartedAt = Date()
-        let since = loadLastPushAtStreets()
+        let since = loadLastPushAtStreets(ownerId: ownerId)
         if debug { print("⬆️ Streets Push started. since=\(since)") }
 
         try await pushStreets(ownerId: ownerId, since: since, debug: debug)
 
-        saveLastPushAtStreets(syncStartedAt)
+        saveLastPushAtStreets(syncStartedAt, ownerId: ownerId)
         if debug { print("✅ Streets Push finished") }
     }
 
     func pushClients(ownerId: UUID, debug: Bool = true) async throws {
         let syncStartedAt = Date()
-        let since = loadLastPushAtClients()
+        let since = loadLastPushAtClients(ownerId: ownerId)
         if debug { print("⬆️ Clients Push started. since=\(since)") }
 
         try await pushClients(ownerId: ownerId, since: since, debug: debug)
 
-        saveLastPushAtClients(syncStartedAt)
+        saveLastPushAtClients(syncStartedAt, ownerId: ownerId)
         if debug { print("✅ Clients Push finished") }
     }
 
     func pushAddresses(ownerId: UUID, debug: Bool = true) async throws {
         let syncStartedAt = Date()
-        let since = loadLastPushAtAddresses()
+        let since = loadLastPushAtAddresses(ownerId: ownerId)
         if debug { print("⬆️ Addresses Push started. since=\(since)") }
 
         try await pushAddresses(ownerId: ownerId, since: since, debug: debug)
 
-        saveLastPushAtAddresses(syncStartedAt)
+        saveLastPushAtAddresses(syncStartedAt, ownerId: ownerId)
         if debug { print("✅ Addresses Push finished") }
     }
 
     func pushTasks(ownerId: UUID, debug: Bool = true) async throws {
         let syncStartedAt = Date()
-        let since = loadLastPushAtTasks()
+        let since = loadLastPushAtTasks(ownerId: ownerId)
         if debug { print("⬆️ Tasks Push started. since=\(since)") }
 
         try await pushTasks(ownerId: ownerId, since: since, debug: debug)
 
-        saveLastPushAtTasks(syncStartedAt)
+        saveLastPushAtTasks(syncStartedAt, ownerId: ownerId)
         if debug { print("✅ Tasks Push finished") }
     }
     
