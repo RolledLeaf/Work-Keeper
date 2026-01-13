@@ -35,6 +35,10 @@ final class AuthService: ObservableObject {
         session?.user.id
     }
     
+    var userEmail: String? {
+        session?.user.email
+    }
+    
     func restoreSession() async {
         // Restore saved session if present. Missing/expired session is not a user-facing error.
         state = .loading
@@ -56,7 +60,15 @@ final class AuthService: ObservableObject {
     func signUp(email: String, password: String) async {
         authError = nil
         do {
-            let result = try await client.auth.signUp(email: email, password: password)
+          
+            let redirectURL = URL(string: "workkeeper://auth/callback")
+
+            let result = try await client.auth.signUp(
+                email: email,
+                password: password,
+                redirectTo: redirectURL
+            )
+
             session = result.session
             state = (session == nil) ? .unauthenticated : .authenticated
         } catch {
@@ -82,11 +94,10 @@ final class AuthService: ObservableObject {
         do {
             try await client.auth.signOut()
 
-            // Clear in-memory auth state first
             session = nil
             state = .unauthenticated
 
-            // Clear per-owner sync checkpoints to avoid mixing if another user logs in later.
+ 
             if let ownerId {
                 clearSyncCheckpoints(for: ownerId)
             }
@@ -95,6 +106,16 @@ final class AuthService: ObservableObject {
             purgeLocalDataHandler?()
         } catch {
             authError = error.localizedDescription
+        }
+    }
+
+
+    func handleOpenURL(_ url: URL) {
+        client.auth.handle(url)
+
+        Task { [weak self] in
+            guard let self else { return }
+            await self.restoreSession()
         }
     }
 }

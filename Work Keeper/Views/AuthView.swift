@@ -44,7 +44,7 @@ struct AuthView: View {
                 }
                 .buttonStyle(.borderedProminent)
             }
-            .disabled(isLoading || email.isEmpty || password.isEmpty)
+            .disabled(isLoading || email.isBlank || password.isBlank)
 
             if isLoading {
                 ProgressView()

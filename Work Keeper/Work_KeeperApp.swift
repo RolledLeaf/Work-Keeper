@@ -51,6 +51,9 @@ struct Work_KeeperApp: App {
                 .environmentObject(auth)
                 .environmentObject(syncService)
                 .environmentObject(networkMonitor)
+                .onOpenURL { url in
+                                    auth.handleOpenURL(url)
+                                }
                 .task {
                     if auth.purgeLocalDataHandler == nil {
                         auth.purgeLocalDataHandler = { purgeLocalCoreData() }

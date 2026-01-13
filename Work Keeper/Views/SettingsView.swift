@@ -77,22 +77,30 @@ struct SettingsView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
+           
+            .ifAvailableButtonStyleGlass()
             .disabled(isUploading)
 
             Spacer()
             
-            Button {
-                presentLogoutAlert()
-            } label: {
-                HStack {
-                    Text("Выйти")
-                    Image(systemName: "rectangle.portrait.and.arrow.forward")
-                }
-                .frame(maxWidth: .infinity)
+            
+            if let email = auth.userEmail {
+                Text("\(email)")
+                    .font(.custom(Montserrat.regular.rawValue, size: 12))
             }
-            .buttonStyle(.bordered)
-         
+            
+                Button {
+                    presentLogoutAlert()
+                } label: {
+                    HStack {
+                        Text("Выйти")
+                        Image(systemName: "rectangle.portrait.and.arrow.forward")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .foregroundStyle(Color.custom(.deleteButtonRed))
+                .ifAvailableButtonStyleGlass()
+            
 
             Spacer()
         }

@@ -119,6 +119,7 @@ struct TaskListView: View {
     @State private var lastEditedTaskDescription: String = ""
     @State private var lastCompletedFinalAmount: Double = 0.0
     @State private var selectedTask: TaskEntity?
+    @State private var selectedClient: Client?
     @State private var taskToCancel: TaskEntity?
     @State private var taskToDelete: TaskEntity?
     @State private var selectedTaskForSchedule: TaskEntity?
@@ -488,8 +489,7 @@ struct TaskListView: View {
                                         (viewModel.groupedTasksByDate[dateKey] ?? [])
                                             .sorted { $0.scheduledAt ?? Date.distantPast < $1.scheduledAt ?? Date.distantPast }
                                     ) { task in
-                                        TaskRow(viewModel: viewModel, task: task
-                                        )
+                                       TaskRow(viewModel: viewModel, selectedClient: $selectedClient, task: task)
                                         .padding(.vertical, 6) // коррекция расстояния между ячейками
                                         .contentShape(Rectangle())
                                         .onTapGesture {
@@ -658,14 +658,19 @@ struct TaskListView: View {
                         .navigationDestination(item: $selectedTask) { task in
                             TaskView(task: task)
                         }
+                        .navigationDestination(item: $selectedClient) { client in
+                            ClientProfileView(client: client)
+                        }
+                        .onChange(of: selectedClient) { newValue in
+                            if newValue != nil {
+                                showScrollToTopButton = false
+                            }
+                        }
                     }
                     
                     .navigationTitle("")
                     .navigationBarTitleDisplayMode(.inline)
-                    
                 }
-                
-                
             }
             .padding(.trailing, 17)
             .padding(.leading, 16)
@@ -738,7 +743,8 @@ struct TaskListView: View {
         .overlay(alignment: .bottomTrailing) {
             if showScrollToTopButton {
                 Button(action: {
-                    selectedDate = Date()
+                    let today = Date()
+                    selectedDate = today
                 }) {
                     Image("arrowUp")
                         .resizable()

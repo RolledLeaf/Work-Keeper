@@ -12,8 +12,8 @@ struct TaskRow: View {
     @State private var repeatBadgeOpacity: Double = 0
     @State private var creditCardOpacity: Double = 0
     @State private var cashOpacity: Double = 0
-    @State private var selectedClient: Client?
     @ObservedObject var viewModel: TaskListViewModel
+    @Binding var selectedClient: Client?
     
     
     var clientTasksCount: Int {
@@ -67,6 +67,7 @@ struct TaskRow: View {
         
         return VStack {
             VStack {
+                
                 
                 HStack {
                     HStack {
@@ -302,11 +303,7 @@ struct TaskRow: View {
                     .padding(.top, 20)
             }
         }
-        .navigationDestination(item: $selectedClient) { client in
-            ClientProfileView(client: client)
-        }
        
     }
     
 }
-

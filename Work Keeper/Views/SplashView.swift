@@ -3,6 +3,8 @@ import SwiftUI
 struct SplashView: View {
     var body: some View {
         ZStack {
+            Color.custom(.splashBackground).edgesIgnoringSafeArea(.all)
+            
             Image("SplashScreen")
                 .resizable()
                 .scaledToFill()
@@ -17,6 +19,7 @@ struct SplashView: View {
                     .padding(.top, 250)
             }
         }
+       
        
     }
 }

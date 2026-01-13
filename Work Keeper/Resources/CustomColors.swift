@@ -37,6 +37,7 @@ enum CustomColor: String {
     case bckgFieldGray = "bckgFieldGray"
     case whiteOnly = "whiteOnly"
     case inactiveColorsGray = "inactiveColorsGray"
+    case splashBackground = "splashBackground"
 }
 
 
