@@ -9,8 +9,17 @@ final class AuthService: ObservableObject {
         case authenticated
         case unauthenticated
     }
+    
+    enum SignUpPhase: Equatable {
+        case idle
+        case sending
+        case confirmationEmailSent(email: String)
+        case signedIn
+        case failed(message: String)
+    }
 
     @Published private(set) var state: AuthState = .loading
+    @Published var signUpPhase: SignUpPhase = .idle
     @Published private(set) var session: Session?
     @Published var authError: String?
 
@@ -59,20 +68,32 @@ final class AuthService: ObservableObject {
 
     func signUp(email: String, password: String) async {
         authError = nil
-        do {
-          
-            let redirectURL = URL(string: "workkeeper://auth/callback")
+        await MainActor.run { signUpPhase = .sending }
 
+        do {
+            let redirectURL = URL(string: "workkeeper://auth/callback")
             let result = try await client.auth.signUp(
                 email: email,
                 password: password,
                 redirectTo: redirectURL
             )
 
-            session = result.session
-            state = (session == nil) ? .unauthenticated : .authenticated
+            await MainActor.run {
+                session = result.session
+                if let _ = result.session {
+                    state = .authenticated
+                    signUpPhase = .signedIn
+                } else {
+                    // самое важное: успех без сессии = письмо подтверждения отправлено
+                    state = .unauthenticated
+                    signUpPhase = .confirmationEmailSent(email: email)
+                }
+            }
         } catch {
-            authError = error.localizedDescription
+            await MainActor.run {
+                authError = error.localizedDescription
+                signUpPhase = .failed(message: error.localizedDescription)
+            }
         }
     }
 

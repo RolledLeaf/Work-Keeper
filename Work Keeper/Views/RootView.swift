@@ -9,7 +9,7 @@ struct RootView: View {
             SplashView()
 
         case .unauthenticated:
-            AuthView()
+            LoginView()
 
         case .authenticated:
             TabBar()
