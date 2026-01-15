@@ -99,13 +99,17 @@ struct ClientProfileView: View {
     
         var body: some View {
             VStack {
-                HStack {
-                    Spacer()
-                    
-                    VStack{
-                        Text(client.firstName ?? "имя не указано")
-                            .font(.custom(Montserrat.bold.rawValue, size: 32))
+              
                         
+                        HStack {
+                            Text(client.firstName ?? "имя не указано")
+                                .font(.custom(Montserrat.bold.rawValue, size: 32))
+                            
+                            Text(client.lastName ?? "")
+                                .font(.custom(Montserrat.bold.rawValue, size: 32))
+                        }
+                        .minimumScaleFactor(0.7)
+                        .padding(.horizontal, 22)
                         
                         Button(action: {
                             let text =
@@ -123,15 +127,8 @@ struct ClientProfileView: View {
                                 .font(.custom(Montserrat.regular.rawValue, size: 19))
                                 .foregroundColor(.custom(.taskTextGray))
                         }
-                    }
-                    Spacer()
-                    
-                 
-                }
-                .padding(.horizontal, 22)
-                
-                Spacer()
-                    .frame(height: 9)
+        
+            
                 
                 if !client.hasAddress {
                     HStack {
@@ -157,12 +154,9 @@ struct ClientProfileView: View {
                         Spacer()
                     }
                     .padding(.horizontal, 30)
+                    .padding(.top, 9)
                     
-                    Spacer()
-                        .frame(height: 17)
-                    
-                 
-                    
+        
             } else {
                 HStack {
                     
@@ -188,8 +182,8 @@ struct ClientProfileView: View {
                     }) {
                         HStack {
                         Text(client.primaryAddress?.street?.name ?? "Адрес не указан")
-                        
-                        Text("\(client.primaryAddress?.house ?? "")")
+                        +
+                        Text(" \(client.primaryAddress?.house ?? "")")
                     }
                             .frame(height: 48)
                             .font(.custom(Montserrat.regular.rawValue, size: 24))
@@ -199,11 +193,12 @@ struct ClientProfileView: View {
                             .minimumScaleFactor(0.7)
                         Spacer()
                     }
+                    Spacer()
+                        .frame(height: 17)
                 }
                 .padding(.horizontal, 30)
                 
-                Spacer()
-                    .frame(height: 17)
+            
                 
                 
                 if client.primaryAddress?.isPrivateHouse == false {
@@ -230,6 +225,13 @@ struct ClientProfileView: View {
                 }
             }
                 
+                Text(client.comment ?? "")
+                    .font(.custom(Montserrat.italic.rawValue, size: 18))
+                    .foregroundColor(.custom(.taskTextGray))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .padding(.horizontal, 15)
+                    .padding(.top, 15)
                 
                 Spacer()
                     .frame(height: 35)
