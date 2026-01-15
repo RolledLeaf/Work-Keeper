@@ -2,42 +2,58 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24411" systemVersion="25B78" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
     <entity name="Address" representedClassName="Address" syncable="YES" codeGenerationType="class">
         <attribute name="apartment" optional="YES" attributeType="String"/>
+        <attribute name="deletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="entrance" optional="YES" attributeType="String"/>
         <attribute name="entranceType" optional="YES" attributeType="String" defaultValueString="под."/>
         <attribute name="floor" optional="YES" attributeType="String"/>
         <attribute name="house" attributeType="String"/>
         <attribute name="isPrimary" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isPrivateHouse" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="needsSync" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="remoteId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="roomType" optional="YES" attributeType="String" defaultValueString="кв."/>
+        <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="client" maxCount="1" deletionRule="Nullify" destinationEntity="Client" inverseName="address" inverseEntity="Client"/>
         <relationship name="street" maxCount="1" deletionRule="Nullify" destinationEntity="Street" inverseName="address" inverseEntity="Street"/>
         <relationship name="tasks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TaskEntity"/>
     </entity>
     <entity name="Client" representedClassName="Client" syncable="YES" codeGenerationType="class">
         <attribute name="comment" optional="YES" attributeType="String"/>
+        <attribute name="deletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="firstName" attributeType="String"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO" spotlightIndexingEnabled="YES"/>
         <attribute name="lastName" optional="YES" attributeType="String"/>
+        <attribute name="needsSync" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="phone" attributeType="String"/>
+        <attribute name="remoteId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="address" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Address" inverseName="client" inverseEntity="Address"/>
         <relationship name="tasks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TaskEntity" inverseName="client" inverseEntity="TaskEntity"/>
     </entity>
     <entity name="Street" representedClassName="Street" syncable="YES" codeGenerationType="class">
+        <attribute name="deletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="name" attributeType="String"/>
+        <attribute name="needsSync" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="remoteId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="address" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Address" inverseName="street" inverseEntity="Address"/>
     </entity>
     <entity name="TaskEntity" representedClassName="TaskEntity" syncable="YES" codeGenerationType="class">
         <attribute name="comment" optional="YES" attributeType="String"/>
         <attribute name="contractAmount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="cost" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="extraPayment" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="deletedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="extraPayment" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO" spotlightIndexingEnabled="YES"/>
-        <attribute name="isRemote" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isRemote" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="needsSync" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="paymentType" optional="YES" attributeType="String"/>
+        <attribute name="remoteId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="scheduledAt" attributeType="Date" usesScalarValueType="NO"/>
-        <attribute name="statusString" optional="YES" attributeType="String"/>
+        <attribute name="statusString" attributeType="String"/>
         <attribute name="taskDescription" optional="YES" attributeType="String"/>
-        <attribute name="totalAmount" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="totalAmount" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="updatedAt" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="address" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Address"/>
         <relationship name="client" maxCount="1" deletionRule="Nullify" destinationEntity="Client" inverseName="tasks" inverseEntity="Client"/>
     </entity>

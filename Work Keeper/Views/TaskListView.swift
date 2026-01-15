@@ -8,6 +8,7 @@ private struct SectionHeaderOffsetKey: PreferenceKey {
     }
 }
 
+
 // MARK: - Filters
 
 struct TasksFilterView: View {
@@ -86,6 +87,11 @@ struct TasksFilterView: View {
 struct TaskListView: View {
     // MARK: - Properties
     @StateObject private var viewModel = TaskListViewModel()
+    
+    @EnvironmentObject private var syncService: SyncService
+    @EnvironmentObject private var auth: AuthService
+    @EnvironmentObject private var networkMonitor: NetworkMonitor
+    
     @State private var selectedDate = Date()
     @State private var listScrollPosition: Date?
     @State private var showDeleteAlert = false
@@ -102,6 +108,9 @@ struct TaskListView: View {
     @State private var showFilters = false
     @State private var showPopup = false
     @State private var navigateToTaskView = false
+    @State private var isSpinning = false
+    @State private var syncReloadTask: Task<Void, Never>? = nil
+    
     @State private var headerBaselineMinY: CGFloat? = nil
     @State private var lastCompletedTaskDescription: String = ""
     @State private var lastCanceledTaskDescription: String = ""
@@ -110,6 +119,7 @@ struct TaskListView: View {
     @State private var lastEditedTaskDescription: String = ""
     @State private var lastCompletedFinalAmount: Double = 0.0
     @State private var selectedTask: TaskEntity?
+    @State private var selectedClient: Client?
     @State private var taskToCancel: TaskEntity?
     @State private var taskToDelete: TaskEntity?
     @State private var selectedTaskForSchedule: TaskEntity?
@@ -117,6 +127,11 @@ struct TaskListView: View {
     @State private var selectedTaskForEdit: TaskEntity?
     // Keep a reference to the ScrollViewProxy for scroll actions
     @State private var scrollProxy: ScrollViewProxy? = nil
+   
+    
+        
+    
+    
     
     private var filterIcon: ImageResource {
        
@@ -235,6 +250,9 @@ struct TaskListView: View {
                     
                     Spacer()
                     
+                   
+
+                    
                     Button(action: {
                         showNewTaskView = true
                     }) {
@@ -264,6 +282,7 @@ struct TaskListView: View {
                         .onSubmit {
                             hideKeyboard()
                         }
+                        
                     
                     Button(action:  {
                         viewModel.searchText = ""
@@ -282,7 +301,7 @@ struct TaskListView: View {
                         RoundedRectangle(cornerRadius: 30)
                             .fill(Color.custom(.searchFieldGray))
                         )
-                    
+                    .ifAvailableGlassStyle(in: .capsule, interactive: true)
                     
                     if !viewModel.searchText.isEmpty {
                         Button(action:  {
@@ -296,15 +315,69 @@ struct TaskListView: View {
                         }
                     }
                 }
-                .frame(height: 50)
+                
+                if !networkMonitor.isOnline {
+                    HStack {
+                        Spacer()
+                        Text("Нет сети, работа оффлайн")
+                            .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            .foregroundColor(.secondary)
+                        Image(systemName: "wifi.slash")
+                            .font(.system(size: 13))
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(height: 15)
+
+                } else {
+                    switch syncService.phase {
+                    case .syncing:
+                        HStack {
+                            Spacer()
+                            Text("синхронизация")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            Image("sync")
+                                .resizable()
+                                .frame(width: 13.55, height: 15)
+                                .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                                .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
+                                .onAppear { isSpinning = true }
+                                .onDisappear { isSpinning = false }
+                        }
+                        .frame(height: 15)
+                        
+                    case .success:
+                        HStack {
+                            Spacer()
+                            Text("синхронизировано")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            Image("syncCompleted")
+                                .resizable()
+                                .frame(width: 13.55, height: 15)
+                        }
+                        .frame(height: 15)
+                        
+                    case .failure:
+                        HStack {
+                            Spacer()
+                            Text("ошибка синхронизации")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            Image("syncError")
+                                .resizable()
+                                .frame(width: 13.55, height: 15)
+                        }
+                        .frame(height: 15)
+                        
+                    case .idle:
+                        // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
+                        Spacer().frame(height: 15)
+                    }
+                }
+               
                 
                 // MARK: - Placeholder or the List beginning
                 
                 if viewModel.groupedTasksByDate.isEmpty {
-                    
-                    
-                       
-                        
+       
                     VStack {
                         
                         HStack {
@@ -416,8 +489,7 @@ struct TaskListView: View {
                                         (viewModel.groupedTasksByDate[dateKey] ?? [])
                                             .sorted { $0.scheduledAt ?? Date.distantPast < $1.scheduledAt ?? Date.distantPast }
                                     ) { task in
-                                        TaskRow(viewModel: viewModel, task: task
-                                        )
+                                       TaskRow(viewModel: viewModel, selectedClient: $selectedClient, task: task)
                                         .padding(.vertical, 6) // коррекция расстояния между ячейками
                                         .contentShape(Rectangle())
                                         .onTapGesture {
@@ -435,8 +507,9 @@ struct TaskListView: View {
                                                 }) {
                                                     Image("cancel")
                                                     Text("Отменить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskCanceledOrange))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                                 Button(action: {
                                                     selectedTaskForComplete = task
@@ -444,8 +517,9 @@ struct TaskListView: View {
                                                 }) {
                                                     Image("completed")
                                                     Text("Завершить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskCompleteGreen))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                             case .completed:
                                                 Button(action: {
@@ -456,17 +530,19 @@ struct TaskListView: View {
                                                 }) {
                                                     Image("cancel")
                                                     Text("Отменить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskCanceledOrange))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                                 Button(action: {
                                                     selectedTaskForSchedule = task
                                                     showSchedulePicker = true
                                                 }) {
                                                     Image("inProgress")
-                                                    Text("Запланировать")
+                                                    Text("Переназначить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskViewYellow))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                             case .canceled:
                                                 Button(action: {
@@ -474,9 +550,10 @@ struct TaskListView: View {
                                                     showSchedulePicker = true
                                                 }) {
                                                     Image("inProgress")
-                                                    Text("Запланировать")
+                                                    Text("Переназначить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskViewYellow))
+                                                .tint(Color.custom(.pureWhite))
                                                 
                                                 Button(action: {
                                                     selectedTaskForComplete = task
@@ -484,8 +561,9 @@ struct TaskListView: View {
                                                 }) {
                                                     Image("completed")
                                                     Text("Завершить")
+                                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
                                                 }
-                                                .tint(Color.custom(.taskCompleteGreen))
+                                                .tint(Color.custom(.pureWhite))
                                             }
                                         }
                                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
@@ -494,9 +572,13 @@ struct TaskListView: View {
                                                 showDeleteAlert = true
                                             }) {
                                                 Image("delete")
+                                                    .resizable()
+                                                    .frame(width: 30, height: 30)
                                                 Text("Удалить")
+                                                    .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                                    .foregroundStyle(Color.red)
                                             }
-                                            .tint(Color.custom(.deleteButtonRed))
+                                            .tint(Color.custom(.pureWhite))
                                             
                                             
                                             Button(action: {
@@ -504,9 +586,13 @@ struct TaskListView: View {
                                                 showEditTaskView = true
                                             }) {
                                                 Image("edit")
-                                                Text("Редактировать")
+                                                    .resizable()
+                                                    .frame(width: 30, height: 30)
+                                                Text("Изменить")
+                                                    .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                                    .foregroundStyle(Color.custom(.pitchBlack))
                                             }
-                                            .tint(Color.custom(.editButtonGray))
+                                            .tint(Color.custom(.pureWhite))
                                         }
                                     }
                                 }
@@ -572,14 +658,19 @@ struct TaskListView: View {
                         .navigationDestination(item: $selectedTask) { task in
                             TaskView(task: task)
                         }
+                        .navigationDestination(item: $selectedClient) { client in
+                            ClientProfileView(client: client)
+                        }
+                        .onChange(of: selectedClient) { newValue in
+                            if newValue != nil {
+                                showScrollToTopButton = false
+                            }
+                        }
                     }
                     
                     .navigationTitle("")
                     .navigationBarTitleDisplayMode(.inline)
-                    
                 }
-                
-                
             }
             .padding(.trailing, 17)
             .padding(.leading, 16)
@@ -601,6 +692,7 @@ struct TaskListView: View {
                             showCancelTaskNotification = false
                         }
                     }
+                    syncService.runManualSync(auth: auth, debug: true)
                 }
             }
         }
@@ -615,6 +707,27 @@ struct TaskListView: View {
                     }
             }
         }
+        .onChange(of: syncService.phase) { newPhase in
+            switch newPhase {
+            case .syncing:
+                isSpinning = true
+
+            case .success:
+                isSpinning = false
+
+                // After a successful sync, re-apply current DB filters so UI reflects
+                // remote changes (e.g., deletedAt applied during Pull).
+                syncReloadTask?.cancel()
+                syncReloadTask = Task { @MainActor in
+                    // small delay to let CoreData saves settle (safe, avoids race)
+                    try? await Task.sleep(nanoseconds: 150_000_000) // 0.15s
+                    viewModel.applyCurrentFiltersUsingDB(debug: false)
+                }
+
+            default:
+                isSpinning = false
+            }
+        }
         .onChange(of: viewModel.didScheduleTask) { newValue in
             if newValue {
                 viewModel.loadTasks()
@@ -624,12 +737,14 @@ struct TaskListView: View {
                     withAnimation { showScheduleTaskNotification = false }
                     viewModel.didScheduleTask = false
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             }
         }
         .overlay(alignment: .bottomTrailing) {
             if showScrollToTopButton {
                 Button(action: {
-                    selectedDate = Date()
+                    let today = Date()
+                    selectedDate = today
                 }) {
                     Image("arrowUp")
                         .resizable()
@@ -684,6 +799,8 @@ struct TaskListView: View {
                 }
                 
                 viewModel.loadTasks()
+
+                syncService.runManualSync(auth: auth, debug: true)
             })
         }
         
@@ -701,6 +818,7 @@ struct TaskListView: View {
                         showEditTaskNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             })
         }
         
@@ -713,6 +831,7 @@ struct TaskListView: View {
                 viewModel.scheduleTask(task, at: chosenDate)
             }
                                .presentationDetents([.fraction(0.25)])
+            
         }
         
         .sheet(item: $selectedTaskForComplete, onDismiss: {
@@ -733,6 +852,7 @@ struct TaskListView: View {
                         showCompleteTaskNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             }
         }
         .popover(isPresented: $showFilters) {
@@ -771,10 +891,7 @@ struct TaskListView: View {
         
         
         .onAppear {
-            
             loadSavedStatuses()
-            
-            // Скролл к сегодняшнему (оставляем как есть)
             let today = dayKey(Date())
             let keys = Array(viewModel.groupedTasksByDate.keys)
             if keys.contains(today) {
@@ -806,6 +923,7 @@ struct TaskListView: View {
                         showDeleteTaskNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
                 
             }
             Button("Отмена", role: .cancel) {

@@ -229,6 +229,9 @@ struct NewTaskView: View {
     
     @Environment(\.dismiss)
     private var dismiss
+
+    @EnvironmentObject private var syncService: SyncService
+    @EnvironmentObject private var auth: AuthService
     
     enum Field {
         case house
@@ -409,7 +412,7 @@ struct NewTaskView: View {
                         }
                         .padding(.top, 16)
                         .padding(.leading, 36)
-                        .padding(.trailing, 69)
+                        .padding(.trailing, 126)
                         
                         HStack {
                             ZStack {
@@ -473,7 +476,7 @@ struct NewTaskView: View {
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundColor(.custom(.pitchBlack))
                                         .padding(.leading, 16)
-                                        .keyboardType(.phonePad)
+                                       
                                         .textContentType(.telephoneNumber)
                                         .onChange(of: viewModel.phoneDigits) { newValue in
                                             if newValue.count > maxPhoneNumberCharactersCount { viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))
@@ -1046,6 +1049,11 @@ struct NewTaskView: View {
         .onAppear {
             phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
             previousPhoneMasked = phoneMasked
+
+            // Inject sync dependencies (if user is logged in)
+            if let ownerId = auth.session?.user.id {
+                viewModel.configureSync(syncService: syncService, ownerId: ownerId)
+            }
         }
         
         .sheet(isPresented: $showStreetsView, onDismiss: {

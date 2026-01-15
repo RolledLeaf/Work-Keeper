@@ -370,7 +370,7 @@ struct EditClientView: View {
                                 .font(.system(size: 21, weight: .regular, design: .default))
                                 .foregroundColor(.black)
                                 .padding(.leading, 5)
-                                .keyboardType(.phonePad)
+                               
                                 .textContentType(.telephoneNumber)
                                 .focused($focusedField, equals: .phoneNumber)
                                 .onChange(of: viewModel.phoneDigits) { newValue in

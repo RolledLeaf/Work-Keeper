@@ -61,13 +61,13 @@ final class StreetListViewModel: ObservableObject {
     }
     
     func addStreet(_ name: String) {
-   
         guard !name.isBlank else { return }
-        let street = store.createOrFetchStreet(name: name)
-        loadStreets()
-        // можно вернуть или выбрать только что созданную/найденную улицу:
+        
+         let street = store.createOrFetchStreet(name: name)
+        
         selectedStreet = street
-        lastAddedStreetName = street.name ?? "Без названия"
+        lastAddedStreetName = street?.name ?? name
+        
     }
     
     func update(_ street: Street, name: String) {

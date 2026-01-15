@@ -116,6 +116,43 @@ struct NewClientView: View {
                 .padding(.horizontal, 20)
                 .frame(height: 110, alignment: .center)
                 
+                
+                HStack {
+                    Text("Контакт")
+                        .foregroundColor(Color.custom(.textTitleGray))
+                        .font(.system(size: 19, weight: .regular, design: .default))
+                    Spacer()
+                }
+                .padding(.horizontal, 21)
+                
+                Spacer()
+                    .frame(height: 15)
+                
+                HStack {
+                    ZStack {
+                        Color.white
+                        TextField("", text: $viewModel.phoneDigits)
+                            .font(.system(size: 21, weight: .regular, design: .default))
+                            .foregroundColor(.black)
+                            .padding(.leading, 5)
+                            .focused($focusedField, equals: .phoneNumber)
+                            .textContentType(.telephoneNumber)
+                            .onChange(of: viewModel.phoneDigits) { newValue in
+                                if newValue.count > maxPhoneNumberCharactersCount {
+                                    viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                                }
+                               
+                            }
+                    }
+                    .cornerRadius(10)
+                    .frame(width: 190, height: 40)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                    )
+                    Spacer()
+                }
+                
                 Spacer()
                     .frame(height: 35)
                 
@@ -354,7 +391,7 @@ struct NewClientView: View {
                     .frame(height: 21)
                 
                 HStack {
-                    Text("Контакт")
+                    Text("Коментарий")
                         .foregroundColor(Color.custom(.textTitleGray))
                         .font(.system(size: 19, weight: .regular, design: .default))
                     Spacer()
@@ -367,24 +404,24 @@ struct NewClientView: View {
                 HStack {
                     ZStack {
                         Color.white
-                        TextField("", text: $viewModel.phoneDigits)
+                        TextEditor(text:  $viewModel.comment)
                             .font(.system(size: 21, weight: .regular, design: .default))
                             .foregroundColor(.black)
-                            .padding(.leading, 5)
-                            .keyboardType(.phonePad)
+                            .padding(.horizontal, 16)
+                            .frame(height: 80)
                             .focused($focusedField, equals: .phoneNumber)
                             .textContentType(.telephoneNumber)
-                            .onChange(of: viewModel.phoneDigits) { newValue in
-                                if newValue.count > maxPhoneNumberCharactersCount {
-                                    viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))
+                            .onChange(of: viewModel.comment) { newValue in
+                                if newValue.count > maxCommentCharachtersCount {
+                                    viewModel.comment = String(newValue.prefix(maxCommentCharachtersCount))
                                 }
                                
                             }
                     }
-                    .cornerRadius(10)
-                    .frame(width: 190, height: 40)
+                    .cornerRadius(20)
+                   
                     .overlay(
-                        RoundedRectangle(cornerRadius: 10)
+                        RoundedRectangle(cornerRadius: 20)
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     Spacer()

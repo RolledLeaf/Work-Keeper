@@ -12,13 +12,14 @@ struct TaskRow: View {
     @State private var repeatBadgeOpacity: Double = 0
     @State private var creditCardOpacity: Double = 0
     @State private var cashOpacity: Double = 0
-    @State private var selectedClient: Client?
     @ObservedObject var viewModel: TaskListViewModel
+    @Binding var selectedClient: Client?
     
     
     var clientTasksCount: Int {
         guard let tasks = task.client?.tasks as? Set<TaskEntity> else { return 0 }
-        return tasks.count
+        let actualTasks = tasks.filter { $0.deletedAt == nil }
+        return actualTasks.count
     }
     
     
@@ -66,6 +67,7 @@ struct TaskRow: View {
         
         return VStack {
             VStack {
+                
                 
                 HStack {
                     HStack {
@@ -268,6 +270,10 @@ struct TaskRow: View {
                         .font(.custom(Montserrat.regular.rawValue, size: 25))
                         .foregroundStyle(.mainBlack)
                     Spacer()
+                    Image(paymentIconResource ?? ImageResource.init(name: "cash", bundle: .main))
+                        .padding(.trailing, 20)
+                        .frame(width: 25, height: 25)
+                        .opacity(task.status == .completed ? 1 : 0)
                 }
                 .frame(height: 25)
                
@@ -297,11 +303,7 @@ struct TaskRow: View {
                     .padding(.top, 20)
             }
         }
-        .navigationDestination(item: $selectedClient) { client in
-            ClientProfileView(client: client)
-        }
        
     }
     
 }
-

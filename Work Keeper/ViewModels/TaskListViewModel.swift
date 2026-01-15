@@ -35,7 +35,7 @@ final class TaskListViewModel: ObservableObject {
         print("Task \(String(describing: task.taskDescription)) rescheduled to \(date)")
     }
     
-    
+   
     
     var groupedTasksByDate: [Date: [TaskEntity]] {
         Dictionary(grouping: tasks) { task in
@@ -64,6 +64,9 @@ final class TaskListViewModel: ObservableObject {
             .store(in: &cancelables)
     }
 
+    
+   
+    
     func calculateDailyIncome(for date: Date, debug: Bool = false) -> Double {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
@@ -83,7 +86,7 @@ final class TaskListViewModel: ObservableObject {
 
         // суммируем доход
         let total = dailyTasks.reduce(0.0) { partial, task in
-            let income = task.contractAmount + task.extraPayment - task.cost
+            let income = task.contractAmount + (task.extraPaymentValue ?? 0) - task.cost
             return partial + income
         }
 
@@ -147,7 +150,7 @@ final class TaskListViewModel: ObservableObject {
     func applyCurrentFiltersUsingDB(debug: Bool = false) {
         print("[TaskListViewModel] applyCurrentFiltersUsingDB called with searchText:", searchText)
         
-        var andPreds: [NSPredicate] = []
+        var andPreds: [NSPredicate] = [NSPredicate(format: "deletedAt == nil")]
         
         if let statuses = selectedStatuses, !statuses.isEmpty {
             let raw = statuses.map { $0.rawValue }
@@ -257,6 +260,7 @@ final class TaskListViewModel: ObservableObject {
 
 // MARK: - Task View Models Managments
 
+@MainActor
 final class CreateTaskViewModel: ObservableObject {
     @Published var scheduledAt: Date = Date()
     @Published var streetName: String = ""
@@ -300,6 +304,18 @@ final class CreateTaskViewModel: ObservableObject {
     private let addressStore = AddressStore()
     private let clientStore = ClientStore()
     private let taskStore = TaskStore()
+
+    // MARK: - Sync (optional)
+    private var syncService: SyncService?
+    private var ownerId: UUID?
+
+    /// You can inject sync dependencies later (e.g. from a View's onAppear)
+    func configureSync(syncService: SyncService, ownerId: UUID) {
+        self.syncService = syncService
+        self.ownerId = ownerId
+    }
+
+    init() {}
     
   
     func canSaveTask() -> Bool {
@@ -325,9 +341,16 @@ final class CreateTaskViewModel: ObservableObject {
             comment: comment.isEmpty ? nil : comment
         )
 
-        let hasAddress = client.addressesArray.count > 0
-       
-            let street = streetStore.createOrFetchStreet(name: streetName)
+        // Для удалённого задания адрес не обязателен и не должен создаваться.
+        var taskAddress: Address? = nil
+
+        if !isRemote {
+            let hasAddress = client.addressesArray.count > 0
+
+            guard let street = streetStore.createOrFetchStreet(name: streetName) else {
+                print("❌ saveTask: streetName is empty for non-remote task")
+                return
+            }
 
             let address = addressStore.createOrFetchAddress(
                 house: house,
@@ -337,20 +360,21 @@ final class CreateTaskViewModel: ObservableObject {
                 isPrivateHouse: isPrivateHouse,
                 street: street,
                 client: client,
-                isPrimary: !hasAddress ? true : false, // 👈 при создании задания НЕ трогаем primary
+                isPrimary: !hasAddress ? true : false,
                 roomType: roomType ?? "кв.",
                 entranceType: entranceType ?? "под."
             )
 
             // link the address with the client
             client.addToAddress(address)
-    
+            taskAddress = address
+        }
 
         // Создаём задачу
         taskStore.createTask(
             scheduledAt: scheduledAt,
             client: client,
-            address: address,        // 👈 новый параметр
+            address: taskAddress,
             description: description,
             isRemote: isRemote,
             status: status,
@@ -388,8 +412,6 @@ final class CreateTaskViewModel: ObservableObject {
              🧾 Статус: \(status.rawValue)
              """)
         }
-
-      
     }
     
     private func maskRU(fromDigits s: String) -> String {
@@ -536,13 +558,9 @@ final class EditTaskViewModel: ObservableObject {
 
     // MARK: - Initialization
     init(task: TaskEntity) {
+        
         let rawPhone = task.client?.phone ?? ""
-        let digitsAll = rawPhone.filter { $0.isNumber }
-        var nsn = digitsAll
-        if nsn.hasPrefix("7") { nsn.removeFirst() }     // убираем +7
-        if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
-        self.phoneDigits = nsn
-        self.phoneNumber = rawPhone // можно не использовать во View
+        self.phoneDigits = rawPhone
         self.task = task
         // Populate from existing Task
         self.scheduledAt = task.scheduledAt ?? Date()
@@ -558,8 +576,8 @@ final class EditTaskViewModel: ObservableObject {
         } else {
             self.costText = ""
         }
-        if task.extraPayment > 0 {
-            self.extraPaymentText = String(format: "%.0f", task.extraPayment)
+        if task.extraPaymentValue ?? 0 > 0 {
+            self.extraPaymentText = String(format: "%.0f", task.extraPaymentValue ?? 0)
         } else {
             self.extraPaymentText = ""
         }
@@ -631,7 +649,10 @@ final class EditTaskViewModel: ObservableObject {
         
         // Обновляем адрес, привязанный к задаче (а не обязательно primary-адрес клиента)
         if !isRemote {
-            let street = streetStore.createOrFetchStreet(name: streetName)
+            guard let street = streetStore.createOrFetchStreet(name: streetName) else {
+                print("❌ update: streetName is empty for non-remote task")
+                return false
+            }
 
             if let existingAddress = task.address {
                 existingAddress.street = street
@@ -671,7 +692,7 @@ final class EditTaskViewModel: ObservableObject {
             isRemote: isRemote,
             status: status,
             contractAmount: contractAmount,
-            extraPayment: extraPayment,
+            extraPaymentValue: extraPayment,
             paymentType: paymentType ?? .none,
             cost: cost
         )

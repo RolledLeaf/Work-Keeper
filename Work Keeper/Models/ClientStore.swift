@@ -9,20 +9,27 @@ final class ClientStore: NSObject, ObservableObject {
         self.context = context
     }
     
-
-func createClient(firstName: String,
-                  lastName: String?,
-                  addresses: [Address],
-                  phone: String
-                  ) -> Client {
+    
+    func createClient(firstName: String,
+                      lastName: String?,
+                      addresses: [Address],
+                      phone: String,
+                      comment: String?
+    ) -> Client {
         
         let client = Client(context: context)
         client.id = UUID()
-        client.firstName = firstName
+        client.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         client.lastName = lastName
-    client.address = NSSet(array: addresses)
-        client.phone = phone
-       
+        client.address = NSSet(array: addresses)
+        client.phone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+        client.comment = comment
+        
+        // Sync fields
+        client.remoteId = nil
+        client.deletedAt = nil
+        client.updatedAt = Date()
+        client.needsSync = true
         
         do {
             try context.save()
@@ -32,43 +39,45 @@ func createClient(firstName: String,
         
         return client
     }
-                      
-func createOrFetchClient(firstName: String,
-                         lastName: String?,
-                         addresses: [Address],
-                         phone: String,
-                         comment: String?) -> Client {
     
-    let request: NSFetchRequest<Client> = Client.fetchRequest()
-    request.predicate = NSPredicate(format: "firstName == %@ AND phone == %@", firstName, phone)
-    request.fetchLimit = 1
-    
-    do {
-        if let existing = try context.fetch(request).first {
-            return existing
-        } else {
+    func createOrFetchClient(firstName: String,
+                             lastName: String?,
+                             addresses: [Address],
+                             phone: String,
+                             comment: String?) -> Client {
+        
+        let request: NSFetchRequest<Client> = Client.fetchRequest()
+        request.predicate = NSPredicate(format: "phone == %@ AND deletedAt == nil", phone)
+        request.fetchLimit = 1
+        
+        do {
+            if let existing = try context.fetch(request).first {
+                return existing
+            } else {
+                return createClient(firstName: firstName,
+                                    lastName: lastName,
+                                    addresses: addresses,
+                                    phone: phone, comment: comment
+                )
+                
+            }
+        } catch {
+            print("Error in createOrFetchClient: \(error)")
             return createClient(firstName: firstName,
                                 lastName: lastName,
                                 addresses: addresses,
-                                phone: phone
-                                )
+                                phone: phone, comment: comment)
         }
-    } catch {
-        print("Error in createOrFetchClient: \(error)")
-        return createClient(firstName: firstName,
-                            lastName: lastName,
-                            addresses: addresses,
-                            phone: phone)
     }
-}
     
     func fetchClients() -> [Client] {
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Client.firstName, ascending: true)]
+        request.predicate = NSPredicate(format: "deletedAt == nil")
         
         do {
             return try context.fetch(request)
-       
+            
         } catch {
             print("❌ Error fetching clients: \(error)")
             return []
@@ -79,6 +88,7 @@ func createOrFetchClient(firstName: String,
         print("Fetching and sorting clients...")
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: keypath, ascending: ascending)]
+        request.predicate = NSPredicate(format: "deletedAt == nil")
         
         do {
             return try context.fetch(request)
@@ -95,7 +105,12 @@ func createOrFetchClient(firstName: String,
         print("Fetching clients with no predicate...")
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = sortDescriptors
-        request.predicate = predicate
+        let notDeleted = NSPredicate(format: "deletedAt == nil")
+        if let predicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [notDeleted, predicate])
+        } else {
+            request.predicate = notDeleted
+        }
         if let limit = limit { request.fetchLimit = limit }
         if debug { print("[ClientStore] fetchClients(matching:) predicate:", predicate?.predicateFormat ?? "<none>") }
         do {
@@ -110,8 +125,12 @@ func createOrFetchClient(firstName: String,
         // Count clients who have at least one task with status scheduled or completed
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         // Predicate: ANY tasks.statusString IN {"scheduled", "completed"}
-      
-
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "ANY tasks.statusString IN %@", ["completed"]),
+            NSPredicate(format: "ANY tasks.deletedAt == nil")
+        ])
+        
         do {
             let count = try context.count(for: request)
             if debug { print("[ClientStore] totalClientsCount (scheduled|completed) =", count) }
@@ -124,20 +143,22 @@ func createOrFetchClient(firstName: String,
     
     
     func hasClient(withPhone phone: String, excluding: Client? = nil) -> Bool {
-        let context = CoreDataStack.shared.context
+        //        let context = CoreDataStack.shared.context - это создание нового контекста. может давать ложные результаты, особенно если изменения ещё не сохранены/в другом контексте. Правильно использовать self.context
+        let context = self.context
         let request: NSFetchRequest<Client> = Client.fetchRequest()
-
+        
         var predicates: [NSPredicate] = [
-            NSPredicate(format: "phone == %@", phone)
+            NSPredicate(format: "phone == %@", phone),
+            NSPredicate(format: "deletedAt == nil")
         ]
-
+        
         if let excludingClient = excluding {
             predicates.append(NSPredicate(format: "SELF != %@", excludingClient))
         }
-
+        
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
         request.fetchLimit = 1
-
+        
         do {
             let count = try context.count(for: request)
             return count > 0
@@ -146,7 +167,7 @@ func createOrFetchClient(firstName: String,
             return false
         }
     }
-
+    
     
     func newClientsByMonth(
         year: Int,
@@ -155,20 +176,20 @@ func createOrFetchClient(firstName: String,
         debug: Bool = false
     ) -> [Int] {
         var result = Array(repeating: 0, count: 12)
-
+        
         // Построим диапазон дат на год
         var cal = Calendar.current
         cal.timeZone = .current
-
+        
         var startComp = DateComponents(); startComp.year = year; startComp.month = 1; startComp.day = 1
         var endComp   = DateComponents(); endComp.year = year + 1; endComp.month = 1; endComp.day = 1
-
+        
         guard let startDate = cal.date(from: startComp),
               let endDate = cal.date(from: endComp) else {
             if debug { print("[ClientStore] ERROR: bad date range for year \(year)") }
             return result
         }
-
+        
         // Fetch tasks in the year with client != nil (and optionally status)
         let req: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         req.predicate = {
@@ -177,26 +198,26 @@ func createOrFetchClient(firstName: String,
                 NSPredicate(format: "%K != nil", "client")
             ]
             if onlyCompleted {
-                preds.append(NSPredicate(format: "statusString in %@", ["completed", "scheduled"]))
+                preds.append(NSPredicate(format: "statusString in %@", ["completed"]))
             }
             return NSCompoundPredicate(andPredicateWithSubpredicates: preds)
         }()
         // we only need the client relationship and date, but fetch objects for simplicity
         req.includesPropertyValues = true
         req.returnsObjectsAsFaults = false
-
+        
         do {
             let tasks = try context.fetch(req)
             // Map clientID -> earliest date within year
             var firstDateByClient: [NSManagedObjectID: Date] = [:]
-
+            
             for task in tasks {
                 guard let client = task.client else { continue }
                 let clientId = client.objectID
                 // get date value
                 let dateVal = task.value(forKey: dateKey) as? Date ?? task.scheduledAt
                 guard let date = dateVal else { continue }
-
+                
                 if let existing = firstDateByClient[clientId] {
                     if date < existing {
                         firstDateByClient[clientId] = date
@@ -205,7 +226,7 @@ func createOrFetchClient(firstName: String,
                     firstDateByClient[clientId] = date
                 }
             }
-
+            
             // Now count by month of the earliest date
             for (_, firstDate) in firstDateByClient {
                 let month = cal.component(.month, from: firstDate) // 1...12
@@ -213,7 +234,7 @@ func createOrFetchClient(firstName: String,
                     result[month - 1] += 1
                 }
             }
-
+            
             if debug {
                 print("[ClientStore] newClientsByMonth year=\(year) onlyCompleted=\(onlyCompleted) counts=", result)
             }
@@ -229,13 +250,17 @@ func createOrFetchClient(firstName: String,
                       lastName: String?,
                       addresses: [Address],
                       phone: String
-                      ) {
-      
+    ) {
+        
         client.firstName = firstName
         client.lastName = lastName
         client.address = NSSet(array: addresses)
         client.phone = phone
         
+        // Sync fields
+        //        client.deletedAt = nil - убрал чтобы случайно не "воскресить" клиента локально
+        client.updatedAt = Date()
+        client.needsSync = true
         
         do {
             try context.save()
@@ -244,31 +269,57 @@ func createOrFetchClient(firstName: String,
         }
     }
     
-func deleteClient(_ client: Client) {
-    // 1) Удаляем адреса клиента (Address -> client является обязательной связью)
-    if let addresses = client.address as? Set<Address> {
-        for address in addresses {
-            context.delete(address)
+    func deleteClient(_ client: Client) {
+        // Soft delete for sync (cascade)
+        let now = Date()
+        
+        // 1) Soft-delete addresses
+        if let addresses = client.address as? Set<Address> {
+            for address in addresses {
+                address.deletedAt = now
+                address.updatedAt = now
+                address.needsSync = true
+            }
+        }
+        
+        // 2) Soft-delete tasks
+        if let tasks = client.tasks as? Set<TaskEntity> {
+            for task in tasks {
+                task.deletedAt = now
+                task.updatedAt = now
+                task.needsSync = true
+            }
+        }
+        
+        // 3) Soft-delete client
+        client.deletedAt = now
+        client.updatedAt = now
+        client.needsSync = true
+        
+        do {
+            try context.save()
+        } catch {
+            print("❌ Error soft-deleting client: \(error)")
         }
     }
-
-    // 2) Удаляем задачи клиента, если в модели Task.client стоит required
-    if let tasks = client.tasks as? Set<TaskEntity> {
-        for task in tasks {
-            context.delete(task)
+    
+    /// Permanent delete (debug / cleanup only)
+    func purgeClient(_ client: Client) {
+        // Remove children first to satisfy required relationships
+        if let addresses = client.address as? Set<Address> {
+            for address in addresses { context.delete(address) }
+        }
+        if let tasks = client.tasks as? Set<TaskEntity> {
+            for task in tasks { context.delete(task) }
+        }
+        context.delete(client)
+        
+        do {
+            try context.save()
+        } catch {
+            print("❌ Error purging client: \(error)")
         }
     }
-
-    // 3) Удаляем самого клиента
-    context.delete(client)
-
-    // 4) Сохраняем изменения
-    do {
-        try context.save()
-    } catch {
-        print("❌ Error deleting client: \(error)")
-    }
-}
     
     
     /// Fetch clients sorted by the number of completed tasks using a DB-side aggregation.
@@ -277,29 +328,30 @@ func deleteClient(_ client: Client) {
         // Build expression: count of tasks with status == "completed"
         let exprFormat = "SUBQUERY(tasks, $t, $t.statusString == %@).@count"
         let expr = NSExpression(format: exprFormat, "completed")
-
+        
         let exprDesc = NSExpressionDescription()
         exprDesc.name = "completedCount"
         exprDesc.expression = expr
         exprDesc.expressionResultType = .integer32AttributeType
-
+        
         // Request dictionary results containing objectID and the computed count
         let req = NSFetchRequest<NSDictionary>(entityName: "Client")
+        req.predicate = NSPredicate(format: "deletedAt == nil")
         req.resultType = .dictionaryResultType
         req.propertiesToFetch = ["objectID", exprDesc]
         req.returnsDistinctResults = false
-
+        
         // Sort by the computed value
         req.sortDescriptors = [NSSortDescriptor(key: "completedCount", ascending: !descending)]
         if let limit = limit { req.fetchLimit = limit }
-
+        
         if debug { print("[ClientStore] fetchClientsSortedByCompletedCountDB predicate: <none>, sorting by completedCount \(descending ? "desc" : "asc")") }
-
+        
         do {
             let rows = try context.fetch(req)
             var clients: [Client] = []
             clients.reserveCapacity(rows.count)
-
+            
             for row in rows {
                 if let objId = row["objectID"] as? NSManagedObjectID {
                     // obtain fault for object id in this context
@@ -312,14 +364,14 @@ func deleteClient(_ client: Client) {
                     }
                 }
             }
-
+            
             if debug {
                 let sample = clients.prefix(10).map { c in
                     "\(c.firstName ?? "?") \(c.lastName ?? "") — completed:\(c.completedTasksCount)"
                 }
                 print("[ClientStore] fetchClientsSortedByCompletedCountDB sample:", sample)
             }
-
+            
             return clients
         } catch {
             print("❌ ClientStore.fetchClientsSortedByCompletedCountDB error:", error)
@@ -330,45 +382,55 @@ func deleteClient(_ client: Client) {
 
 extension Client {
     var hasAddress: Bool {
-            guard let streetName = primaryAddress?.street?.name?.trimmingCharacters(in: .whitespacesAndNewlines),
-                  !streetName.isEmpty else {
-                return false
-            }
-            return true
+        guard let streetName = primaryAddress?.street?.name?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !streetName.isEmpty else {
+            return false
         }
+        return true
+    }
     
     var addressesArray: [Address] {
         (address as? Set<Address>)?.sorted { $0.house ?? "" < $1.house ?? "" } ?? []
     }
-
+    
     var primaryAddress: Address? {
         addressesArray.first(where: { $0.isPrimary })
     }
     
     var scheduledTasksCount: Int {
-          (tasks as? Set<TaskEntity>)?
-              .filter { $0.status == .scheduled }
-              .count ?? 0
-      }
-
-      var completedTasksCount: Int {
-          (tasks as? Set<TaskEntity>)?
-              .filter { $0.status == .completed }
-              .count ?? 0
-      }
-
-      var canceledTasksCount: Int {
-          (tasks as? Set<TaskEntity>)?
-              .filter { $0.status == .canceled }
-              .count ?? 0
-      }
+        (tasks as? Set<TaskEntity>)?
+            .filter { $0.status == .scheduled }
+            .filter { $0.deletedAt == nil }
+            .count ?? 0
+    }
+    
+    var completedTasksCount: Int {
+        (tasks as? Set<TaskEntity>)?
+            .filter { $0.status == .completed }
+            .filter { $0.deletedAt == nil }
+            .count ?? 0
+    }
+    
+    var canceledTasksCount: Int {
+        (tasks as? Set<TaskEntity>)?
+            .filter { $0.status == .canceled }
+            .filter { $0.deletedAt == nil }
+            .count ?? 0
+    }
+    
+    var totalTasksCount: Int {
+        (tasks as? Set<TaskEntity>)?
+            .filter { $0.deletedAt == nil }
+            .count ?? 0
+        
+    }
     
     var formattedAddress: String {
         guard let address = address?.allObjects.first as? Address else { return "Адрес не указан" }
         return "\(address.street?.name ?? "") \(address.house ?? "")"
     }
     
-  
+    
     
     
     var apartmentNumber: String {
@@ -387,17 +449,12 @@ extension Client {
     }
     
     var totalIncome: Double {
-           (tasks as? Set<TaskEntity>)?
+        (tasks as? Set<TaskEntity>)?
             .filter { $0.status == .completed }
-               .compactMap { $0.totalAmount }
-               .reduce(0, +) ?? 0
-       }
-
-      
-
-       var totalTasksCount: Int {
-           (tasks as? Set<TaskEntity>)?.count ?? 0
-       }
+            .compactMap { $0.totalAmount }
+            .reduce(0, +) ?? 0
+    }
     
    
+    
 }

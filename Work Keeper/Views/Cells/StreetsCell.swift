@@ -9,6 +9,9 @@ struct StreetRow: View {
     @State private var lastEditedStreet = ""
     
     @ObservedObject var viewModel: StreetListViewModel
+    // MARK: - Sync Objects
+    @EnvironmentObject private var syncService: SyncService
+    @EnvironmentObject private var auth: AuthService
     
     let street: Street
     let isFirst: Bool
@@ -84,7 +87,7 @@ struct StreetRow: View {
                 }
                 
                 viewModel.loadStreets()
-                
+                syncService.runManualSync(auth: auth, debug: true)
            
                 UINotificationFeedbackGenerator().notificationOccurred(.warning)
             }
@@ -107,6 +110,7 @@ struct StreetRow: View {
                         viewModel.streetWasEdited = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
                     
             }, viewModel: viewModel, street: street)
         }

@@ -98,6 +98,7 @@ struct ClientsListView: View {
     @State private var showAddClientNotification = false
     @State private var showDeleteClientNotification = false
     @State private var showEditClientNotification = false
+    @State private var isSpinning = false
     @State private var lastAddedClientName = ""
     @State private var lastDeletedClientName = ""
     @State private var lastEditedClientName = ""
@@ -109,7 +110,9 @@ struct ClientsListView: View {
     @State private var clientToEdit: Client?
     @State private var client: Client?
     
-    
+    // MARK: - Sync Objects
+    @EnvironmentObject private var syncService: SyncService
+    @EnvironmentObject private var auth: AuthService
 
     
     var body: some View {
@@ -128,8 +131,7 @@ struct ClientsListView: View {
                             showSortOrderMenu = true
                         }) {
                             Image("sortAZ")
-                                .resizable()
-                                .frame(width: 31, height: 22)
+                                
                                 
                         }
                         .padding(.leading, 3)
@@ -182,6 +184,7 @@ struct ClientsListView: View {
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(Color.custom(.searchFieldGray))
                                 )
+                            .ifAvailableGlassStyle(in: .capsule, interactive: true)
                         if !viewModel.searchText.isEmpty {
                             Button(action:  {
                                 viewModel.searchText = ""
@@ -196,6 +199,50 @@ struct ClientsListView: View {
                         }
                     }
                     .padding(.horizontal, 20)
+                    
+                    switch syncService.phase {
+                    case .syncing:
+                        HStack {
+                            Spacer()
+                            Text("синхронизация")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            Image("sync")
+                                .resizable()
+                                .frame(width: 13.55, height: 15)
+                                .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                                .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
+                                .onAppear { isSpinning = true }
+                                .onDisappear { isSpinning = false }
+                        }
+                        
+                        .frame(height: 15)
+
+                    case .success:
+                        HStack {
+                            Spacer()
+                            Text("синхронизировано")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            Image("syncCompleted")
+                                .resizable()
+                                .frame(width: 13.55, height: 15)
+                        }
+                        .frame(height: 15)
+
+                    case .failure:
+                        HStack {
+                            Spacer()
+                            Text("ошибка синхронизации")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                            Image("syncError")
+                                .resizable()
+                                .frame(width: 13.55, height: 15)
+                        }
+                        .frame(height: 15)
+
+                    case .idle:
+                        // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
+                        Spacer().frame(height: 15)
+                    }
                     
                     if viewModel.clients.isEmpty {
                         
@@ -226,7 +273,7 @@ struct ClientsListView: View {
                                         Image("delete")
                                         Text("Удалить")
                                     }
-                                    .tint(Color.custom(.deleteButtonRed))
+                                    .tint(Color.custom(.pureWhite))
                                     
                                     Button(action: {
                                         clientToEdit = client
@@ -235,7 +282,7 @@ struct ClientsListView: View {
                                         Image("edit")
                                         Text("Редактировать")
                                     }
-                                    .tint(Color.custom(.editButtonGray))
+                                    .tint(Color.custom(.pureWhite))
                                 }
                                 .listRowBackground(Color.custom(.mainBackground))
                                 .listRowSeparator(.hidden)
@@ -286,6 +333,7 @@ struct ClientsListView: View {
                         showAddClientNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
                 viewModel.loadUserDefaultsAndSort()
             })
         }
@@ -304,6 +352,7 @@ struct ClientsListView: View {
                         showEditClientNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             })
         }
         
@@ -335,6 +384,7 @@ struct ClientsListView: View {
                         showDeleteClientNotification = false
                     }
                 }
+                syncService.runManualSync(auth: auth, debug: true)
             }
                 
             Button("Нет", role: .cancel) {}

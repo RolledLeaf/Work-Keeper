@@ -369,7 +369,7 @@ struct EditTaskView: View {
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundColor(.custom(.pitchBlack))
                                         .padding(.leading, 16)
-                                        .keyboardType(.phonePad)
+                                        
                                         .textContentType(.telephoneNumber)
                                         .onChange(of: viewModel.phoneDigits) { newValue in
                                             if newValue.count > maxPhoneNumberCharactersCount { viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))

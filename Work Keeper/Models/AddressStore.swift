@@ -19,15 +19,20 @@ final class AddressStore: NSObject {
                            entranceType: String
     ) -> Address {
         let address = Address(context: context)
-        address.house = house
-        address.apartment = apartment
-        address.entrance = entrance
-        address.floor = floor
+        address.house = house.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.apartment = apartment?.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.entrance = entrance?.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.floor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
         address.isPrivateHouse = isPrivateHouse
         address.street = street
-        address.roomType = roomType
-        address.entranceType = entranceType
+        address.roomType = roomType.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.entranceType = entranceType.trimmingCharacters(in: .whitespacesAndNewlines)
         
+        // Sync fields
+        address.remoteId = nil
+        address.deletedAt = nil
+        address.updatedAt = Date()
+        address.needsSync = true
         
         return address
     }
@@ -49,11 +54,25 @@ final class AddressStore: NSObject {
 
         let request: NSFetchRequest<Address> = Address.fetchRequest()
         
-        // Ищем адрес только внутри адресов ЭТОГО клиента и этой улицы/дома
+        let trimmedHouse = house.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedApt = (apartment ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEntrance = (entrance ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedFloor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedRoomType = roomType.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedEntranceType = entranceType.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Match a specific address for this client by all identity fields
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             NSPredicate(format: "client == %@", client),
             NSPredicate(format: "street == %@", street),
-            NSPredicate(format: "house == %@", house)
+            NSPredicate(format: "house == %@", trimmedHouse),
+            NSPredicate(format: "(apartment == %@ OR (apartment == nil AND %@ == ''))", trimmedApt, trimmedApt),
+            NSPredicate(format: "(entrance == %@ OR (entrance == nil AND %@ == ''))", trimmedEntrance, trimmedEntrance),
+            NSPredicate(format: "floor == %@", trimmedFloor),
+            NSPredicate(format: "roomType == %@", trimmedRoomType),
+            NSPredicate(format: "entranceType == %@", trimmedEntranceType),
+            NSPredicate(format: "isPrivateHouse == %@", NSNumber(value: isPrivateHouse)),
+            NSPredicate(format: "deletedAt == nil")
         ])
         
         request.fetchLimit = 1
@@ -74,11 +93,19 @@ final class AddressStore: NSObject {
                 )
                 address.client = client
                 address.isPrimary = isPrimary
+                address.remoteId = nil
+                address.deletedAt = nil
+                address.updatedAt = Date()
+                address.needsSync = true
 
                 if isPrimary {
                     if let addresses = client.address as? Set<Address> {
                         for addr in addresses where addr != address {
-                            addr.isPrimary = false
+                            if addr.isPrimary {
+                                addr.isPrimary = false
+                                addr.updatedAt = Date()
+                                addr.needsSync = true
+                            }
                         }
                     }
                 }
@@ -99,6 +126,7 @@ final class AddressStore: NSObject {
             )
             address.client = client
             address.isPrimary = isPrimary
+
             return address
         }
     }
@@ -112,13 +140,17 @@ final class AddressStore: NSObject {
                        roomType: String,
                            entranceType: String
     ) {
-        address.house = house
-        address.apartment = apartment
-        address.entrance = entrance
-        address.floor = floor
+        address.house = house.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.apartment = apartment?.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.entrance = entrance?.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.floor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
         address.isPrivateHouse = isPrivateHouse
-        address.entranceType = entranceType
-        address.roomType = roomType
+        address.entranceType = entranceType.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.roomType = roomType.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Sync fields
+        address.updatedAt = Date()
+        address.needsSync = true
         
         do {
             try context.save()
@@ -129,16 +161,30 @@ final class AddressStore: NSObject {
     
  
     func deleteAddress(_ address: Address) {
+        // Soft delete for sync
+        address.deletedAt = Date()
+        address.updatedAt = Date()
+        address.needsSync = true
+        do {
+            try context.save()
+        } catch {
+            print("Error soft-deleting address: \(error)")
+        }
+    }
+
+    /// Permanent delete (debug / cleanup only)
+    func purgeAddress(_ address: Address) {
         context.delete(address)
         do {
             try context.save()
         } catch {
-            print("Error deleting address: \(error)")
+            print("Error purging address: \(error)")
         }
     }
     
     func fetchAddresses() -> [Address] {
         let fetchRequest: NSFetchRequest<Address> = Address.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "deletedAt == nil")
         do {
             return try context.fetch(fetchRequest)
         } catch {

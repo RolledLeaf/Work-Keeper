@@ -379,7 +379,7 @@ struct TaskView: View {
                             Text("Доплата")
                                 .font(.custom(SFPro.regular.rawValue, size: 20))
                             Spacer()
-                            Text("\(task.extraPayment.formattedCurrency())")
+                            Text("\(task.extraPaymentValue?.formattedCurrency() ?? 0.formattedCurrency())")
                                 .font(.custom(SFPro.regular.rawValue, size: 20))
                         }
                         .padding(.leading, 29)

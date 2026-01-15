@@ -36,6 +36,12 @@ struct TabBar: View {
                     Text("Статистика")
                 }
                 .tag(2)
+            SettingsView()
+                .tabItem {
+                    Image(systemName: "gearshape")
+                    Text("Настройки")
+                }
+                .tag(3)
         }
         .tint(Color.custom(.pitchBlack)) // цвет ВЫБРАННОГО таба (иконка + текст)
     }

@@ -1,4 +1,5 @@
 import Foundation
+
 import CoreData
 
 final class TaskStore: NSObject, ObservableObject {
@@ -9,8 +10,7 @@ final class TaskStore: NSObject, ObservableObject {
     init(context: NSManagedObjectContext = CoreDataStack.shared.context) {
         self.context = context
     }
-    
-    
+
     func createTask(scheduledAt: Date,
                     client: Client,
                     address: Address?,
@@ -24,18 +24,32 @@ final class TaskStore: NSObject, ObservableObject {
         
         
         let task = TaskEntity(context: context)
-        task.client = client
-        task.address = address
+
+        // Sync fields
+        task.remoteId = nil
+        task.deletedAt = nil
+        task.updatedAt = Date()
+        task.needsSync = true
+
+        // Core fields
         task.id = UUID()
         task.scheduledAt = scheduledAt
         task.client = client
         task.taskDescription = description
         task.isRemote = isRemote
         task.statusString = status.rawValue
+
+        // Address: for remote tasks we must not persist an Address relationship
+        task.address = isRemote ? nil : address
+
+        // Financials
         task.contractAmount = contractAmount
         task.cost = cost ?? 0
-        task.totalAmount = contractAmount - (cost ?? 0)
-        task.paymentType = PaymentType.none.rawValue
+        task.extraPaymentValue = nil
+        task.paymentType = paymentType.rawValue
+        task.totalAmount = task.contractAmount + (task.extraPaymentValue ?? 0) - task.cost
+        
+       
         
         do {
             try context.save()
@@ -58,9 +72,13 @@ final class TaskStore: NSObject, ObservableObject {
         task.comment = comment
         task.contractAmount = contractAmount
         task.cost = cost ?? 0
-        task.extraPayment = extraPayment ?? 0
+        task.extraPaymentValue = extraPayment
         task.paymentType = paymentType.rawValue
         task.totalAmount = task.contractAmount + (extraPayment ?? 0) - (cost ?? 0)
+        // Sync fields
+        task.deletedAt = nil
+        task.updatedAt = Date()
+        task.needsSync = true
         do {
             try context.save()
         } catch {
@@ -71,6 +89,10 @@ final class TaskStore: NSObject, ObservableObject {
     func makeScheduled(_ task: TaskEntity, paymentType: PaymentType?) {
         task.status = .scheduled
         task.paymentType = paymentType?.rawValue
+        // Sync fields
+        task.deletedAt = nil
+        task.updatedAt = Date()
+        task.needsSync = true
         do {
             try context.save()
         } catch {
@@ -83,8 +105,13 @@ final class TaskStore: NSObject, ObservableObject {
         task.comment = comment
         task.contractAmount = 0
         task.cost = 0
+        task.extraPaymentValue = nil
         task.totalAmount = 0
         task.paymentType = paymentType?.rawValue
+        // Sync fields
+        task.deletedAt = nil
+        task.updatedAt = Date()
+        task.needsSync = true
         do {
             try context.save()
         } catch {
@@ -94,6 +121,7 @@ final class TaskStore: NSObject, ObservableObject {
     
     func fetchTasks() -> [TaskEntity] {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "deletedAt == nil")
         request.sortDescriptors = [
             NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)
         ]
@@ -107,11 +135,24 @@ final class TaskStore: NSObject, ObservableObject {
     }
      
     func deleteTask(_ task: TaskEntity) {
+        // Soft delete for sync
+        task.deletedAt = Date()
+        task.updatedAt = Date()
+        task.needsSync = true
+        do {
+            try context.save()
+        } catch {
+            print("❌ Error deleting (soft) task: \(error)")
+        }
+    }
+
+    /// Permanent delete (use carefully, e.g. debug tools / cleanup)
+    func purgeTask(_ task: TaskEntity) {
         context.delete(task)
         do {
             try context.save()
         } catch {
-            print("❌ Error deleting task: \(error)")
+            print("❌ Error purging task: \(error)")
         }
     }
     
@@ -123,7 +164,7 @@ final class TaskStore: NSObject, ObservableObject {
                     isRemote: Bool,
                     status: Status,
                     contractAmount: Double,
-                    extraPayment: Double?,
+                    extraPaymentValue: Double?,
                     paymentType: PaymentType,
                     cost: Double?) {
         
@@ -139,16 +180,17 @@ final class TaskStore: NSObject, ObservableObject {
         
         // Update financials
         task.contractAmount = contractAmount
-        if let cost = cost {
-            task.cost = cost
-        }
-        if let extra = extraPayment {
-            task.extraPayment = extra
-        }
+        task.cost = cost ?? 0
+        task.extraPaymentValue = extraPaymentValue
         task.paymentType = paymentType.rawValue
         
         // Recalculate total
-        task.totalAmount = task.contractAmount + task.extraPayment - task.cost
+        task.totalAmount = task.contractAmount + (task.extraPaymentValue ?? 0) - task.cost
+        
+        // Sync fields
+        task.deletedAt = nil
+        task.updatedAt = Date()
+        task.needsSync = true
         
         // Save changes
         do {
@@ -187,6 +229,7 @@ final class TaskStore: NSObject, ObservableObject {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
 
         var predicates: [NSPredicate] = [
+            NSPredicate(format: "deletedAt == nil"),
             NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
         ]
         if let status { predicates.append(NSPredicate(format: "statusString == %@", status.rawValue)) }
@@ -207,7 +250,12 @@ final class TaskStore: NSObject, ObservableObject {
     ) -> [TaskEntity] {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         request.sortDescriptors = sortDescriptors
-        request.predicate = predicate
+        let notDeleted = NSPredicate(format: "deletedAt == nil")
+        if let predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [notDeleted, predicate])
+        } else {
+            request.predicate = notDeleted
+        }
         if let limit = limit { request.fetchLimit = limit }
 
         if debug {
@@ -244,6 +292,7 @@ final class TaskStore: NSObject, ObservableObject {
         request.sortDescriptors = [NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)]
 
         var predicates: [NSPredicate] = [
+            NSPredicate(format: "deletedAt == nil"),
             NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, startDate as NSDate, dateKey, endDate as NSDate)
         ]
         if let status { predicates.append(NSPredicate(format: "statusString == %@", status.rawValue)) }
@@ -284,7 +333,7 @@ final class TaskStore: NSObject, ObservableObject {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(keyPath: \TaskEntity.scheduledAt, ascending: true)]
 
-        var predicates: [NSPredicate] = []
+        var predicates: [NSPredicate] = [NSPredicate(format: "deletedAt == nil")]
         if let start = start, let end = end {
             predicates.append(NSPredicate(format: "%K >= %@ AND %K < %@", dateKey, start as NSDate, dateKey, end as NSDate))
         }
@@ -316,6 +365,13 @@ final class TaskStore: NSObject, ObservableObject {
     @discardableResult
     func totalTasksCount(debug: Bool = false) -> Int {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+        
+        let predicates: [NSPredicate] = [
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "statusString == %@", Status.completed.rawValue)
+        ]
+        
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
         do {
             let count = try context.count(for: request)
             if debug { print("[TaskStore] totalTaskCount =", count) }
@@ -329,7 +385,10 @@ final class TaskStore: NSObject, ObservableObject {
     @discardableResult
     func totalCanceled(debug: Bool = false) -> Int {
         let request: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "statusString == %@", Status.canceled.rawValue)
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "deletedAt == nil"),
+            NSPredicate(format: "statusString == %@", Status.canceled.rawValue)
+        ])
         do {
             let count = try context.count(for: request)
             if debug { print("[TaskListViewModel] totalCanceled =", count) }
@@ -352,6 +411,13 @@ extension TaskEntity {
         }
     }
     
+}
+
+extension TaskEntity {
+    var extraPaymentValue: Double? {
+        get { extraPayment?.doubleValue }
+        set { extraPayment = newValue.map(NSNumber.init(value:)) }
+    }
 }
 
 

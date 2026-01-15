@@ -7,8 +7,13 @@ struct StreetsListView: View {
     @State private var sortToggle: Bool = false
     @State private var showAddConfirmation = false
     @ObservedObject var viewModel: StreetListViewModel
+    
     @Environment(\.dismiss)
     private var dismiss
+    
+    // MARK: - Sync Objects
+    @EnvironmentObject private var syncService: SyncService
+    @EnvironmentObject private var auth: AuthService
     
     private func loadUserDefaults() {
         if userDefaults.bool(forKey: UserDefaultsKeys.streetsSorting.rawValue) {
@@ -100,6 +105,7 @@ struct StreetsListView: View {
                         RoundedRectangle(cornerRadius: 16)
                             .fill(Color.custom(.searchFieldGray))
                     )
+                    
                 
                 if !viewModel.searchText.isEmpty {
                     Button(action:  {
@@ -191,7 +197,7 @@ struct StreetsListView: View {
                     viewModel.lastAddedStreetName = ""
                 }
             }
-                
+            syncService.runManualSync(auth: auth, debug: true)
         }) {
             AddStreetView(viewModel: viewModel)
         }

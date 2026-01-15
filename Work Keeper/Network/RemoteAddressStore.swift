@@ -1,0 +1,204 @@
+import Foundation
+import Supabase
+
+final class RemoteAddressStore {
+    private let client: SupabaseClient
+
+    init(client: SupabaseClient = SupabaseManager.shared.client) {
+        self.client = client
+    }
+
+    // MARK: - Fetch
+
+    func fetchChanges(ownerId: UUID, since: Date) async throws -> [AddressDTO] {
+        // RLS is not supported on views in our Supabase setup, so we use an RPC.
+        // The function enforces owner_id = auth.uid() server-side.
+        struct Params: Encodable { let p_since: String }
+
+        let rows: [AddressDTO] = try await client
+            .rpc("get_address_changes", params: Params(p_since: since.iso8601String))
+            .execute()
+            .value
+
+        // Extra safety: keep only expected owner (should already be enforced by RPC)
+        return rows.filter { $0.owner_id == ownerId }
+    }
+    
+    func fetchByClient(clientId: UUID) async throws -> [AddressDTO] {
+        let result: [AddressDTO] = try await client
+            .from("addresses")
+            .select()
+            .eq("client_id", value: clientId.uuidString)
+            .order("is_primary", ascending: false)
+            .order("updated_at", ascending: false)
+            .execute()
+            .value
+        return result
+    }
+    
+    /// Fetch candidate addresses for a given (owner, client, street, house).
+    /// We match optional fields client-side to avoid PostgREST null-filter quirks.
+    func fetchCandidates(ownerId: UUID, clientId: UUID, streetId: UUID, house: String) async throws -> [AddressDTO] {
+        let trimmedHouse = house.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHouse.isEmpty else { return [] }
+
+        let result: [AddressDTO] = try await client
+            .from("addresses")
+            .select()
+            .eq("owner_id", value: ownerId.uuidString)
+            .eq("client_id", value: clientId.uuidString)
+            .eq("street_id", value: streetId.uuidString)
+            .eq("house", value: trimmedHouse)
+            .order("updated_at", ascending: false)
+            .execute()
+            .value
+
+        return result
+    }
+
+    func fetchAll(ownerId: UUID, includeDeleted: Bool = false) async throws -> [AddressDTO] {
+        // Keep this as a filter-capable builder until after conditional filters are applied.
+        var q = client
+            .from("addresses")
+            .select()
+
+        if !includeDeleted {
+            // PostgREST null check: deleted_at IS NULL
+            q = q.filter("deleted_at", operator: "is", value: "null")
+        }
+
+        // Apply ordering after filters (do not reassign: order returns a TransformBuilder)
+        let result: [AddressDTO] = try await q
+            .order("updated_at", ascending: false)
+            .execute()
+            .value
+
+        // Optional extra safety (RLS should already limit to the current user)
+        return result.filter { $0.owner_id == ownerId }
+    }
+
+    // MARK: - Create
+
+    func create(_ payload: AddressInsertDTO) async throws -> AddressDTO {
+        // IMPORTANT: never insert with is_primary = true directly.
+        // It can violate the unique constraint (one primary per client) before we get a chance to run RPC.
+        let safeInsert = AddressInsertDTO(
+            owner_id: payload.owner_id,
+            client_id: payload.client_id,
+            street_id: payload.street_id,
+            house: payload.house,
+            apartment: payload.apartment,
+            entrance: payload.entrance,
+            entrance_type: payload.entrance_type,
+            room_type: payload.room_type,
+            floor: payload.floor,
+            is_primary: false,
+            is_private_house: payload.is_private_house
+        )
+
+        let created: AddressDTO = try await client
+            .from("addresses")
+            .insert(safeInsert)
+            .select()
+            .single()
+            .execute()
+            .value
+
+        if payload.is_primary {
+            try await setPrimary(clientId: payload.client_id, addressId: created.id)
+        }
+
+        return try await fetchOne(addressId: created.id)
+    }
+
+    // MARK: - Update
+
+    func update(addressId: UUID, ownerId: UUID, clientId: UUID, payload: AddressUpdateDTO) async throws -> AddressDTO {
+        // IMPORTANT: never update with is_primary = true directly.
+        // Update the fields first with is_primary = false, then set primary via RPC if needed.
+        let safeUpdate = AddressUpdateDTO(
+            street_id: payload.street_id,
+            house: payload.house,
+            apartment: payload.apartment,
+            entrance: payload.entrance,
+            entrance_type: payload.entrance_type,
+            room_type: payload.room_type,
+            floor: payload.floor,
+            is_primary: false,
+            is_private_house: payload.is_private_house
+        )
+
+        _ = try await client
+            .from("addresses")
+            .update(safeUpdate)
+            .eq("id", value: addressId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
+            .execute()
+
+        if payload.is_primary {
+            try await setPrimary(clientId: clientId, addressId: addressId)
+        }
+
+        return try await fetchOne(addressId: addressId)
+    }
+
+    // MARK: - Soft delete (RPC)
+
+    func softDelete(addressId: UUID) async throws {
+        struct Params: Encodable { let p_address_id: UUID }
+
+        let updatedCount: Int = try await client
+            .rpc("soft_delete_address", params: Params(p_address_id: addressId))
+            .execute()
+            .value
+
+        if updatedCount == 0 {
+            throw NSError(
+                domain: "RemoteAddressStore",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "Address was not deleted (owner mismatch or already deleted)."]
+            )
+        }
+    }
+
+    /// Soft delete by updating `deleted_at` (used by incremental push).
+    func softDelete(addressId: UUID, ownerId: UUID, deletedAt: Date) async throws {
+        struct Payload: Encodable { let deleted_at: String }
+
+        _ = try await client
+            .from("addresses")
+            .update(Payload(deleted_at: deletedAt.iso8601String))
+            .eq("id", value: addressId.uuidString)
+            .eq("owner_id", value: ownerId.uuidString)
+            .execute()
+    }
+
+    // MARK: - Helpers
+
+    private func fetchOne(addressId: UUID) async throws -> AddressDTO {
+        try await client
+            .from("addresses")
+            .select()
+            .eq("id", value: addressId.uuidString)
+            .single()
+            .execute()
+            .value
+    }
+
+    private func setPrimary(clientId: UUID, addressId: UUID) async throws {
+        struct Params: Encodable { let p_client_id: UUID; let p_address_id: UUID }
+
+        let updatedCount: Int = try await client
+            .rpc("set_primary_address", params: Params(p_client_id: clientId, p_address_id: addressId))
+            .execute()
+            .value
+
+        if updatedCount == 0 {
+            throw NSError(
+                domain: "RemoteAddressStore",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "Failed to set primary address (not found / owner mismatch)."]
+            )
+        }
+    }
+}
