@@ -89,16 +89,79 @@ struct PrimaryAddressPickMenu: View {
 
 struct ClientProfileView: View {
 
+    @EnvironmentObject private var syncService: SyncService
+    @EnvironmentObject private var auth: AuthService
+    
     @ObservedObject var viewModel = ClientsListViewModel()
     @ObservedObject var client: Client
+    @State private var clientToEdit: Client?
+    @State private var clientToDelete: Client?
     @State private var selectedTaskForDetails: TaskEntity?
     @State private var didCopyPhoneNumber = false
     @State private var didCopyAddress = false
     @State private var isPrimaryAddressPickerPresented = false
     @State private var showSingleAddressMessage = false
+   
+    @State private var showEditClientView = false
+    @State private var showDeleteAlert = false
+    @State private var lastDeletedClientName = ""
+    @State private var lastEditedClientName = ""
     
         var body: some View {
             VStack {
+              
+                
+                HStack {
+                    Spacer()
+                    
+                    Menu {
+                        Button {
+                            clientToEdit = client
+                        } label: {
+                            Label {
+                                Text("Редактировать")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 17))
+                            } icon: {
+                                Image("pen")
+                            }
+                        }
+
+                        Button(role: .destructive) {
+                            showDeleteAlert = true
+                        } label: {
+                            Label {
+                                Text("Удалить")
+                            } icon: {
+                                Image(systemName: "trash")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                    }
+                    .frame(width: 25, height: 25)
+                }
+                
+                .padding(.horizontal, 20)
+                
+             
+                    .confirmationDialog("Удалить клиента?", isPresented: $showDeleteAlert, titleVisibility: .visible) {
+                        Button("Удалить", role: .destructive) {
+                            let clientName = client.firstName
+                            lastDeletedClientName = clientName ?? "Неизвестный клиент"
+                            viewModel.delete(client)
+                            
+                          
+                            
+                           
+                            syncService.runManualSync(auth: auth, debug: true)
+                       
+                            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                        }
+                        Button("Отмена", role: .cancel) { }
+                    } message: {
+                        Text("Клиент \(client.firstName ?? "без имени") будет удалён(на)")
+                    }
+                
               
                         
                         HStack {
@@ -110,6 +173,7 @@ struct ClientProfileView: View {
                         }
                         .minimumScaleFactor(0.7)
                         .padding(.horizontal, 22)
+                        .padding(.top, 15)
                         
                         Button(action: {
                             let text =
@@ -140,13 +204,14 @@ struct ClientProfileView: View {
                             }
                         }) {
                             Image("home")
+                                .opacity(0.5)
                         }
                         
                         Spacer()
                         
                         Text("Клиент не давал адрес")
                             .frame(height: 48)
-                            .font(.custom(SFPro.regular.rawValue, size: 24))
+                            .font(.custom(Montserrat.regular.rawValue, size: 24))
                            
                             .frame(width: 300, alignment: .center)
                             .multilineTextAlignment(.center)
@@ -372,5 +437,17 @@ struct ClientProfileView: View {
             .sheet(isPresented: $isPrimaryAddressPickerPresented) {
                 PrimaryAddressPickMenu(client: client)
             }
+            
+            .sheet(item: $clientToEdit, onDismiss: {
+               
+            }) { client in
+                EditClientView(viewModel: EditClientViewModel(client: client),
+                               onEdit: { editedName in
+                    lastEditedClientName = editedName
+                 
+                    syncService.runManualSync(auth: auth, debug: true)
+                })
+            }
+            
     }
 }

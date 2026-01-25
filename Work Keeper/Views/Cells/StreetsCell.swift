@@ -93,7 +93,7 @@ struct StreetRow: View {
             }
             Button("Отмена", role: .cancel) { }
         } message: {
-            Text("Улица будет удалена безвозвратно")
+            Text("Улица \(street.name ?? "без названия") будет удалена")
         }
         
         
