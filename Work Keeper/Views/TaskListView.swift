@@ -248,9 +248,67 @@ struct TaskListView: View {
                         .contentShape(Rectangle())
                     }
                     
+                    
                     Spacer()
                     
-                   
+                    if !networkMonitor.isOnline {
+                        HStack {
+                            
+                            Text("Нет сети, работа оффлайн")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                .foregroundColor(.secondary)
+                            Image(systemName: "wifi.slash")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(height: 15)
+
+                    } else {
+                        switch syncService.phase {
+                        case .syncing:
+                            HStack {
+                               
+                                Text("синхронизация")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                Image("sync")
+                                    .resizable()
+                                    .frame(width: 13.55, height: 15)
+                                    .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                                    .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
+                                    .onAppear { isSpinning = true }
+                                    .onDisappear { isSpinning = false }
+                            }
+                            .frame(height: 15)
+                            
+                        case .success:
+                            HStack {
+                                
+                                Text("синхронизировано")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                Image("syncCompleted")
+                                    .resizable()
+                                    .frame(width: 13.55, height: 15)
+                            }
+                            .frame(height: 15)
+                            
+                        case .failure:
+                            HStack {
+                               
+                                Text("ошибка синхронизации")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                Image("syncError")
+                                    .resizable()
+                                    .frame(width: 13.55, height: 15)
+                            }
+                            .frame(height: 15)
+                            
+                        case .idle:
+                            // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
+                            Spacer().frame(height: 15)
+                        }
+                    }
+                    
+                    Spacer()
 
                     
                     Button(action: {
@@ -265,6 +323,7 @@ struct TaskListView: View {
                 }
                 .frame(height: 30)
                 .padding(.leading, 3)
+                .padding(.top, 3)
            
                 HStack {
                     HStack {
@@ -315,63 +374,8 @@ struct TaskListView: View {
                         }
                     }
                 }
-                
-                if !networkMonitor.isOnline {
-                    HStack {
-                        Spacer()
-                        Text("Нет сети, работа оффлайн")
-                            .font(.custom(Montserrat.regular.rawValue, size: 11))
-                            .foregroundColor(.secondary)
-                        Image(systemName: "wifi.slash")
-                            .font(.system(size: 13))
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(height: 15)
+                .padding(.top, 6)
 
-                } else {
-                    switch syncService.phase {
-                    case .syncing:
-                        HStack {
-                            Spacer()
-                            Text("синхронизация")
-                                .font(.custom(Montserrat.regular.rawValue, size: 11))
-                            Image("sync")
-                                .resizable()
-                                .frame(width: 13.55, height: 15)
-                                .rotationEffect(.degrees(isSpinning ? 360 : 0))
-                                .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
-                                .onAppear { isSpinning = true }
-                                .onDisappear { isSpinning = false }
-                        }
-                        .frame(height: 15)
-                        
-                    case .success:
-                        HStack {
-                            Spacer()
-                            Text("синхронизировано")
-                                .font(.custom(Montserrat.regular.rawValue, size: 11))
-                            Image("syncCompleted")
-                                .resizable()
-                                .frame(width: 13.55, height: 15)
-                        }
-                        .frame(height: 15)
-                        
-                    case .failure:
-                        HStack {
-                            Spacer()
-                            Text("ошибка синхронизации")
-                                .font(.custom(Montserrat.regular.rawValue, size: 11))
-                            Image("syncError")
-                                .resizable()
-                                .frame(width: 13.55, height: 15)
-                        }
-                        .frame(height: 15)
-                        
-                    case .idle:
-                        // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
-                        Spacer().frame(height: 15)
-                    }
-                }
                
                 
                 // MARK: - Placeholder or the List beginning
@@ -417,8 +421,9 @@ struct TaskListView: View {
                             Text("Создайте карточку задания, нажав на \nиконку “+“ в правом верхнем углу экрана")
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .font(.custom(Montserrat.medium.rawValue, size: 12))
-                                .multilineTextAlignment(.leading)
+                                Spacer()
                         }
+                        .multilineTextAlignment(.leading)
                         .frame(height: 30)
                         .padding(.top, 18)
                         Spacer()
@@ -429,8 +434,7 @@ struct TaskListView: View {
                 
                     
                 } else {
-                    Spacer()
-                        .frame(height: 20)
+                   
                     NavigationStack {
                         List {
                             ForEach(viewModel.groupedTasksByDate.keys.sorted(by: >), id: \.self) { dateKey in

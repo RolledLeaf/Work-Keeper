@@ -255,6 +255,7 @@ final class CreateClientViewModel: ObservableObject {
     func createClient() {
         let trimmedFirstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedLastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
+        
         let trimmedStreetName = streetName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedBuilding = building.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedApartment = apartment.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -277,6 +278,7 @@ final class CreateClientViewModel: ObservableObject {
                 client,
                 firstName: client.firstName ?? "",
                 lastName: client.lastName,
+                comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
                 addresses: [],
                 phone: client.phone ?? ""
             )
@@ -290,6 +292,7 @@ final class CreateClientViewModel: ObservableObject {
                 client,
                 firstName: client.firstName ?? "",
                 lastName: client.lastName,
+                comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
                 addresses: [],
                 phone: client.phone ?? ""
             )
@@ -314,6 +317,7 @@ final class CreateClientViewModel: ObservableObject {
             client,
             firstName: client.firstName ?? "",
             lastName: client.lastName,
+            comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
             addresses: [address],
             phone: client.phone ?? ""
         )
@@ -333,6 +337,7 @@ final class EditClientViewModel: ObservableObject {
     @Published var entranceType: String
     @Published var phoneNumber: String
     @Published var phoneDigits: String = ""
+    @Published var comment: String
     
     let roomTypes = ["кв.", "оф.", "каб."]
     let entranceTypes = ["под.", "вход."]
@@ -355,6 +360,7 @@ final class EditClientViewModel: ObservableObject {
         self.firstName = client.firstName ?? ""
         self.lastName = client.lastName ?? ""
         self.phoneNumber = client.phone ?? ""
+        self.comment = client.comment ?? ""
         
         
         if let address = (client.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
@@ -411,6 +417,7 @@ final class EditClientViewModel: ObservableObject {
         client.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         client.lastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
         client.phone = phoneValue
+        client.comment = comment.trimmingCharacters(in: .whitespacesAndNewlines)
 
         // Prepare an array of addresses to persist.
         // Address is optional: if streetName is empty, we do not touch/create addresses.
@@ -421,14 +428,28 @@ final class EditClientViewModel: ObservableObject {
         // If no street provided, keep existing addresses as-is (or none) and only update basic client fields.
         guard !trimmedStreetName.isBlank else {
             resultingAddresses = (client.address as? Set<Address>)?.sorted(by: { ($0.street?.name ?? "") < ($1.street?.name ?? "") }) ?? []
-            store.updateClient(client, firstName: client.firstName ?? "", lastName: client.lastName, addresses: resultingAddresses, phone: client.phone ?? "")
+            store.updateClient(
+                client,
+                firstName: client.firstName ?? "",
+                lastName: client.lastName,
+                comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
+                addresses: resultingAddresses,
+                phone: client.phone ?? ""
+            )
             return
         }
 
         guard let streetObj = streetStore.createOrFetchStreet(name: trimmedStreetName) else {
             print("❌ updateClient: invalid streetName")
             resultingAddresses = (client.address as? Set<Address>)?.sorted(by: { ($0.street?.name ?? "") < ($1.street?.name ?? "") }) ?? []
-            store.updateClient(client, firstName: client.firstName ?? "", lastName: client.lastName, addresses: resultingAddresses, phone: client.phone ?? "")
+            store.updateClient(
+                client,
+                firstName: client.firstName ?? "",
+                lastName: client.lastName,
+                comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
+                addresses: resultingAddresses,
+                phone: client.phone ?? ""
+            )
             return
         }
 
@@ -460,7 +481,16 @@ final class EditClientViewModel: ObservableObject {
         }
 
         // Persist changes using store.updateClient which will save context
-        store.updateClient(client, firstName: client.firstName ?? "", lastName: client.lastName, addresses: resultingAddresses, phone: client.phone ?? "")
+        store.updateClient(
+            client,
+            firstName: client.firstName ?? "",
+            lastName: client.lastName,
+            comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
+            addresses: resultingAddresses,
+            phone: client.phone ?? ""
+        )
+        
+        print("Client has been updated with: \(client.firstName ?? "") \(client.lastName ?? ""), \(comment) ")
     }
 
     // helper to avoid passing optional empty strings

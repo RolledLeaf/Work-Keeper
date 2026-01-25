@@ -12,7 +12,7 @@ struct NewClientView: View {
     private var maxLastNameCharachtersCount: Int = 12
     private let maxBuildingCharachtersCount: Int = 8
     private let maxStreetCharachtersCount: Int = 49
-    private let maxCommentCharachtersCount: Int = 91
+    private let maxCommentCharachtersCount: Int = 65
     private let maxApartmentCharachtersCount: Int = 6
     private let maxEntranceCharachtersCount: Int = 3
     private let maxFloorCharachtersCount: Int = 3
@@ -53,7 +53,7 @@ struct NewClientView: View {
         ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             
-            
+            ScrollView {
             VStack {
                 
                 Text("Новый клиент")
@@ -141,7 +141,7 @@ struct NewClientView: View {
                                 if newValue.count > maxPhoneNumberCharactersCount {
                                     viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))
                                 }
-                               
+                                
                             }
                     }
                     .cornerRadius(10)
@@ -152,6 +152,7 @@ struct NewClientView: View {
                     )
                     Spacer()
                 }
+                .padding(.leading, 20)
                 
                 Spacer()
                     .frame(height: 35)
@@ -415,11 +416,11 @@ struct NewClientView: View {
                                 if newValue.count > maxCommentCharachtersCount {
                                     viewModel.comment = String(newValue.prefix(maxCommentCharachtersCount))
                                 }
-                               
+                                
                             }
                     }
                     .cornerRadius(20)
-                   
+                    
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
@@ -457,13 +458,13 @@ struct NewClientView: View {
                             showNameAndPhoneAlert = true
                             return
                         }
-
+                        
                         // Затем проверяем уникальность номера телефона
                         if !viewModel.hasUniquePhone() {
                             showNumberExistsAlert = true
                             return
                         }
-
+                        
                         // Если обе проверки пройдены — создаём клиента
                         onCreation?(viewModel.firstName)
                         viewModel.createClient()
@@ -488,7 +489,7 @@ struct NewClientView: View {
             } // end of main VStack
             
             
-            
+        }
         }
         .onTapGesture {
             hideKeyboard()

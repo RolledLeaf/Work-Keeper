@@ -248,12 +248,14 @@ final class ClientStore: NSObject, ObservableObject {
     func updateClient(_ client: Client,
                       firstName: String,
                       lastName: String?,
+                      comment: String?,
                       addresses: [Address],
                       phone: String
     ) {
         
         client.firstName = firstName
         client.lastName = lastName
+        client.comment = comment
         client.address = NSSet(array: addresses)
         client.phone = phone
         
