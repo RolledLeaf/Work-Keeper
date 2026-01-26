@@ -344,6 +344,7 @@ struct NewTaskView: View {
                     .background(
                         RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .fill(Color.custom(.bckgFieldGray))
+                       
                     )
                     .overlay(
                         RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
@@ -583,9 +584,7 @@ struct NewTaskView: View {
                     //Street section end
                     
                         HStack {
-                            
-                            
-                            
+
                             HStack(spacing: 6) {
                                 Spacer()
                                 Text("дом")
@@ -666,7 +665,7 @@ struct NewTaskView: View {
                             }
                         
                             .cornerRadius(30)
-                            .frame(width: 106, height: 40)
+                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(textFieldColor))
@@ -715,7 +714,7 @@ struct NewTaskView: View {
                                 Spacer()
                         
                             }
-                            .frame(width: 106, height: 40)
+                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(textFieldColor))
@@ -771,7 +770,7 @@ struct NewTaskView: View {
                         )
                         Spacer()
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.leading, 20)
                     
                     HStack {
                         Toggle(isOn: $viewModel.isPrivateHouse) {
@@ -780,7 +779,7 @@ struct NewTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .frame(width: 165, alignment: .leading)
+                        .frame(alignment: .leading)
                         .disabled(viewModel.shouldBlockPrivate)
                         .onChange(of: viewModel.isPrivateHouse) { newValue in
                             if newValue == true {
@@ -799,10 +798,11 @@ struct NewTaskView: View {
                         Toggle(isOn: $viewModel.isRemote) {
                             Text("Удалёнка")
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .frame(alignment: .trailing)
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .frame(width: 148, alignment: .trailing)
+                        
                         
                         .disabled(viewModel.shouldBlockRemote)
                         .onChange(of: viewModel.isRemote) { _, newValue in

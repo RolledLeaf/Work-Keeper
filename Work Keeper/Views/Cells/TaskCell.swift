@@ -264,7 +264,7 @@ struct TaskRow: View {
                 HStack {
                     Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(Montserrat.bold.rawValue, size: 25))
-                                  .foregroundStyle(.mainBlack)
+                                  .foregroundStyle(task.totalAmount >= 0 ? .mainBlack : .red)
                     +
                     Text(" ₽")
                         .font(.custom(Montserrat.regular.rawValue, size: 25))

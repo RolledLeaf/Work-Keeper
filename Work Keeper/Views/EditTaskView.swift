@@ -558,7 +558,7 @@ struct EditTaskView: View {
                             }
                         
                             .cornerRadius(30)
-                            .frame(width: 106, height: 40)
+                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(textFieldColor))
@@ -607,7 +607,7 @@ struct EditTaskView: View {
                                 Spacer()
                         
                             }
-                            .frame(width: 106, height: 40)
+                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(textFieldColor))
@@ -672,7 +672,7 @@ struct EditTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .frame(width: 165, alignment: .leading)
+                        .frame(alignment: .leading)
                         .disabled(viewModel.shouldBlockPrivate)
                         .onChange(of: viewModel.isPrivateHouse) { newValue in
                             if newValue == true {
@@ -694,7 +694,7 @@ struct EditTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .frame(width: 148, alignment: .trailing)
+                        .frame(alignment: .trailing)
                         
                         .disabled(viewModel.shouldBlockRemote)
                         .onChange(of: viewModel.isRemote) { _, newValue in
