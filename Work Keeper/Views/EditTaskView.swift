@@ -44,6 +44,10 @@ struct EditTaskView: View {
     @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
     @FocusState private var focusedField: Field?
+    
+    private var adaptiveCardRadius: CGFloat {
+        DeviceLayout.cardRadius(for: UIScreen.main.bounds.width)
+    }
  
    
     enum Field {
@@ -158,14 +162,15 @@ struct EditTaskView: View {
                             .frame(height: 20)
                     }
                     .background(
-                        RoundedCorner(radius: 26, corners: [.bottomLeft, .bottomRight])
+                        RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .fill(Color.custom(.bckgFieldGray))
                     )
                     .overlay(
-                        RoundedCorner(radius: 26, corners: [.bottomLeft, .bottomRight])
+                        RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
-                    
+                    .padding(.top, 1)
+                    .padding(.horizontal, 1)
                     
                     
                     
