@@ -127,7 +127,8 @@ struct TaskListView: View {
     @State private var selectedTaskForEdit: TaskEntity?
     // Keep a reference to the ScrollViewProxy for scroll actions
     @State private var scrollProxy: ScrollViewProxy? = nil
-   
+    // Height of the header overlay for top padding and blur overlay
+    private let headerOverlayHeight: CGFloat = 110
     
         
     
@@ -219,165 +220,7 @@ struct TaskListView: View {
             }
             
             VStack {
-                HStack {
- 
-                    Button(action: {
-                        showFilters = true
-                    }) {
-                        Image(filterIcon)
-                            .font(.system(size: 30, weight: .regular))
-                            .foregroundStyle(.pitchBlack)
-                            .ifAvailableButtonStyleGlass()
-                    }
-                    .padding(.leading, 8)
-                    .padding(.trailing, 5)
-                    
-                    ZStack {
-                        Image("calendar")
-                            .frame(width: 30, height: 30)
-                            .ifAvailableButtonStyleGlass()
-                        
-                        DatePicker("",
-                                   selection: $selectedDate,
-                                   displayedComponents: .date
-                        )
-                        .labelsHidden()
-                        .datePickerStyle(.compact)
-                        .blendMode(.destinationOver)
-                        .frame(width: 30, height: 30)
-                        .contentShape(Rectangle())
-                    }
-                    
-                    
-                    Spacer()
-                    
-                    if !networkMonitor.isOnline {
-                        HStack {
-                            
-                            Text("Нет сети, работа оффлайн")
-                                .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                .foregroundColor(.secondary)
-                            Image(systemName: "wifi.slash")
-                                .font(.system(size: 13))
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(height: 15)
-
-                    } else {
-                        switch syncService.phase {
-                        case .syncing:
-                            HStack {
-                               
-                                Text("синхронизация")
-                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                Image("sync")
-                                    .resizable()
-                                    .frame(width: 13.55, height: 15)
-                                    .rotationEffect(.degrees(isSpinning ? 360 : 0))
-                                    .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
-                                    .onAppear { isSpinning = true }
-                                    .onDisappear { isSpinning = false }
-                            }
-                            .frame(height: 15)
-                            
-                        case .success:
-                            HStack {
-                                
-                                Text("синхронизировано")
-                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                Image("syncCompleted")
-                                    .resizable()
-                                    .frame(width: 13.55, height: 15)
-                            }
-                            .frame(height: 15)
-                            
-                        case .failure:
-                            HStack {
-                               
-                                Text("ошибка синхронизации")
-                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                Image("syncError")
-                                    .resizable()
-                                    .frame(width: 13.55, height: 15)
-                            }
-                            .frame(height: 15)
-                            
-                        case .idle:
-                            // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
-                            Spacer().frame(height: 15)
-                        }
-                    }
-                    
-                    Spacer()
-
-                    
-                    Button(action: {
-                        showNewTaskView = true
-                    }) {
-                        Image("plus")
-                            .frame(width: 30, height: 30)
-                            .foregroundStyle(.pitchBlack)
-                            .padding(.trailing, 5)
-
-                    }
-                }
-                .frame(height: 30)
-                .padding(.leading, 3)
-                .padding(.top, 3)
-           
-                HStack {
-                    HStack {
-                        Image("magnifyingGlass")
-                        .resizable()
-                        .frame(width: 21, height: 21)
-                        .foregroundColor(Color.custom(.pitchBlack))
-                        .padding(.leading, 20)
-                    
-                    TextField("Поиск задания", text: $viewModel.searchText)
-                            .font(.custom(Montserrat.regular.rawValue, size: 16))
-                        .onChange(of: viewModel.searchText) { newValue in
-                            print("[TaskListView] searchText changed:", newValue)
-                        }
-                        .onSubmit {
-                            hideKeyboard()
-                        }
-                        
-                    
-                    Button(action:  {
-                        viewModel.searchText = ""
-                        
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .resizable()
-                            .frame(width: 18, height: 18)
-                        
-                    }
-                    .opacity(viewModel.searchText.isEmpty ? 0 : 1)
-                    .padding(.trailing, 15)
-                }
-                    .frame(height: 50)
-                    .background(
-                        RoundedRectangle(cornerRadius: 30)
-                            .fill(Color.custom(.searchFieldGray))
-                        )
-                    .ifAvailableGlassStyle(in: .capsule, interactive: true)
-                    
-                    if !viewModel.searchText.isEmpty {
-                        Button(action:  {
-                            viewModel.searchText = ""
-                            hideKeyboard()
-                        }) {
-                            Image(systemName: "xmark.circle")
-                                .resizable()
-                                .frame(width: 45, height: 45)
-                                .foregroundStyle(Color.custom(.pitchBlack))
-                        }
-                    }
-                }
-                .padding(.top, 6)
-
-               
-                
+  
                 // MARK: - Placeholder or the List beginning
                 
                 if viewModel.groupedTasksByDate.isEmpty {
@@ -437,6 +280,13 @@ struct TaskListView: View {
                    
                     NavigationStack {
                         List {
+                            // Top spacer so first visible content is not glued to the top.
+                            Color.clear
+                                .frame(height: headerOverlayHeight)
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+
                             ForEach(viewModel.groupedTasksByDate.keys.sorted(by: >), id: \.self) { dateKey in
                                 Section(header:
                                     ZStack {
@@ -479,7 +329,8 @@ struct TaskListView: View {
                                             
                                                
                                         }
-                                        .frame(height: 17)
+                                        .padding(.leading, 20)
+                                        .padding(.trailing, 10)
                                     }
                                     .background(
                                         GeometryReader { geo in
@@ -494,8 +345,8 @@ struct TaskListView: View {
                                             .sorted { $0.scheduledAt ?? Date.distantPast < $1.scheduledAt ?? Date.distantPast }
                                     ) { task in
                                        TaskRow(viewModel: viewModel, selectedClient: $selectedClient, task: task)
-                                        .padding(.vertical, 6) // коррекция расстояния между ячейками
-                                        .contentShape(Rectangle())
+                                        .padding(.vertical, 5) // коррекция расстояния между ячейками
+
                                         .onTapGesture {
                                             selectedTask = task
                                             showScrollToTopButton = false
@@ -657,8 +508,7 @@ struct TaskListView: View {
                         }
                         
                         .listStyle(PlainListStyle())
-                        .padding(.leading, -16)
-                        .padding(.trailing, -17)
+                        
                         .navigationDestination(item: $selectedTask) { task in
                             TaskView(task: task)
                         }
@@ -676,8 +526,8 @@ struct TaskListView: View {
                     .navigationBarTitleDisplayMode(.inline)
                 }
             }
-            .padding(.trailing, 17)
-            .padding(.leading, 16)
+            
+           
             
             if showPopup, let task = taskToCancel {
                 CancelTaskPopup(task: task, isPresented: $showPopup) { description in
@@ -700,6 +550,187 @@ struct TaskListView: View {
                 }
             }
         }
+        .overlay(alignment: .top) {
+            VStack {
+                HStack {
+                    
+                    Button(action: {
+                        showFilters = true
+                    }) {
+                        Image(filterIcon)
+                            .font(.system(size: 30, weight: .regular))
+                            .foregroundStyle(.pitchBlack)
+                            .ifAvailableButtonStyleGlass()
+                    }
+                    .padding(.leading, 8)
+                    .padding(.trailing, 5)
+                    
+                    ZStack {
+                        Image("calendar")
+                            .frame(width: 30, height: 30)
+                            .ifAvailableButtonStyleGlass()
+                        
+                        DatePicker("",
+                                   selection: $selectedDate,
+                                   displayedComponents: .date
+                        )
+                        .labelsHidden()
+                        .datePickerStyle(.compact)
+                        .blendMode(.destinationOver)
+                        .frame(width: 30, height: 30)
+                        .contentShape(Rectangle())
+                    }
+                    
+                    
+                    Spacer()
+                    
+                    if !networkMonitor.isOnline {
+                        HStack {
+                            
+                            Text("Нет сети, работа оффлайн")
+                                .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                .foregroundColor(.secondary)
+                            Image(systemName: "wifi.slash")
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(height: 15)
+                        
+                    } else {
+                        switch syncService.phase {
+                        case .syncing:
+                            HStack {
+                                
+                                Text("синхронизация")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                Image("sync")
+                                    .resizable()
+                                    .frame(width: 13.55, height: 15)
+                                    .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                                    .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
+                                    .onAppear { isSpinning = true }
+                                    .onDisappear { isSpinning = false }
+                            }
+                            .frame(height: 15)
+                            
+                        case .success:
+                            HStack {
+                                
+                                Text("синхронизировано")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                Image("syncCompleted")
+                                    .resizable()
+                                    .frame(width: 13.55, height: 15)
+                            }
+                            .frame(height: 15)
+                            
+                        case .failure:
+                            HStack {
+                                
+                                Text("ошибка синхронизации")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                Image("syncError")
+                                    .resizable()
+                                    .frame(width: 13.55, height: 15)
+                            }
+                            .frame(height: 15)
+                            
+                        case .idle:
+                            // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
+                            Spacer().frame(height: 15)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    
+                    Button(action: {
+                        showNewTaskView = true
+                    }) {
+                        Image("plus")
+                            .frame(width: 30, height: 30)
+                            .foregroundStyle(.pitchBlack)
+                            .padding(.trailing, 5)
+                        
+                    }
+                }
+                
+                .padding(.horizontal, 16)
+                
+                HStack {
+                    HStack {
+                        Image("magnifyingGlass")
+                            .resizable()
+                            .frame(width: 21, height: 21)
+                            .foregroundColor(Color.custom(.pitchBlack))
+                            .padding(.leading, 20)
+                        
+                        TextField("Поиск задания", text: $viewModel.searchText)
+                            .font(.custom(Montserrat.regular.rawValue, size: 16))
+                            .onChange(of: viewModel.searchText) { newValue in
+                                print("[TaskListView] searchText changed:", newValue)
+                            }
+                            .onSubmit {
+                                hideKeyboard()
+                            }
+                        
+                        
+                        Button(action:  {
+                            viewModel.searchText = ""
+                            
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .resizable()
+                                .frame(width: 18, height: 18)
+                            
+                        }
+                        .opacity(viewModel.searchText.isEmpty ? 0 : 1)
+                        .padding(.trailing, 15)
+                    }
+                    
+                    .frame(height: 50)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .overlay(
+                        Capsule().stroke(Color.white.opacity(0.25), lineWidth: 1)
+                    )
+                    .shadow(radius: 10, y: 6)
+                    
+                    if !viewModel.searchText.isEmpty {
+                        Button(action:  {
+                            viewModel.searchText = ""
+                            hideKeyboard()
+                        }) {
+                            Image(systemName: "xmark.circle")
+                                .resizable()
+                                .frame(width: 45, height: 45)
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                        }
+                    }
+                }
+                .padding(.top, 10)
+                .padding(.horizontal, 16)
+            }
+            .padding(.top, 50)
+            .padding(.bottom, 10)
+            .background {
+                // material blur that fades out with a vertical gradient
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .mask(
+                        LinearGradient(
+                            stops: [
+                                .init(color: .black, location: 0.0),
+                                .init(color: .black, location: 0.35),
+                                .init(color: .clear, location: 1.0)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            }
+            .ignoresSafeArea(edges: .top)
+        }
+        
     }
     
     var body: some View {

@@ -25,6 +25,11 @@ struct TaskRow: View {
     
     let task: TaskEntity
     
+    private var adaptiveHeight: CGFloat {
+        DeviceLayout.taskCardHeight(for: UIScreen.main.bounds.width)
+    }
+    
+    
     private var taskAddress: Address? {
         if let address = task.address {
             return address          // адрес, привязанный к задаче
@@ -65,7 +70,7 @@ struct TaskRow: View {
             
         }
         
-        return VStack {
+        return ZStack(alignment: .topLeading) {
             VStack {
                 
                 
@@ -279,16 +284,19 @@ struct TaskRow: View {
                
             }
            
-            //Конец вертикального стека UI Элементов
+                    .padding(.leading, 20)
+                    .padding(.trailing, 10)
             
         }
-      
-        .padding(.leading, 20)
-        .padding(.trailing, 10)
+        
+
         .background(
             Image(statusImage)
-                .resizable()
-                        .scaledToFill()
+                .resizable(
+                    resizingMode: .stretch
+                )
+                .frame(maxWidth: .infinity)
+                       .frame(height: 177)
         )
        
  
