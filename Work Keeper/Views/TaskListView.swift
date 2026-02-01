@@ -567,7 +567,8 @@ struct TaskListView: View {
                     
                     ZStack {
                         Image("calendar")
-                            .frame(width: 30, height: 30)
+                            .resizable()
+                            .frame(width: 33, height: 32)
                             .ifAvailableButtonStyleGlass()
                         
                         DatePicker("",
@@ -648,7 +649,8 @@ struct TaskListView: View {
                         showNewTaskView = true
                     }) {
                         Image("plus")
-                            .frame(width: 30, height: 30)
+                            .resizable()
+                            .frame(width: 33, height: 33)
                             .foregroundStyle(.pitchBlack)
                             .padding(.trailing, 5)
                         

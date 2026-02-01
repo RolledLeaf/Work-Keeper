@@ -38,7 +38,7 @@ struct TabBar: View {
                 .tag(2)
             SettingsView()
                 .tabItem {
-                    Image(systemName: "gearshape")
+                    Image(selectedTab == 3 ? "settings" : "settingsInactive")
                     Text("Настройки")
                 }
                 .tag(3)

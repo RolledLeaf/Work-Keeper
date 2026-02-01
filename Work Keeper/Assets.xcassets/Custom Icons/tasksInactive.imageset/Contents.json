@@ -6,12 +6,45 @@
       "scale" : "1x"
     },
     {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "tasks tab bar inactive dark 2.svg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
       "filename" : "tasks tab bar inactive 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "tasks tab bar inactive dark 1.svg",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
       "filename" : "tasks tab bar inactive 2.svg",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "tasks tab bar inactive dark.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }

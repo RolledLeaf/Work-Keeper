@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "Stat ico.svg",
+      "filename" : "Stat active 2.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -12,12 +12,12 @@
           "value" : "dark"
         }
       ],
-      "filename" : "Stat ico dark.svg",
+      "filename" : "stat dark 2.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Stat ico 1.svg",
+      "filename" : "Stat active 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
@@ -28,12 +28,12 @@
           "value" : "dark"
         }
       ],
-      "filename" : "Stat ico dark 1.svg",
+      "filename" : "stat dark 1.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Stat ico 2.svg",
+      "filename" : "Stat active.svg",
       "idiom" : "universal",
       "scale" : "3x"
     },
@@ -44,7 +44,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "Stat ico dark 2.svg",
+      "filename" : "stat dark.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }
