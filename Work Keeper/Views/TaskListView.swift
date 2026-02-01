@@ -219,8 +219,8 @@ struct TaskListView: View {
             if viewModel.groupedTasksByDate.isEmpty {
                 Image(ImageResource(name: "noTasksBackgroung", bundle: .main))
                       .resizable()
-                      .scaledToFit()
-                      .opacity(0.03)
+                      .scaledToFill()
+                      
             } else {
                 Color.custom(.mainBackground).ignoresSafeArea()
                     .onTapGesture { hideKeyboard() }
@@ -278,7 +278,7 @@ struct TaskListView: View {
                         .padding(.top, 18)
                         Spacer()
                     }
-                    .padding(.top, 192)
+                    .padding(.top, 255)
                     .padding(.leading, 58)
                     .padding(.trailing, 30)
                 
