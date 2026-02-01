@@ -129,7 +129,14 @@ struct TaskListView: View {
     @State private var scrollProxy: ScrollViewProxy? = nil
     // Height of the header overlay for top padding and blur overlay
     private let headerOverlayHeight: CGFloat = 110
-    
+    private var cellGap: CGFloat {
+        if #available(iOS 26, *) {
+            return 5
+        } else {
+            return 10
+        }
+    }
+
         
     
     
@@ -329,9 +336,11 @@ struct TaskListView: View {
                                             
                                                
                                         }
+                                        .frame(height: 14)
                                         .padding(.leading, 20)
                                         .padding(.trailing, 10)
                                     }
+                                    .frame(height: 1)
                                     .background(
                                         GeometryReader { geo in
                                             Color.clear
@@ -345,7 +354,7 @@ struct TaskListView: View {
                                             .sorted { $0.scheduledAt ?? Date.distantPast < $1.scheduledAt ?? Date.distantPast }
                                     ) { task in
                                        TaskRow(viewModel: viewModel, selectedClient: $selectedClient, task: task)
-                                        .padding(.vertical, 5) // коррекция расстояния между ячейками
+                                        .padding(.vertical, cellGap) // коррекция расстояния между ячейками
 
                                         .onTapGesture {
                                             selectedTask = task
