@@ -85,7 +85,7 @@ final class ClientStore: NSObject, ObservableObject {
     }
     
     func fetchClients(sortedBy keypath: String, ascending: Bool) -> [Client] {
-        print("Fetching and sorting clients...")
+        print("Fetching and sorting clients with \(keypath)...")
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: keypath, ascending: ascending)]
         request.predicate = NSPredicate(format: "deletedAt == nil")

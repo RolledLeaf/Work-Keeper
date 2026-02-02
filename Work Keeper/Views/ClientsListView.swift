@@ -1,94 +1,7 @@
 import SwiftUI
 
 
-struct SortPopoverView: View {
-    
-    @Binding var selection: SortOption
-    @Environment(\.dismiss) private var dismiss
-    
-    var onApply: ((SortOption) -> Void)?
 
-    var body: some View {
-          NavigationStack {
-              VStack {
-                  Text("Упорядочить")
-                      .font(.system(size: 28, weight: .bold))
-                      .padding(.top, 4)
-
-                  // Card container with list-like rows
-                  VStack(spacing: 0) {
-                      ForEach(SortOption.allCases) { option in
-                          Button(action: {
-                              // select item
-                              withAnimation(.easeInOut) {
-                                  selection = option
-                              }
-                          }) {
-                              HStack {
-                                  // label
-                                  Text(option.rawValue)
-                                      .font(.system(size: 20))
-                                      .foregroundColor(.primary)
-                                  Spacer()
-                                  // radio visual
-                                  RadioCircle(isSelected: selection == option)
-                              }
-                              .contentShape(Rectangle())
-                              .padding(.vertical, 18)
-                              .padding(.horizontal, 16)
-                          }
-                          .buttonStyle(.plain)
-
-                          // divider except after last
-                          if option != SortOption.allCases.last {
-                              Divider()
-                                  .padding(.leading, 16)
-                          }
-                      }
-                  }
-                  .background(
-                      RoundedRectangle(cornerRadius: 12)
-                          .fill(Color(.systemGray6))
-                  )
-                  .padding(.horizontal, 16)
-
-                  Spacer(minLength: 10)
-              }
-              .padding(.bottom, 12)
-              .toolbar {
-                  ToolbarItem(placement: .confirmationAction) {
-                      Button("Готово") {
-                          onApply?(selection)
-                          dismiss()
-                      }
-                      .font(.system(size: 17, weight: .semibold))
-                  }
-              }
-          }
-          .presentationDetents([.medium])
-          .presentationCornerRadius(20)
-          .presentationDragIndicator(.visible)
-      }
-  }
-
-
-  struct RadioCircle: View {
-      let isSelected: Bool
-      var body: some View {
-          ZStack {
-              Circle()
-                  .stroke(lineWidth: 2)
-                  .frame(width: 26, height: 26)
-                  .foregroundColor(isSelected ? Color.purple : Color.gray.opacity(0.6))
-              if isSelected {
-                  Circle()
-                      .frame(width: 12, height: 12)
-                      .foregroundColor(Color.purple)
-              }
-          }
-          .animation(.easeInOut(duration: 0.15), value: isSelected)
-      }
-  }
 
 struct ClientsListView: View {
     @State private var showNewClientView = false
@@ -109,7 +22,7 @@ struct ClientsListView: View {
     @State private var clientToDelete: Client?
     @State private var clientToEdit: Client?
     @State private var client: Client?
-    
+   
     
     // MARK: - Sync Objects
     @EnvironmentObject private var syncService: SyncService
@@ -208,9 +121,18 @@ struct ClientsListView: View {
                 VStack {
                     HStack {
                         Button(action: {
-                            showSortOrderMenu = true
+                            switch viewModel.sortSelection {
+                            case .nameAZ:
+                            
+                                viewModel.sortSelection = .nameZA
+                                viewModel.applySort(option: viewModel.sortSelection)
+                            case .nameZA:
+                                
+                                viewModel.sortSelection = .nameAZ
+                                viewModel.applySort(option: viewModel.sortSelection)
+                            }
                         }) {
-                            Image("sortAZ")
+                            Image(viewModel.sortSelection == .nameAZ ? "sortAZ" : "sortZA" )
                                 
                                 
                         }
@@ -383,11 +305,7 @@ struct ClientsListView: View {
             })
         }
         
-        .sheet(isPresented: $showSortOrderMenu) {
-            SortPopoverView(selection: $viewModel.sortSelection) { chosen in
-                viewModel.applySort(option: chosen)
-                       }
-                   }
+        
 
         .onAppear {
             viewModel.loadUserDefaultsAndSort()
@@ -424,7 +342,4 @@ struct ClientsListView: View {
 }
 
 
-#Preview {
-    ClientsListView()
-}
 
