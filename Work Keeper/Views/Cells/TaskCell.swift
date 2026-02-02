@@ -25,11 +25,6 @@ struct TaskRow: View {
     
     let task: TaskEntity
     
-    private var adaptiveHeight: CGFloat {
-        DeviceLayout.taskCardHeight(for: UIScreen.main.bounds.width)
-    }
-    
-    
     private var taskAddress: Address? {
         if let address = task.address {
             return address          // адрес, привязанный к задаче

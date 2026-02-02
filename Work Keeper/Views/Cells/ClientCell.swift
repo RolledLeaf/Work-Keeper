@@ -124,15 +124,19 @@ struct ClientRow: View {
                 .padding(.vertical, 7)
             }
             .frame(height: 100)
-            .frame(maxWidth: .infinity)
+            
             
         }
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-        )
-       
+        .cornerRadius(left: 50, right: 15)
+        .overlay {
+            if #available(iOS 16.0, *) {
+                TwoSideRoundedRectangle(leftRadius: 50, rightRadius: 15)
+                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+            } else {
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+            }
+        }
         
     }
 }

@@ -287,13 +287,6 @@ struct TaskListView: View {
                    
                     NavigationStack {
                         List {
-                            // Top spacer so first visible content is not glued to the top.
-                            Color.clear
-                                .frame(height: headerOverlayHeight)
-                                .listRowSeparator(.hidden)
-                                .listRowBackground(Color.clear)
-                                .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-
                             ForEach(viewModel.groupedTasksByDate.keys.sorted(by: >), id: \.self) { dateKey in
                                 Section(header:
                                     ZStack {
@@ -470,7 +463,10 @@ struct TaskListView: View {
                             }
                             .listRowBackground(Color.custom(.mainBackground))
                         }
-                        
+                        .safeAreaInset(edge: .top) {
+                            Color.clear
+                                .frame(height: headerOverlayHeight)
+                        }
                         .coordinateSpace(name: "taskList")
                         .scrollPosition(id: $listScrollPosition)
                         .onPreferenceChange(SectionHeaderOffsetKey.self) { minY in

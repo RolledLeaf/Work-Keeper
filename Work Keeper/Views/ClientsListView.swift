@@ -110,11 +110,13 @@ struct ClientsListView: View {
     @State private var clientToEdit: Client?
     @State private var client: Client?
     
+    
     // MARK: - Sync Objects
     @EnvironmentObject private var syncService: SyncService
     @EnvironmentObject private var auth: AuthService
 
     
+    private let headerOverlayHeight: CGFloat = 80
     var body: some View {
         
         NavigationStack {
@@ -126,6 +128,84 @@ struct ClientsListView: View {
                     }
                 
                 VStack {
+  
+                    if viewModel.clients.isEmpty {
+                        
+                        VStack {
+                            
+                            Image("noClientsPlaceholder")
+                                .resizable()
+                                .frame(width: 276, height: 268)
+                            
+                            Text("Клиентов пока нет")
+                        }
+                        .padding(.top, 50)
+                        
+                        Spacer()
+                    } else {
+                        
+                        List {
+                            ForEach(viewModel.clientsGroupedByFirstLetter, id: \.letter) { section in
+                                Section(header:
+                                    HStack {
+                                        Rectangle()
+                                            .frame(height: 1)
+                                        Text(section.letter)
+                                            .font(.custom(Montserrat.bold.rawValue, size: 15))
+                                        Rectangle()
+                                            .frame(height: 1)
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 6)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color.clear)
+                                ) {
+                                    ForEach(section.clients) { client in
+                                        ClientRow(client: client, viewModel: viewModel)
+                                            .contentShape(Rectangle())
+                                            .onTapGesture { selectedClient = client }
+                                    }
+                                }
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button(action: {
+                                    showDeleteAlert = true
+                                    clientToDelete = client
+                                }) {
+                                    Image("delete")
+                                    Text("Удалить")
+                                }
+                                .tint(Color.custom(.pureWhite))
+                                
+                                Button(action: {
+                                    clientToEdit = client
+                                    showEditClientView = true
+                                }) {
+                                    Image("edit")
+                                    Text("Редактировать")
+                                }
+                                .tint(Color.custom(.pureWhite))
+                            }
+                            .listRowBackground(Color.custom(.mainBackground))
+                            .listRowSeparator(.hidden)
+                        }
+                        .listStyle(PlainListStyle())
+                        .safeAreaInset(edge: .top) {
+                            // Reserve space for the custom top overlay so pinned section headers
+                            // stop below it instead of sticking to the very top.
+                            Color.clear
+                                .frame(height: headerOverlayHeight)
+                        }
+                        .background(Color.custom(.mainBackground))
+                        .navigationDestination(item: $selectedClient) { client in
+                            ClientProfileView(client: client)
+                        }
+                    }
+                }
+                
+            }
+            .overlay(alignment: .top) {
+                VStack {
                     HStack {
                         Button(action: {
                             showSortOrderMenu = true
@@ -136,6 +216,51 @@ struct ClientsListView: View {
                         }
                         .padding(.leading, 3)
                         
+                        Spacer()
+                        
+                        switch syncService.phase {
+                        case .syncing:
+                            HStack {
+                                Spacer()
+                                Text("синхронизация")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                Image("sync")
+                                    .resizable()
+                                    .frame(width: 13.55, height: 15)
+                                    .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                                    .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
+                                    .onAppear { isSpinning = true }
+                                    .onDisappear { isSpinning = false }
+                            }
+                            
+                            .frame(height: 15)
+
+                        case .success:
+                            HStack {
+                                Spacer()
+                                Text("синхронизировано")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                Image("syncCompleted")
+                                    .resizable()
+                                    .frame(width: 13.55, height: 15)
+                            }
+                            .frame(height: 15)
+
+                        case .failure:
+                            HStack {
+                                Spacer()
+                                Text("ошибка синхронизации")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                Image("syncError")
+                                    .resizable()
+                                    .frame(width: 13.55, height: 15)
+                            }
+                            .frame(height: 15)
+
+                        case .idle:
+                            // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
+                            Spacer().frame(height: 15)
+                        }
                         
                         Spacer()
                         
@@ -198,106 +323,8 @@ struct ClientsListView: View {
                             
                         }
                     }
-                    .padding(.horizontal, 20)
-                    
-                    switch syncService.phase {
-                    case .syncing:
-                        HStack {
-                            Spacer()
-                            Text("синхронизация")
-                                .font(.custom(Montserrat.regular.rawValue, size: 11))
-                            Image("sync")
-                                .resizable()
-                                .frame(width: 13.55, height: 15)
-                                .rotationEffect(.degrees(isSpinning ? 360 : 0))
-                                .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
-                                .onAppear { isSpinning = true }
-                                .onDisappear { isSpinning = false }
-                        }
-                        
-                        .frame(height: 15)
-
-                    case .success:
-                        HStack {
-                            Spacer()
-                            Text("синхронизировано")
-                                .font(.custom(Montserrat.regular.rawValue, size: 11))
-                            Image("syncCompleted")
-                                .resizable()
-                                .frame(width: 13.55, height: 15)
-                        }
-                        .frame(height: 15)
-
-                    case .failure:
-                        HStack {
-                            Spacer()
-                            Text("ошибка синхронизации")
-                                .font(.custom(Montserrat.regular.rawValue, size: 11))
-                            Image("syncError")
-                                .resizable()
-                                .frame(width: 13.55, height: 15)
-                        }
-                        .frame(height: 15)
-
-                    case .idle:
-                        // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
-                        Spacer().frame(height: 15)
-                    }
-                    
-                    if viewModel.clients.isEmpty {
-                        
-                        VStack {
-                            
-                            Image("noClientsPlaceholder")
-                                .resizable()
-                                .frame(width: 276, height: 268)
-                            
-                            Text("Клиентов пока нет")
-                        }
-                        .padding(.top, 50)
-                        
-                        Spacer()
-                    } else {
-                        
-                        List(viewModel.clients) { client in
-                            ClientRow(client: client, viewModel: viewModel)
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    selectedClient = client
-                                }
-                                .swipeActions(edge: .trailing) {
-                                    Button(action: {
-                                        showDeleteAlert = true
-                                        clientToDelete = client
-                                    }) {
-                                        Image("delete")
-                                        Text("Удалить")
-                                    }
-                                    .tint(Color.custom(.pureWhite))
-                                    
-                                    Button(action: {
-                                        clientToEdit = client
-                                        showEditClientView = true
-                                    }) {
-                                        Image("edit")
-                                        Text("Редактировать")
-                                    }
-                                    .tint(Color.custom(.pureWhite))
-                                }
-                                .listRowBackground(Color.custom(.mainBackground))
-                                .listRowSeparator(.hidden)
-                                
-                            
-                        }
-                        .listStyle(PlainListStyle())
-                        .background(Color.custom(.mainBackground))
-                        
-                        .navigationDestination(item: $selectedClient) { client in
-                            ClientProfileView(client: client)
-                        }
-                    }
+                    .padding(.horizontal, 16)
                 }
-                
             }
             
         }

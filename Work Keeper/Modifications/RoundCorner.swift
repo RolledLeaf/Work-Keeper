@@ -16,38 +16,8 @@ enum DeviceLayout {
             return 36
         }
     }
-    
-    
-    static func taskCardHeight(for width: CGFloat) -> CGFloat {
-        switch width {
-        case 393: //iPhone 16 Pro, 16, 15 Pro, 15, 14 Pro
-            return 170
-        case 414: //iPhone 11 Pro Max, XS Max, 11, XR, 8 Plus, 7 Plus, 6s Plus, 6 Plus
-            return 170
-        case 428: //iPhone 14 Plus, 13 Pro Max, 12 Pro Max
-            return 170
-        case 390: //iPhone 14, 13 Pro, 13, 12 Pro, 12
-            return 170
-        case 375:  //*iPhone 13 mini, 12 mini, 11 Pro, XS, X, SE (3rd/2nd gen), 8, 7, 6s, 6
-            return 170
-           
-        default:
-            return 170
-        }
-    }
-    
-    static func taskCardWidth(for width: CGFloat) -> CGFloat {
-        switch width {
-        case 414: //iPhone 11 Pro Max, XS Max, 11, XR, 8 Plus, 7 Plus, 6s Plus, 6 Plus
-            return 170
-        case 390: //iPhone 14, 13 Pro, 13, 12 Pro, 12
-            return 173
-        case 375:
-            return 165
-        default:
-            return 175
-        }
-    }
+ 
+
     
     //    iPhone 16 Pro Max / 17 Pro Max: 440 x 956 pt
     //    iPhone 16 Pro / 17 Pro: 402 x 874 pt
@@ -80,10 +50,36 @@ struct RoundedCorner: Shape {
     }
 }
 
+@available(iOS 16.0, *)
+struct TwoSideRoundedRectangle: Shape {
+    var leftRadius: CGFloat
+    var rightRadius: CGFloat
+    var style: RoundedCornerStyle = .continuous
+
+    func path(in rect: CGRect) -> Path {
+        UnevenRoundedRectangle(
+            topLeadingRadius: leftRadius,
+            bottomLeadingRadius: leftRadius,
+            bottomTrailingRadius: rightRadius,
+            topTrailingRadius: rightRadius,
+            style: style
+        )
+        .path(in: rect)
+    }
+}
+
 extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
     }
+
+    @ViewBuilder
+    func cornerRadius(left: CGFloat, right: CGFloat, style: RoundedCornerStyle = .continuous) -> some View {
+        if #available(iOS 16.0, *) {
+            self.clipShape(TwoSideRoundedRectangle(leftRadius: left, rightRadius: right, style: style))
+        } else {
+            // Fallback: round all corners with the smaller radius
+            self.cornerRadius(min(left, right))
+        }
+    }
 }
-
-

@@ -58,7 +58,13 @@ final class ClientsStatViewModel: ObservableObject {
 
 
 final class ClientsListViewModel: ObservableObject {
-    @Published var clients: [Client] = []
+    @Published var clients: [Client] = [] {
+        didSet {
+            rebuildClientsGroupedByFirstLetter()
+        }
+    }
+    /// Секции клиентов по первой букве имени (firstName)
+    @Published var clientsGroupedByFirstLetter: [(letter: String, clients: [Client])] = []
     @Published var selectedClient: Client?
     @Published var pickedAddress: Address?
     @Published var client: Client?
@@ -75,7 +81,7 @@ final class ClientsListViewModel: ObservableObject {
     private let store = ClientStore()
     
     init() {
- 
+        rebuildClientsGroupedByFirstLetter()
         $searchText
             .debounce(for: .milliseconds(250), scheduler: RunLoop.main)
             .removeDuplicates()
@@ -84,6 +90,33 @@ final class ClientsListViewModel: ObservableObject {
                 self.applySearchUsingDB()
             }
             .store(in: &cancellables)
+    }
+    
+    private func rebuildClientsGroupedByFirstLetter() {
+        let grouped = Dictionary(grouping: clients) { client -> String in
+            let name = (client.firstName ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard let first = name.first else { return "#" }
+            return String(first).uppercased()
+        }
+
+        let sortedLetters = grouped.keys.sorted { a, b in
+            a.localizedStandardCompare(b) == .orderedAscending
+        }
+
+        clientsGroupedByFirstLetter = sortedLetters.map { letter in
+            let items = (grouped[letter] ?? []).sorted {
+                let aFirst = ($0.firstName ?? "").localizedLowercase
+                let bFirst = ($1.firstName ?? "").localizedLowercase
+                if aFirst != bFirst { return aFirst < bFirst }
+
+                let aLast = ($0.lastName ?? "").localizedLowercase
+                let bLast = ($1.lastName ?? "").localizedLowercase
+                return aLast < bLast
+            }
+            return (letter: letter, clients: items)
+        }
     }
     
     func pickClientWithNewAddress(_ client: Client) {
