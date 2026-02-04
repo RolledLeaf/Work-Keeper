@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "Stat inactive.svg",
+      "filename" : "Group 896.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -12,12 +12,12 @@
           "value" : "dark"
         }
       ],
-      "filename" : "stat inactive dark 2.svg",
+      "filename" : "Group 893.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Stat inactive 1.svg",
+      "filename" : "Group 897.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
@@ -28,12 +28,12 @@
           "value" : "dark"
         }
       ],
-      "filename" : "stat inactive dark 1.svg",
+      "filename" : "Group 894.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Stat inactive 2.svg",
+      "filename" : "Group 898.svg",
       "idiom" : "universal",
       "scale" : "3x"
     },
@@ -44,7 +44,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "stat inactive dark.svg",
+      "filename" : "Group 895.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }

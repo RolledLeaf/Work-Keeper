@@ -206,7 +206,7 @@ struct ClientsListView: View {
                         Button(action: {
                             showNewClientView = true
                         }) {
-                            Image("plus")
+                            Image("plusClients")
                                 .resizable()
                                 .frame(width: 33, height: 33)
                                 .foregroundStyle(.pitchBlack)

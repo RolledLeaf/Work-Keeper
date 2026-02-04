@@ -18,21 +18,11 @@ struct TasksFilterView: View {
     
     var body: some View {
         VStack {
-            HStack {
-                Spacer()
-                Button(action: {
-                    selectedFilters = [.scheduled, .completed, .canceled]
-                }) {
-                    Text("Выбрать все")
-                        .padding(.trailing, 6)
-                }
-            }
-            
-            
             List {
                 ForEach(allFilters, id: \.self) { status in
                     HStack {
                         Text(status.rawValue)
+                            .font(.custom(Montserrat.regular.rawValue, size: 14))
                         Spacer()
                         
                         
@@ -59,10 +49,10 @@ struct TasksFilterView: View {
                                 .padding(.trailing, 8)
                         }
                     }
-                    .contentShape(Rectangle())
+                   
+//                    .contentShape(Rectangle())
+                   
                     .onTapGesture {
-                        
-                        
                         // Toggle the tapped status
                         if selectedFilters.contains(status) {
                             selectedFilters.remove(status)
@@ -76,11 +66,14 @@ struct TasksFilterView: View {
                         }
                     }
                 }
+              
             }
+            
             .listStyle(.insetGrouped)
             .navigationTitle("Фильтры")
             .padding(.top, 8)
         }
+        
     }
 }
 
@@ -131,6 +124,7 @@ struct TaskListView: View {
     @State private var scrollProxy: ScrollViewProxy? = nil
     // Height of the header overlay for top padding and blur overlay
     private let headerOverlayHeight: CGFloat = 110
+    private let timing = 10.1
     private var cellGap: CGFloat {
         if #available(iOS 26, *) {
             return 5
@@ -569,7 +563,6 @@ struct TaskListView: View {
                             .foregroundStyle(.pitchBlack)
                             
                     }
-                    .ifAvailableButtonStyleGlass()
                     .padding(.leading, 8)
                     .padding(.trailing, 5)
                     
@@ -579,7 +572,6 @@ struct TaskListView: View {
                             .frame(width: 33, height: 33)
                             .foregroundStyle(.pitchBlack)
                     }
-                    .ifAvailableButtonStyleGlass()
                 
                     
                     Spacer()
@@ -645,16 +637,16 @@ struct TaskListView: View {
                     
                     
                     Button(action: {
-                        showNewTaskView = true
+                        
                     }) {
                         Image("plus")
-//                            .resizable()
-//                            .frame(width: 33, height: 33)
+                            .resizable()
+                            .frame(width: 33, height: 33)
                             .foregroundStyle(.pitchBlack)
-//                            .padding(.trailing, 5)
+                            .opacity(0)
                         
                     }
-                    .ifAvailableButtonStyleGlass()
+                    
                 }
                 
                 .padding(.horizontal, 16)
@@ -770,7 +762,7 @@ struct TaskListView: View {
                 viewModel.loadTasks()
                 lastScheduleTaskDescription = viewModel.lastScheduledTaskDescription ?? "Без названия"
                 withAnimation { showScheduleTaskNotification = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
                     withAnimation { showScheduleTaskNotification = false }
                     viewModel.didScheduleTask = false
                 }
@@ -859,7 +851,7 @@ struct TaskListView: View {
                     showScheduleTaskNotification = true
                 }
                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
                     withAnimation(.easeOut(duration: 0.25)) {
                         showScheduleTaskNotification = false
                     }
@@ -880,7 +872,7 @@ struct TaskListView: View {
                 withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                     showEditTaskNotification = true
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
                     withAnimation(.easeOut(duration: 0.25)) {
                         showEditTaskNotification = false
                     }
@@ -914,7 +906,7 @@ struct TaskListView: View {
                 withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                     showCompleteTaskNotification = true
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
                     withAnimation(.easeOut(duration: 0.25)) {
                         showCompleteTaskNotification = false
                     }
@@ -953,7 +945,7 @@ struct TaskListView: View {
                     }
                     .presentationDragIndicator(.visible)
             }
-            .presentationDetents([.fraction(0.45)])
+            .presentationDetents([.fraction(0.39)])
         }
         
         

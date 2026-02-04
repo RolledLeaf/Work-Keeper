@@ -3,29 +3,49 @@ import SwiftUI
 
 struct ScheduleTaskConfirmationView: View {
     @Binding var taskDescription: String
+    let taskTitle = "Задание"
   
     var body: some View {
         VStack(spacing: 8) {
             
             HStack {
+                Text("\(taskTitle)")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                Spacer()
+            }
+            
+            HStack {
                 
+                Text("«")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                +
             Text("\(taskDescription)")
-                    .font(.custom(SFPro.bold.rawValue, size: 20))
+                    .font(.custom(Montserrat.regular.rawValue, size: 17))
                     .foregroundColor(.primary)
-                    .multilineTextAlignment(.center)
+                +
+                Text("»")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                Spacer()
         }
             
-            Text("Запланировано")
-                 .font(.custom(SFPro.regular.rawValue, size: 20))
-                 .foregroundColor(Color.custom(.taskViewYellow))
-                 .multilineTextAlignment(.center)
+            HStack {
+                Text("Запланировано")
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                    .foregroundColor(Color.custom(.taskViewYellow))
+                    .multilineTextAlignment(.center)
+                Spacer()
+            }
+                
         }
         .padding(16)
         .background(Color.custom(.mainBackground).lightened(by: 0.3))
         .cornerRadius(12)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
+           Image("confirmationBackground")
+              
         )
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
         .frame(maxWidth: 340)
@@ -111,7 +131,7 @@ struct EditTaskConfirmationView: View {
             HStack {
                 
             Text("\(taskDescription)")
-                    .font(.custom(SFPro.bold.rawValue, size: 20))
+                    .font(.custom(Montserrat.regular.rawValue, size: 17))
                     .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
         }
@@ -143,7 +163,7 @@ struct CompleteTaskConfirmationView: View {
             HStack {
                 
             Text("\(taskDescription)")
-                .font(.custom(SFPro.bold.rawValue, size: 20))
+                    .font(.custom(Montserrat.regular.rawValue, size: 17))
                 .foregroundColor(.primary)
                 .multilineTextAlignment(.center)
         }

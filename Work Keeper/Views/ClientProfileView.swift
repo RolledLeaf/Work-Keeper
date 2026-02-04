@@ -6,6 +6,8 @@ struct PrimaryAddressPickMenu: View {
     @Environment(\.managedObjectContext) private var context
     
     @ObservedObject var client: Client
+    @State private var addressToDelete: Address?
+    @State private var showDeleteAddressDialog = false
     
     private var addresses: [Address] {
         client.addressesArray
@@ -51,6 +53,20 @@ struct PrimaryAddressPickMenu: View {
                         }
                     }
                     .buttonStyle(.plain)
+                    .contextMenu {
+                        Button {
+                            setPrimary(address)
+                        } label: {
+                            Label("Сделать основным", systemImage: "checkmark.circle")
+                        }
+
+                        Button(role: .destructive) {
+                            addressToDelete = address
+                            showDeleteAddressDialog = true
+                        } label: {
+                            Label("Удалить адрес", systemImage: "trash")
+                        }
+                    }
                 }
             }
             .listStyle(.insetGrouped)
@@ -60,6 +76,24 @@ struct PrimaryAddressPickMenu: View {
                     Button("Закрыть") {
                         dismiss()
                     }
+                }
+            }
+            .confirmationDialog(
+                "Удалить адрес?",
+                isPresented: $showDeleteAddressDialog,
+                titleVisibility: .visible
+            ) {
+                Button("Удалить", role: .destructive) {
+                    if let addr = addressToDelete {
+                        softDeleteAddress(addr)
+                    }
+                }
+                Button("Отмена", role: .cancel) { }
+            } message: {
+                if let addr = addressToDelete {
+                    Text("Адрес \(addr.street?.name ?? "Улица") \(addr.house ?? "") будет удалён")
+                } else {
+                    Text("Адрес будет удалён")
                 }
             }
         }
@@ -83,6 +117,38 @@ struct PrimaryAddressPickMenu: View {
         }
         
         dismiss()
+    }
+
+    private func softDeleteAddress(_ address: Address) {
+        // Mark as deleted for sync
+        address.deletedAt = Date()
+        address.needsSync = true
+        address.updatedAt = Date()
+
+        // If deleting the primary address, pick a new primary from remaining non-deleted addresses
+        if address.isPrimary {
+            let remaining = client.addressesArray
+                .filter { $0.objectID != address.objectID }
+                .filter { $0.deletedAt == nil }
+
+            if let newPrimary = remaining.first {
+                for addr in remaining {
+                    addr.isPrimary = (addr.objectID == newPrimary.objectID)
+                }
+                newPrimary.isPrimary = true
+            }
+            address.isPrimary = false
+        }
+
+        do {
+            try context.save()
+            context.refresh(client, mergeChanges: true)
+        } catch {
+            print("[PrimaryAddressPickMenu] Failed to delete address:", error)
+        }
+
+        // Reset selection
+        addressToDelete = nil
     }
 }
 

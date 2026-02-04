@@ -245,6 +245,22 @@ struct NewTaskView: View {
         case contractAmount
     }
     
+    func clearAllFields() {
+        viewModel.description = ""
+        viewModel.firstName = ""
+        viewModel.phoneDigits = ""
+        viewModel.streetName = ""
+        viewModel.house = ""
+        viewModel.apartment = ""
+        viewModel.entrance = ""
+        viewModel.floor = ""
+        viewModel.contractAmountText = ""
+        viewModel.costText = ""
+        viewModel.isRemote = false
+        viewModel.isPrivateHouse = false
+        viewModel.scheduledAt = Date()
+    }
+    
     private func missingRequiredFieldsMessage() -> String? {
         var missing: [String] = []
         
@@ -957,18 +973,15 @@ struct NewTaskView: View {
                         )
                     .padding(.horizontal, 4)
                     
-                    
-             
-                    
-                    
+ 
                     HStack {
                         Button(action: {
-                            dismiss()
+                            clearAllFields()
                         }) {
                             ZStack {
                                 Rectangle()
                                     .tint(Color.custom(.taskCanceledOrange))
-                                Text("Отмена")
+                                Text("Очистить")
                                     .foregroundStyle(Color.custom(.pitchBlack))
                             }
                         }
@@ -985,7 +998,7 @@ struct NewTaskView: View {
                             } else {
                                 viewModel.saveTask()
                                 onComplete?(viewModel.description)
-                                dismiss()
+                            
                             }
                         }) {
                             ZStack {

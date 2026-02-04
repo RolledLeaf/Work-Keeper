@@ -369,8 +369,8 @@ final class EditClientViewModel: ObservableObject {
     @Published var phoneDigits: String = ""
     @Published var comment: String
     
-    let roomTypes = ["кв.", "оф.", "каб."]
-    let entranceTypes = ["под.", "вход."]
+    let roomTypes = ["кв", "оф", "каб"]
+    let entranceTypes = ["под", "вход"]
     
     private let client: Client
     private let store = ClientStore()

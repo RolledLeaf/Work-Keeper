@@ -297,8 +297,8 @@ final class CreateTaskViewModel: ObservableObject {
         contractAmount - (cost ?? 0)
     }
   
-    let roomTypes = ["кв.", "оф.", "каб."]
-    let entranceTypes = ["под.", "вход."]
+    let roomTypes = ["кв", "оф", "каб"]
+    let entranceTypes = ["под", "вход"]
     
     private let streetStore = StreetStore()
     private let addressStore = AddressStore()
@@ -541,8 +541,8 @@ final class EditTaskViewModel: ObservableObject {
     @Published  var roomType: String?
     @Published  var entranceType: String?
     
-    let roomTypes = ["кв.", "оф.", "каб."]
-    let entranceTypes = ["под.", "вход."]
+    let roomTypes = ["кв", "оф", "каб"]
+    let entranceTypes = ["под", "вход"]
     
     // MARK: - Computed Numeric Values
 
