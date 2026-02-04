@@ -283,16 +283,17 @@ struct TaskRow: View {
                     .padding(.trailing, 10)
             
         }
-        
-
         .background(
             Image(statusImage)
                 .resizable(
                     resizingMode: .stretch
+                    
                 )
                 .frame(maxWidth: .infinity)
                        .frame(height: 177)
+                       
         )
+        
        
  
         .overlay(alignment: .center) {

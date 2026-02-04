@@ -27,6 +27,7 @@ struct ClientsListView: View {
     // MARK: - Sync Objects
     @EnvironmentObject private var syncService: SyncService
     @EnvironmentObject private var auth: AuthService
+    @EnvironmentObject private var networkMonitor: NetworkMonitor
 
     
     private let headerOverlayHeight: CGFloat = 80
@@ -133,72 +134,89 @@ struct ClientsListView: View {
                             }
                         }) {
                             Image(viewModel.sortSelection == .nameAZ ? "sortAZ" : "sortZA" )
+                                .resizable()
+                                .frame(width: 30, height: 30)
                                 
                                 
                         }
-                        .padding(.leading, 3)
+//                        .padding(.leading, 3)
                         
                         Spacer()
                         
-                        switch syncService.phase {
-                        case .syncing:
-                            HStack {
-                                Spacer()
-                                Text("синхронизация")
+                        if !networkMonitor.isOnline {
+                            HStack(alignment: .center ) {
+                                
+                                Text("Нет сети, работа оффлайн")
                                     .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                Image("sync")
-                                    .resizable()
-                                    .frame(width: 13.55, height: 15)
-                                    .rotationEffect(.degrees(isSpinning ? 360 : 0))
-                                    .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
-                                    .onAppear { isSpinning = true }
-                                    .onDisappear { isSpinning = false }
+                                    .foregroundColor(.secondary)
+                                Image(systemName: "wifi.slash")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.secondary)
                             }
+                            .frame(height: 15)
                             
-                            .frame(height: 15)
-
-                        case .success:
-                            HStack {
-                                Spacer()
-                                Text("синхронизировано")
-                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                Image("syncCompleted")
-                                    .resizable()
-                                    .frame(width: 13.55, height: 15)
+                            
+                        } else {
+                            
+                            switch syncService.phase {
+                            case .syncing:
+                                HStack {
+                                   
+                                    Text("синхронизация")
+                                        .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                    Image("sync")
+                                        .resizable()
+                                        .frame(width: 13.55, height: 15)
+                                        .rotationEffect(.degrees(isSpinning ? 360 : 0))
+                                        .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
+                                        .onAppear { isSpinning = true }
+                                        .onDisappear { isSpinning = false }
+                                }
+                                
+                                .frame(height: 15)
+                                
+                            case .success:
+                                HStack {
+                                   
+                                    Text("синхронизировано")
+                                        .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                    Image("syncCompleted")
+                                        .resizable()
+                                        .frame(width: 13.55, height: 15)
+                                }
+                                .frame(height: 15)
+                                
+                            case .failure:
+                                HStack {
+                                   
+                                    Text("ошибка синхронизации")
+                                        .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                    Image("syncError")
+                                        .resizable()
+                                        .frame(width: 13.55, height: 15)
+                                }
+                                .frame(height: 15)
+                                
+                            case .idle:
+                                // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
+                                Spacer().frame(height: 15)
                             }
-                            .frame(height: 15)
-
-                        case .failure:
-                            HStack {
-                                Spacer()
-                                Text("ошибка синхронизации")
-                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                Image("syncError")
-                                    .resizable()
-                                    .frame(width: 13.55, height: 15)
-                            }
-                            .frame(height: 15)
-
-                        case .idle:
-                            // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
-                            Spacer().frame(height: 15)
                         }
-                        
                         Spacer()
                         
                         Button(action: {
                             showNewClientView = true
                         }) {
                             Image("plus")
-                                .frame(width: 30, height: 30)
+                                .resizable()
+                                .frame(width: 33, height: 33)
                                 .foregroundStyle(.pitchBlack)
-                                .padding(.trailing, 5)
                                 .ifAvailableButtonStyleGlass()
                         }
                         
                     }
                     
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, 36)
                     
                     HStack {
                         HStack {
@@ -227,11 +245,12 @@ struct ClientsListView: View {
                             .padding(.trailing, 15)
                         }
                             .frame(height: 50)
-                            .background(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .fill(Color.custom(.searchFieldGray))
-                                )
-                            .ifAvailableGlassStyle(in: .capsule, interactive: true)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .overlay(
+                                Capsule().stroke(Color.white.opacity(0.25), lineWidth: 1)
+                            )
+                            .shadow(radius: 10, y: 6)
+                           
                         if !viewModel.searchText.isEmpty {
                             Button(action:  {
                                 viewModel.searchText = ""
@@ -246,6 +265,7 @@ struct ClientsListView: View {
                         }
                     }
                     .padding(.horizontal, 16)
+                    .padding(.top, 13)
                 }
             }
             

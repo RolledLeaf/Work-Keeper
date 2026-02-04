@@ -109,6 +109,8 @@ struct TaskListView: View {
     @State private var showPopup = false
     @State private var navigateToTaskView = false
     @State private var isSpinning = false
+    @State private var showDatePickerSheet = false
+    @State private var draftDate = Date()
     @State private var syncReloadTask: Task<Void, Never>? = nil
     
     @State private var headerBaselineMinY: CGFloat? = nil
@@ -137,10 +139,6 @@ struct TaskListView: View {
         }
     }
 
-        
-    
-    
-    
     private var filterIcon: ImageResource {
        
         let all: Set<Status> = [.scheduled, .completed, .canceled]
@@ -178,8 +176,6 @@ struct TaskListView: View {
         
        
             return .init(name: "filterScheduledCompleted", bundle: .main)
-    
-    
     }
    
     let customDateFormatter: DateFormatter = DateFormatter.taskDateFormatter
@@ -198,6 +194,11 @@ struct TaskListView: View {
             viewModel.selectedFilters = [.scheduled, .completed, .canceled]
             viewModel.selectedStatuses = nil
         }
+    }
+    
+    private func openDatePicker() {
+        draftDate = selectedDate
+        showDatePickerSheet = true
     }
 
     func scrollToTop() {
@@ -563,30 +564,23 @@ struct TaskListView: View {
                         showFilters = true
                     }) {
                         Image(filterIcon)
-                            .font(.system(size: 30, weight: .regular))
+                            .resizable()
+                            .frame(width: 33, height: 33)
                             .foregroundStyle(.pitchBlack)
-                            .ifAvailableButtonStyleGlass()
+                            
                     }
+                    .ifAvailableButtonStyleGlass()
                     .padding(.leading, 8)
                     .padding(.trailing, 5)
                     
-                    ZStack {
+                    Button(action: openDatePicker) {
                         Image("calendar")
                             .resizable()
-                            .frame(width: 33, height: 32)
-                            .ifAvailableButtonStyleGlass()
-                        
-                        DatePicker("",
-                                   selection: $selectedDate,
-                                   displayedComponents: .date
-                        )
-                        .labelsHidden()
-                        .datePickerStyle(.compact)
-                        .blendMode(.destinationOver)
-                        .frame(width: 30, height: 30)
-                        .contentShape(Rectangle())
+                            .frame(width: 33, height: 33)
+                            .foregroundStyle(.pitchBlack)
                     }
-                    
+                    .ifAvailableButtonStyleGlass()
+                
                     
                     Spacer()
                     
@@ -654,12 +648,13 @@ struct TaskListView: View {
                         showNewTaskView = true
                     }) {
                         Image("plus")
-                            .resizable()
-                            .frame(width: 33, height: 33)
+//                            .resizable()
+//                            .frame(width: 33, height: 33)
                             .foregroundStyle(.pitchBlack)
-                            .padding(.trailing, 5)
+//                            .padding(.trailing, 5)
                         
                     }
+                    .ifAvailableButtonStyleGlass()
                 }
                 
                 .padding(.horizontal, 16)
@@ -821,6 +816,36 @@ struct TaskListView: View {
             }
         }
         
+        .sheet(isPresented: $showDatePickerSheet) {
+            NavigationStack {
+                VStack(spacing: 8) {
+                    DatePicker(
+                        "",
+                        selection: $draftDate,
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+                    .padding(.horizontal, 16)
+
+                    Spacer()
+                }
+                .navigationTitle("Выберите дату")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Отмена") { showDatePickerSheet = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Готово") {
+                            selectedDate = draftDate
+                            showDatePickerSheet = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.fraction(0.52)])
+        }
         
         
         .sheet(isPresented: $showNewTaskView, onDismiss: {
