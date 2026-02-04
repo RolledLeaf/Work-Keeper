@@ -7,7 +7,6 @@ struct ClientsListView: View {
     @State private var showNewClientView = false
     @State private var showDeleteAlert = false
     @State private var showSortOrderMenu = false
-    @State private var showEditClientView = false
     @State private var showAddClientNotification = false
     @State private var showDeleteClientNotification = false
     @State private var showEditClientNotification = false
@@ -78,27 +77,27 @@ struct ClientsListView: View {
                                         ClientRow(client: client, viewModel: viewModel)
                                             .contentShape(Rectangle())
                                             .onTapGesture { selectedClient = client }
+                                            .swipeActions(edge: .trailing) {
+                                                Button {
+                                                    clientToDelete = client
+                                                    showDeleteAlert = true
+                                                } label: {
+                                                    Image("delete")
+                                                    Text("Удалить")
+                                                }
+                                                .tint(Color.custom(.pureWhite))
+
+                                                Button {
+                                                    clientToEdit = client
+                                                    // Edit uses the `.sheet(item: $clientToEdit, ...)` below
+                                                } label: {
+                                                    Image("edit")
+                                                    Text("Редактировать")
+                                                }
+                                                .tint(Color.custom(.pureWhite))
+                                            }
                                     }
                                 }
-                            }
-                            .swipeActions(edge: .trailing) {
-                                Button(action: {
-                                    showDeleteAlert = true
-                                    clientToDelete = client
-                                }) {
-                                    Image("delete")
-                                    Text("Удалить")
-                                }
-                                .tint(Color.custom(.pureWhite))
-                                
-                                Button(action: {
-                                    clientToEdit = client
-                                    showEditClientView = true
-                                }) {
-                                    Image("edit")
-                                    Text("Редактировать")
-                                }
-                                .tint(Color.custom(.pureWhite))
                             }
                             .listRowBackground(Color.custom(.mainBackground))
                             .listRowSeparator(.hidden)
@@ -352,7 +351,9 @@ struct ClientsListView: View {
                 syncService.runManualSync(auth: auth, debug: true)
             }
                 
-            Button("Нет", role: .cancel) {}
+            Button("Нет", role: .cancel) {
+                
+            }
         } message: { client in
             Text("Клиент \(client.firstName ?? "имя не указано") будет удалён")
         }

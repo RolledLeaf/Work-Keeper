@@ -149,10 +149,7 @@ struct ClientProfileView: View {
                             let clientName = client.firstName
                             lastDeletedClientName = clientName ?? "Неизвестный клиент"
                             viewModel.delete(client)
-                            
-                          
-                            
-                           
+
                             syncService.runManualSync(auth: auth, debug: true)
                        
                             UINotificationFeedbackGenerator().notificationOccurred(.warning)
