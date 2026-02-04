@@ -1007,3 +1007,19 @@ struct TaskListView: View {
 }
 
 
+//ZStack {
+//                      Image("calendar")
+//                          .resizable()
+//                          .frame(width: 33, height: 32)
+//                          .ifAvailableButtonStyleGlass()
+//                      
+//                      DatePicker("",
+//                                 selection: $selectedDate,
+//                                 displayedComponents: .date
+//                      )
+//                      .labelsHidden()
+//                      .datePickerStyle(.compact)
+//                      .blendMode(.destinationOver)
+//                      .frame(width: 30, height: 30)
+//                      .contentShape(Rectangle())
+//                  }
