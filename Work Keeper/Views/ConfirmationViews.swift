@@ -1,15 +1,28 @@
 import SwiftUI
 
+enum ConfirmationStrings: String {
+    case title = "Задание"
+    case scheduled = "Запланировано"
+    case deleted = "Удалено"
+    case completed = "Выполнено"
+    case canceled = "Отменено"
+    case edited = "Изменено"
+    case clientTitle = "Клиент"
+    case clientDeleted = "Удален"
+    
+}
+ 
 
 struct ScheduleTaskConfirmationView: View {
     @Binding var taskDescription: String
-    let taskTitle = "Задание"
+ 
   
     var body: some View {
+        ZStack {
         VStack(spacing: 8) {
             
             HStack {
-                Text("\(taskTitle)")
+                Text("\(ConfirmationStrings.title.rawValue)")
                     .foregroundStyle(Color.custom(.mainBlack))
                     .font(.custom(Montserrat.extraBold.rawValue, size: 24))
                 Spacer()
@@ -21,64 +34,80 @@ struct ScheduleTaskConfirmationView: View {
                     .foregroundStyle(Color.custom(.mainBlack))
                     .font(.custom(Montserrat.extraBold.rawValue, size: 17))
                 +
-            Text("\(taskDescription)")
+                Text("\(taskDescription)")
                     .font(.custom(Montserrat.regular.rawValue, size: 17))
-                    .foregroundColor(.primary)
+                    .foregroundColor(Color.custom(.mainBlack))
                 +
                 Text("»")
                     .foregroundStyle(Color.custom(.mainBlack))
                     .font(.custom(Montserrat.extraBold.rawValue, size: 17))
                 Spacer()
-        }
+            }
             
             HStack {
-                Text("Запланировано")
+                Text("\(ConfirmationStrings.scheduled.rawValue)")
                     .font(.custom(Montserrat.extraBold.rawValue, size: 24))
                     .foregroundColor(Color.custom(.taskViewYellow))
                     .multilineTextAlignment(.center)
                 Spacer()
             }
-                
+           
         }
         .padding(16)
-        .background(Color.custom(.mainBackground).lightened(by: 0.3))
-        .cornerRadius(12)
-        .overlay(
-           Image("confirmationBackground")
-              
-        )
+       
+    }
+        .background(Image("confirmationBackground"))
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
 
 struct CancelTaskConfirmationView: View {
     @Binding var taskDescription: String
+ 
   
     var body: some View {
+        ZStack {
         VStack(spacing: 8) {
             
             HStack {
-                
-            Text("\(taskDescription)")
-                    .font(.custom(SFPro.bold.rawValue, size: 20))
-                    .foregroundColor(.primary)
-                    .multilineTextAlignment(.center)
-        }
+                Text("\(ConfirmationStrings.title.rawValue)")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                Spacer()
+            }
             
-            Text("Отменено")
-                 .font(.custom(SFPro.regular.rawValue, size: 20))
-                 .foregroundColor(Color.custom(.taskCanceledOrange))
-                 .multilineTextAlignment(.center)
+            HStack {
+                
+                Text("«")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                +
+                Text("\(taskDescription)")
+                    .font(.custom(Montserrat.regular.rawValue, size: 17))
+                    .foregroundColor(Color.custom(.mainBlack))
+                +
+                Text("»")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                Spacer()
+            }
+            
+            HStack {
+                Text("\(ConfirmationStrings.canceled.rawValue)")
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                    .foregroundColor(Color.custom(.taskCanceledOrange))
+                    .multilineTextAlignment(.center)
+                Spacer()
+            }
         }
         .padding(16)
-        .background(Color.custom(.mainBackground).lightened(by: 0.3))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
-        )
+       
+    }
+        .background(Image("confirmationBackground"))
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
@@ -86,69 +115,98 @@ struct CancelTaskConfirmationView: View {
 
 struct DeleteTaskConfirmationView: View {
     @Binding var taskDescription: String
+ 
   
     var body: some View {
+        ZStack {
         VStack(spacing: 8) {
             
             HStack {
-                
-            Text("\(taskDescription)")
-                    .font(.custom(SFPro.bold.rawValue, size: 20))
-                    .foregroundColor(.primary)
-                    .multilineTextAlignment(.center)
-        }
-            
-            HStack {
-                Text("Удалено")
-                    .font(.custom(SFPro.regular.rawValue, size: 20))
-                    .foregroundColor(Color.custom(.costPaymentRed))
-                Image(systemName: "xmark.bin")
-                    .resizable()
-                    .frame(width: 20, height: 20)
-                    .padding(.leading, 5)
-                    .foregroundStyle(.costPaymentRed)
+                Text("\(ConfirmationStrings.title.rawValue)")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                Spacer()
             }
             
+            HStack {
+                
+                Text("«")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                +
+                Text("\(taskDescription)")
+                    .font(.custom(Montserrat.regular.rawValue, size: 17))
+                    .foregroundColor(Color.custom(.mainBlack))
+                +
+                Text("»")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                Spacer()
+            }
+            
+            HStack {
+                Text("\(ConfirmationStrings.deleted.rawValue)")
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                    .foregroundColor(Color.custom(.costPaymentRed))
+                    .multilineTextAlignment(.center)
+                Spacer()
+            }
         }
         .padding(16)
-        .background(Color.custom(.mainBackground).lightened(by: 0.3))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
-        )
+       
+    }
+        .background(Image("confirmationBackground"))
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
 
 struct EditTaskConfirmationView: View {
     @Binding var taskDescription: String
-  
+    
+    
     var body: some View {
-        VStack(spacing: 8) {
-            
-            HStack {
+        ZStack {
+            VStack(spacing: 8) {
                 
-            Text("\(taskDescription)")
-                    .font(.custom(Montserrat.regular.rawValue, size: 17))
-                    .foregroundColor(.primary)
-                    .multilineTextAlignment(.center)
-        }
+                HStack {
+                    Text("\(ConfirmationStrings.title.rawValue)")
+                        .foregroundStyle(Color.custom(.mainBlack))
+                        .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                    Spacer()
+                }
+                
+                HStack {
+                    
+                    Text("«")
+                        .foregroundStyle(Color.custom(.mainBlack))
+                        .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                    +
+                    Text("\(taskDescription)")
+                        .font(.custom(Montserrat.regular.rawValue, size: 17))
+                        .foregroundColor(Color.custom(.mainBlack))
+                    +
+                    Text("»")
+                        .foregroundStyle(Color.custom(.mainBlack))
+                        .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                    Spacer()
+                }
+                
+                HStack {
+                    Text("\(ConfirmationStrings.edited.rawValue)")
+                        .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                        .foregroundColor(Color.custom(.deepBlue))
+                        .multilineTextAlignment(.center)
+                    Spacer()
+                }
+            }
+            .padding(16)
             
-            Text("Отредактировано")
-                 .font(.custom(SFPro.regular.rawValue, size: 20))
-                 .foregroundColor(Color.custom(.textTitleGray))
-                 .multilineTextAlignment(.center)
         }
-        .padding(16)
-        .background(Color.custom(.mainBackground).lightened(by: 0.3))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
-        )
+        .background(Image("confirmationBackground"))
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
@@ -156,36 +214,52 @@ struct EditTaskConfirmationView: View {
 struct CompleteTaskConfirmationView: View {
     @Binding var taskDescription: String
     @Binding var finalAmount: Double
+    let confirmationTitle = "Задание"
    
     var body: some View {
+        ZStack {
         VStack(spacing: 8) {
+            HStack {
+                Text("\(confirmationTitle)")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                Spacer()
+            }
+            
             
             HStack {
-                
-            Text("\(taskDescription)")
+                Text("«")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                +
+                Text("\(taskDescription)")
                     .font(.custom(Montserrat.regular.rawValue, size: 17))
-                .foregroundColor(.primary)
-                .multilineTextAlignment(.center)
-        }
-            
-            Text("Выполнено")
-                 .font(.custom(SFPro.regular.rawValue, size: 20))
-                 .foregroundColor(.primary)
-
+                    .foregroundColor(.primary)
+                +
+                Text("»")
+                    .foregroundStyle(Color.custom(.mainBlack))
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 17))
+                Spacer()
+            }
+            HStack {
+                Text("Выполнено")
+                    .font(.custom(Montserrat.extraBold.rawValue, size: 24))
+                    .foregroundColor(Color.custom(.taskCompleteGreen))
+                
                 
                 Text("\(finalAmount > 0 ? "+" : "") \(finalAmount.formattedCurrency())")
                     .font(.custom(SFPro.bold.rawValue, size: 25))
-                    .foregroundColor(finalAmount > 0 ? Color(CustomColor.extraPaymentGreen.rawValue) : Color(CustomColor.costPaymentRed.rawValue))
-           
+                    .foregroundColor(finalAmount > 0 ? Color(CustomColor.taskCompleteGreen.rawValue) : Color(CustomColor.costPaymentRed.rawValue))
+                Spacer()
+            }
+            
         }
         .padding(16)
-        .background(Color.custom(.mainBackground).lightened(by: 0.3))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
-        )
+       
+    }
+        .background(Image("confirmationBackground"))
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
@@ -194,9 +268,7 @@ struct CompleteTaskConfirmationView: View {
 
 struct AddClientConfirmationView: View {
     @Binding var name: String
-    
-  
-    
+
     var body: some View {
         VStack(spacing: 8) {
             
@@ -224,6 +296,7 @@ struct AddClientConfirmationView: View {
                 .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
         )
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
@@ -258,6 +331,7 @@ struct EditClientConfirmationView: View {
                 .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
         )
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
@@ -301,6 +375,7 @@ struct DeleteClientConfirmationView: View {
                 .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
         )
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
@@ -335,6 +410,7 @@ struct AddStreetConfirmationView: View {
                 .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
         )
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
@@ -378,6 +454,7 @@ struct DeleteStreetConfirmationView: View {
                 .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
         )
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }
@@ -420,6 +497,7 @@ struct EditStreetConfirmationView: View {
                 .stroke(Color.black.opacity(0.25), lineWidth: 0.5)
         )
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)
+        .frame(height: 170)
         .frame(maxWidth: 340)
     }
 }

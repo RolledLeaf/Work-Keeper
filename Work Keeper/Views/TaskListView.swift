@@ -103,6 +103,7 @@ struct TaskListView: View {
     @State private var navigateToTaskView = false
     @State private var isSpinning = false
     @State private var showDatePickerSheet = false
+    @State private var toastPresented = false
     @State private var draftDate = Date()
     @State private var syncReloadTask: Task<Void, Never>? = nil
     
@@ -123,8 +124,11 @@ struct TaskListView: View {
     // Keep a reference to the ScrollViewProxy for scroll actions
     @State private var scrollProxy: ScrollViewProxy? = nil
     // Height of the header overlay for top padding and blur overlay
+    
+    @Binding var pendingCreatedTaskToast: String?
+    
     private let headerOverlayHeight: CGFloat = 110
-    private let timing = 10.1
+    private let timing = 2.0
     private var cellGap: CGFloat {
         if #available(iOS 26, *) {
             return 5
@@ -539,15 +543,24 @@ struct TaskListView: View {
                     
                     withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                         showCancelTaskNotification = true
+                        toastPresented = true
                     }
                     
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         withAnimation(.easeOut(duration: 0.25)) {
                             showCancelTaskNotification = false
+                            toastPresented = false
                         }
                     }
                     syncService.runManualSync(auth: auth, debug: true)
                 }
+            }
+            
+            if toastPresented {
+                Rectangle()
+                      .fill(.ultraThinMaterial)
+                      .ignoresSafeArea()
+                      .transition(.opacity)
             }
         }
         .overlay(alignment: .top) {
@@ -761,10 +774,14 @@ struct TaskListView: View {
             if newValue {
                 viewModel.loadTasks()
                 lastScheduleTaskDescription = viewModel.lastScheduledTaskDescription ?? "Без названия"
-                withAnimation { showScheduleTaskNotification = true }
+                withAnimation {
+                    showScheduleTaskNotification = true
+                    toastPresented = true
+                }
                 DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
                     withAnimation { showScheduleTaskNotification = false }
                     viewModel.didScheduleTask = false
+                    toastPresented = false
                 }
                 syncService.runManualSync(auth: auth, debug: true)
             }
@@ -840,27 +857,24 @@ struct TaskListView: View {
         }
         
         
-        .sheet(isPresented: $showNewTaskView, onDismiss: {
-            loadSavedStatuses()
-        }) {
-            NewTaskView(onComplete: { description in
-                // тут получаем объект новой задачи
-                lastScheduleTaskDescription = description
-                
-                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
-                    showScheduleTaskNotification = true
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        showScheduleTaskNotification = false
-                    }
-                }
-                
-                viewModel.loadTasks()
+        .onChange(of: pendingCreatedTaskToast) { newValue in
+            guard let description = newValue, !description.isEmpty else { return }
 
-                syncService.runManualSync(auth: auth, debug: true)
-            })
+            lastScheduleTaskDescription = description
+
+            withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+                showScheduleTaskNotification = true
+                toastPresented = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    showScheduleTaskNotification = false
+                    toastPresented = false
+                }
+                pendingCreatedTaskToast = nil // важно: “съедаем” событие
+            }
+            viewModel.loadTasks()
+            loadSavedStatuses()
         }
         
         
@@ -871,10 +885,12 @@ struct TaskListView: View {
                 lastEditedTaskDescription = updatedDescription
                 withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                     showEditTaskNotification = true
+                    toastPresented = true
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
                     withAnimation(.easeOut(duration: 0.25)) {
                         showEditTaskNotification = false
+                        toastPresented = false
                     }
                 }
                 syncService.runManualSync(auth: auth, debug: true)
@@ -899,16 +915,19 @@ struct TaskListView: View {
             CompleteTaskView(viewModel: CompleteTaskViewModel(task: task)) { taskDescription, finalAmount in
                 // обновляем данные и запоминаем данные для тоста
                 viewModel.loadTasks()
+                toastPresented = true
                 //                loadSavedStatuses()
                 lastCompletedTaskDescription = taskDescription
                 lastCompletedFinalAmount = finalAmount
                 
                 withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                     showCompleteTaskNotification = true
+                    toastPresented = true
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
                     withAnimation(.easeOut(duration: 0.25)) {
                         showCompleteTaskNotification = false
+                        toastPresented = false
                     }
                 }
                 syncService.runManualSync(auth: auth, debug: true)
@@ -975,11 +994,13 @@ struct TaskListView: View {
                 
                 withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                     showDeleteTaskNotification = true
+                    toastPresented = true
                 }
                 // Автоскрытие
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                     withAnimation(.easeOut(duration: 0.25)) {
                         showDeleteTaskNotification = false
+                        toastPresented = false
                     }
                 }
                 syncService.runManualSync(auth: auth, debug: true)
@@ -995,7 +1016,7 @@ struct TaskListView: View {
 }
 
 #Preview {
-    TaskListView()
+    TaskListView(pendingCreatedTaskToast: .constant(nil))
 }
 
 

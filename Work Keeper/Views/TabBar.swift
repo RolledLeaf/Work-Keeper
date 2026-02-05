@@ -1,8 +1,19 @@
 
 import SwiftUI
 
+enum AppTab: Hashable {
+    case tasks
+    case newTask
+    case clients
+    case stats
+    case settings
+}
+
+
 struct TabBar: View {
-    @State private var selectedTab = 0
+    
+    @State private var selectedTab: AppTab = .tasks
+    @State private var pendingCreatedTaskToast: String? = nil
     @Environment(\.managedObjectContext) private var context
 
     init() {
@@ -12,47 +23,45 @@ struct TabBar: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            TaskListView()
+            TaskListView(pendingCreatedTaskToast: $pendingCreatedTaskToast)
                 .tabItem {
-                    Image(selectedTab == 0 ? "tasksActive" : "tasksInactive")
-                        .resizable()
-                        .frame(width: 33, height: 33)
+                    Image(selectedTab == AppTab.tasks ? "tasksActive" : "tasksInactive")
+                     
                    
                 }
-                .tag(0)
+                           .tag(AppTab.tasks)
 
             ClientsListView()
                 .tabItem {
-                    Image(selectedTab == 1 ? "clientsActive" : "clientsInactive")
-                        .resizable()
-                        .frame(width: 33, height: 33)
+                    Image(selectedTab == AppTab.clients ? "clientsActive" : "clientsInactive")
+                     
                 }
-                .tag(1)
+                .tag(AppTab.clients)
             
-            NewTaskView()
+            NewTaskView(onComplete: { description in
+                pendingCreatedTaskToast = description
+                selectedTab = .tasks
+            })
                 .tabItem {
-                    Image(selectedTab == 2 ? "plus" : "plusInactive")
-                        .resizable()
-                        .frame(width: 33, height: 33)
+                    Image(selectedTab == AppTab.newTask ? "plus" : "plusInactive")
+                        
                    
                 }
-                .tag(2)
+                .tag(AppTab.newTask)
 
             StatisticsView(context: context)
                 .tabItem {
-                    Image(selectedTab == 3 ? "statsActive" : "statsInactive")
-                        .resizable()
-                        .frame(width: 33, height: 33)
+                    Image(selectedTab == AppTab.stats ? "statsActive" : "statsInactive")
+                       
                    
                 }
-                .tag(3)
+                .tag(AppTab.stats)
             SettingsView()
                 .tabItem {
-                    Image(selectedTab == 4 ? "settings" : "settingsInactive")
-                        .resizable()
-                        .frame(width: 33, height: 33)
+                    Image(selectedTab == AppTab.settings ? "settings" : "settingsInactive")
+                      
                 }
-                .tag(4)
+                .tag(AppTab.settings)
         }
         .tint(Color.custom(.pitchBlack)) // цвет ВЫБРАННОГО таба (иконка + текст)
     }

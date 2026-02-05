@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "filter canceled.svg",
+      "filename" : "Group 841.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -12,12 +12,12 @@
           "value" : "dark"
         }
       ],
-      "filename" : "Group 765.svg",
+      "filename" : "Group 848.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "filter canceled 1.svg",
+      "filename" : "Group 842.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
@@ -28,12 +28,12 @@
           "value" : "dark"
         }
       ],
-      "filename" : "Group 766.svg",
+      "filename" : "Group 849.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "filter canceled 2.svg",
+      "filename" : "Group 843.svg",
       "idiom" : "universal",
       "scale" : "3x"
     },
@@ -44,7 +44,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "Group 767.svg",
+      "filename" : "Group 850.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }
