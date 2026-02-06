@@ -6,10 +6,10 @@ struct SplashView: View {
             Color.custom(.splashBackground).edgesIgnoringSafeArea(.all)
             
             Image("SplashScreen")
-                .resizable()
-                .scaledToFill()
+        
+                .scaledToFit()
                 
-//                .offset(x: -30)
+
             VStack {
    
                 ProgressView("Загрузка…")

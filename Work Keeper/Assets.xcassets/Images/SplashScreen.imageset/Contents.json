@@ -6,12 +6,45 @@
       "scale" : "1x"
     },
     {
-      "filename" : "Splash Screen 1.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Splash Screen dark.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "Splash Screen 2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Splash Screen 2.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Splash Screen dark 2.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "Splash Screen 3.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Splash Screen dark 3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

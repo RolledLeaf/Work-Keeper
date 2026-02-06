@@ -8,6 +8,13 @@ private struct SectionHeaderOffsetKey: PreferenceKey {
     }
 }
 
+private struct TaskToastModel: Identifiable, Equatable {
+    let id = UUID()
+    let kind: TaskToastKind
+    let description: String
+    let finalAmount: Double?
+}
+
 
 // MARK: - Filters
 
@@ -91,11 +98,7 @@ struct TaskListView: View {
     @State private var showNewTaskView = false
     @State private var showCompleteTaskView = false
     @State private var showEditTaskView = false
-    @State private var showCompleteTaskNotification = false
-    @State private var showCancelTaskNotification = false
-    @State private var showScheduleTaskNotification = false
-    @State private var showDeleteTaskNotification = false
-    @State private var showEditTaskNotification = false
+    
     @State private var showSchedulePicker = false
     @State private var showScrollToTopButton = false
     @State private var showFilters = false
@@ -106,13 +109,10 @@ struct TaskListView: View {
     @State private var toastPresented = false
     @State private var draftDate = Date()
     @State private var syncReloadTask: Task<Void, Never>? = nil
+    @State private var taskToast: TaskToastModel? = nil
     
     @State private var headerBaselineMinY: CGFloat? = nil
-    @State private var lastCompletedTaskDescription: String = ""
-    @State private var lastCanceledTaskDescription: String = ""
-    @State private var lastScheduleTaskDescription: String = ""
-    @State private var lastDeletedTaskDescription: String = ""
-    @State private var lastEditedTaskDescription: String = ""
+    
     @State private var lastCompletedFinalAmount: Double = 0.0
     @State private var selectedTask: TaskEntity?
     @State private var selectedClient: Client?
@@ -209,6 +209,23 @@ struct TaskListView: View {
     
     func scrollToToday() {
        selectedDate = Date()
+    }
+    
+    private func presentTaskToast(kind: TaskToastKind, description: String, finalAmount: Double? = nil) {
+        let desc = description.isEmpty ? "Без названия" : description
+
+        taskToast = TaskToastModel(kind: kind, description: desc, finalAmount: finalAmount)
+
+        withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
+            toastPresented = true
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
+            withAnimation(.easeOut(duration: 0.25)) {
+                toastPresented = false
+                taskToast = nil
+            }
+        }
     }
 
     @ViewBuilder
@@ -536,22 +553,10 @@ struct TaskListView: View {
             if showPopup, let task = taskToCancel {
                 CancelTaskPopup(task: task, isPresented: $showPopup) { description in
                     
-                    lastCanceledTaskDescription = description
+                   
                     viewModel.loadTasks()
                     loadSavedStatuses()
-                    
-                    
-                    withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
-                        showCancelTaskNotification = true
-                        toastPresented = true
-                    }
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                        withAnimation(.easeOut(duration: 0.25)) {
-                            showCancelTaskNotification = false
-                            toastPresented = false
-                        }
-                    }
+                    presentTaskToast(kind: .canceled, description: description)
                     syncService.runManualSync(auth: auth, debug: true)
                 }
             }
@@ -736,6 +741,7 @@ struct TaskListView: View {
             }
             .ignoresSafeArea(edges: .top)
         }
+       
         
     }
     
@@ -772,18 +778,11 @@ struct TaskListView: View {
         .onChange(of: viewModel.didScheduleTask) { newValue in
             if newValue {
                 viewModel.loadTasks()
-                lastScheduleTaskDescription = viewModel.lastScheduledTaskDescription ?? "Без названия"
-                withAnimation {
-                    showScheduleTaskNotification = true
-                    toastPresented = true
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
-                    withAnimation { showScheduleTaskNotification = false }
-                    viewModel.didScheduleTask = false
-                    toastPresented = false
-                }
-                syncService.runManualSync(auth: auth, debug: true)
+                let desc = viewModel.lastScheduledTaskDescription ?? "Без названия"
+                presentTaskToast(kind: .scheduled, description: desc)
+                viewModel.didScheduleTask = false
             }
+            syncService.runManualSync(auth: auth, debug: true)
         }
         .overlay(alignment: .bottomTrailing) {
             if showScrollToTopButton {
@@ -805,23 +804,15 @@ struct TaskListView: View {
         
         .overlay(alignment: .center) {
             Group {
-                if showCancelTaskNotification {
-                    CancelTaskConfirmationView(taskDescription: $lastCanceledTaskDescription)
-                        .transition(.offset(y: 40).combined(with: .opacity))
-                } else if showDeleteTaskNotification {
-                    DeleteTaskConfirmationView(taskDescription: $lastDeletedTaskDescription)
-                        .transition(.offset(y: 40).combined(with: .opacity))
-                } else if showEditTaskNotification {
-                    EditTaskConfirmationView(taskDescription: $lastEditedTaskDescription)
-                        .transition(.offset(y: 40).combined(with: .opacity))
-                } else if showCompleteTaskNotification {
-                    CompleteTaskConfirmationView(taskDescription: $lastCompletedTaskDescription, finalAmount: $lastCompletedFinalAmount)
-                        .transition(.offset(y: 40).combined(with: .opacity))
-                } else if showScheduleTaskNotification {
-                    ScheduleTaskConfirmationView(taskDescription: $lastScheduleTaskDescription)
-                        .transition(.offset(y: 40).combined(with: .opacity))
+                if let toast = taskToast {
+                    if let amount = toast.finalAmount {
+                        TaskToastView(kind: toast.kind, taskDescription: toast.description, finalAmount: amount)
+                    } else {
+                        TaskToastView(kind: toast.kind, taskDescription: toast.description)
+                    }
                 }
             }
+            .transition(.offset(y: 40).combined(with: .opacity))
         }
         
         .sheet(isPresented: $showDatePickerSheet) {
@@ -859,19 +850,8 @@ struct TaskListView: View {
         .onChange(of: pendingCreatedTaskToast) { newValue in
             guard let description = newValue, !description.isEmpty else { return }
 
-            lastScheduleTaskDescription = description
-
-            withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
-                showScheduleTaskNotification = true
-                toastPresented = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
-                withAnimation(.easeOut(duration: 0.25)) {
-                    showScheduleTaskNotification = false
-                    toastPresented = false
-                }
-                pendingCreatedTaskToast = nil // важно: “съедаем” событие
-            }
+            presentTaskToast(kind: .scheduled, description: description)
+            pendingCreatedTaskToast = nil
             viewModel.loadTasks()
             loadSavedStatuses()
         }
@@ -881,17 +861,7 @@ struct TaskListView: View {
             loadSavedStatuses()
         }) { task in
             EditTaskView(viewModel: EditTaskViewModel(task: task), onSave: { updatedDescription in
-                lastEditedTaskDescription = updatedDescription
-                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
-                    showEditTaskNotification = true
-                    toastPresented = true
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        showEditTaskNotification = false
-                        toastPresented = false
-                    }
-                }
+                presentTaskToast(kind: .edited, description: updatedDescription)
                 syncService.runManualSync(auth: auth, debug: true)
             })
         }
@@ -912,23 +882,9 @@ struct TaskListView: View {
             loadSavedStatuses()
         }) { task in
             CompleteTaskView(viewModel: CompleteTaskViewModel(task: task)) { taskDescription, finalAmount in
-                // обновляем данные и запоминаем данные для тоста
+                // обновляем данные и запоминаем данные для тост
                 viewModel.loadTasks()
-                toastPresented = true
-                //                loadSavedStatuses()
-                lastCompletedTaskDescription = taskDescription
-                lastCompletedFinalAmount = finalAmount
-                
-                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
-                    showCompleteTaskNotification = true
-                    toastPresented = true
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + timing) {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        showCompleteTaskNotification = false
-                        toastPresented = false
-                    }
-                }
+                presentTaskToast(kind: .completed, description: taskDescription, finalAmount: finalAmount)
                 syncService.runManualSync(auth: auth, debug: true)
             }
         }
@@ -985,23 +941,9 @@ struct TaskListView: View {
             Button("Удалить", role: .destructive) {
                 let desc = task.taskDescription ?? "Без названия"
                 
-                
-                lastDeletedTaskDescription = desc
                 viewModel.delete(task)
                 loadSavedStatuses()
-                
-                
-                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
-                    showDeleteTaskNotification = true
-                    toastPresented = true
-                }
-                // Автоскрытие
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        showDeleteTaskNotification = false
-                        toastPresented = false
-                    }
-                }
+                presentTaskToast(kind: .deleted, description: desc)
                 syncService.runManualSync(auth: auth, debug: true)
                 
             }

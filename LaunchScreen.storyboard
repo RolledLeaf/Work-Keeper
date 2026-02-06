@@ -23,27 +23,29 @@
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SplashScreen" translatesAutoresizingMaskIntoConstraints="NO" id="cLW-zA-eUt">
-                                <rect key="frame" x="0.0" y="210" width="430" height="512"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SplashScreen" translatesAutoresizingMaskIntoConstraints="NO" id="cLW-zA-eUt" userLabel="LoadingScreen">
+                                <rect key="frame" x="0.0" y="0.0" width="430" height="932"/>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                         <color key="backgroundColor" name="splashBackground"/>
                         <constraints>
                             <constraint firstItem="cLW-zA-eUt" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="0vG-Ag-xCl"/>
+                            <constraint firstItem="cLW-zA-eUt" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="5x2-Jl-4Wn"/>
                             <constraint firstItem="cLW-zA-eUt" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" id="Fb6-7k-TQc"/>
                             <constraint firstItem="Bcu-3y-fUS" firstAttribute="trailing" secondItem="cLW-zA-eUt" secondAttribute="trailing" id="IRq-gr-Jhg"/>
+                            <constraint firstAttribute="bottom" secondItem="cLW-zA-eUt" secondAttribute="bottom" id="hCA-Ar-lnr"/>
                             <constraint firstItem="cLW-zA-eUt" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="pfH-Y6-413"/>
                         </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="52.173913043478265" y="374.33035714285711"/>
+            <point key="canvasLocation" x="51.627906976744185" y="374.03433476394855"/>
         </scene>
     </scenes>
     <resources>
-        <image name="SplashScreen" width="341.33334350585938" height="512"/>
+        <image name="SplashScreen" width="393" height="852"/>
         <namedColor name="splashBackground">
             <color red="0.12156862745098039" green="0.20392156862745098" blue="0.29411764705882354" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
