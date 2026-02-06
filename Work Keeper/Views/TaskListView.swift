@@ -561,6 +561,7 @@ struct TaskListView: View {
                       .fill(.ultraThinMaterial)
                       .ignoresSafeArea()
                       .transition(.opacity)
+                      .opacity(0.95)
             }
         }
         .overlay(alignment: .top) {
@@ -572,17 +573,15 @@ struct TaskListView: View {
                     }) {
                         Image(filterIcon)
                             .resizable()
-                            .frame(width: 33, height: 33)
+                            .frame(width: 21, height: 24)
                             .foregroundStyle(.pitchBlack)
-                            
                     }
                     .padding(.leading, 8)
                     .padding(.trailing, 5)
                     
                     Button(action: openDatePicker) {
                         Image("calendar")
-                            .resizable()
-                            .frame(width: 33, height: 33)
+                            
                             .foregroundStyle(.pitchBlack)
                     }
                 

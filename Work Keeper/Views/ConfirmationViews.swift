@@ -19,7 +19,7 @@ struct ScheduleTaskConfirmationView: View {
   
     var body: some View {
         ZStack {
-        VStack(spacing: 8) {
+        VStack(spacing: 15) {
             
             HStack {
                 Text("\(ConfirmationStrings.title.rawValue)")
@@ -69,7 +69,7 @@ struct CancelTaskConfirmationView: View {
   
     var body: some View {
         ZStack {
-        VStack(spacing: 8) {
+        VStack(spacing: 15) {
             
             HStack {
                 Text("\(ConfirmationStrings.title.rawValue)")
@@ -119,7 +119,7 @@ struct DeleteTaskConfirmationView: View {
   
     var body: some View {
         ZStack {
-        VStack(spacing: 8) {
+        VStack(spacing: 15) {
             
             HStack {
                 Text("\(ConfirmationStrings.title.rawValue)")
@@ -168,7 +168,7 @@ struct EditTaskConfirmationView: View {
     
     var body: some View {
         ZStack {
-            VStack(spacing: 8) {
+            VStack(spacing: 15) {
                 
                 HStack {
                     Text("\(ConfirmationStrings.title.rawValue)")
@@ -218,7 +218,7 @@ struct CompleteTaskConfirmationView: View {
    
     var body: some View {
         ZStack {
-        VStack(spacing: 8) {
+        VStack(spacing: 16) {
             HStack {
                 Text("\(confirmationTitle)")
                     .foregroundStyle(Color.custom(.mainBlack))
@@ -270,7 +270,7 @@ struct AddClientConfirmationView: View {
     @Binding var name: String
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 15) {
             
             Text("Клиент ")
                 .font(.custom(SFPro.regular.rawValue, size: 20))
@@ -305,7 +305,7 @@ struct EditClientConfirmationView: View {
     @Binding var name: String
   
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 15) {
             
             
             Text("Клиент ")
@@ -340,7 +340,7 @@ struct DeleteClientConfirmationView: View {
     @Binding var name: String
   
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 15) {
             
             
             
@@ -385,7 +385,7 @@ struct AddStreetConfirmationView: View {
     @Binding var streetName: String
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 15) {
             Text("Адрес")
                 .font(.headline)
                 .foregroundColor(.primary)
@@ -419,7 +419,7 @@ struct DeleteStreetConfirmationView: View {
     @Binding var name: String
   
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 15) {
             
             
             
@@ -465,7 +465,7 @@ struct EditStreetConfirmationView: View {
     
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 15) {
             Text("Адрес")
                 .font(.headline)
                 .foregroundColor(.primary)
