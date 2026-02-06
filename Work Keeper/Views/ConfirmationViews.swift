@@ -34,7 +34,7 @@ struct TaskToastView: View {
 
     var body: some View {
         ZStack {
-            VStack(spacing: 15) {
+            VStack(spacing: 17) {
 
                 HStack {
                     Text("Задание")
@@ -62,7 +62,7 @@ struct TaskToastView: View {
                 .lineLimit(1, reservesSpace: false)
 
                 HStack {
-                    Text(kind.label)
+                    Text(kind.label).textCase(.uppercase)
                         .font(.custom(Montserrat.extraBold.rawValue, size: 24))
                         .foregroundColor(kind.color)
 
@@ -79,7 +79,8 @@ struct TaskToastView: View {
                     Spacer()
                 }
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 18)
         }
         .background(Image("confirmationBackground"))
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 4)

@@ -586,7 +586,8 @@ struct TaskListView: View {
                     
                     Button(action: openDatePicker) {
                         Image("calendar")
-                            
+                            .resizable()
+                            .frame(width: 28.65, height: 25)
                             .foregroundStyle(.pitchBlack)
                     }
                 
