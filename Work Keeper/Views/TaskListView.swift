@@ -15,6 +15,82 @@ private struct TaskToastModel: Identifiable, Equatable {
     let finalAmount: Double?
 }
 
+// MARK: - Empty List Placeholder View
+struct EmptyListPlaceholderView: View {
+    struct HeadlineLine {
+        let text: String
+        let color: Color
+        let font: Font
+        let height: CGFloat
+    }
+
+    let line1: HeadlineLine
+    let line2: HeadlineLine
+
+    // Third line supports a bold suffix like "..."
+    let line3Text: String
+    let line3TextFont: Font
+    let line3Suffix: String
+    let line3SuffixFont: Font
+    let line3Color: Color
+    let line3Height: CGFloat
+
+    let hintText: String
+
+    // Layout tuning (kept as defaults matching current Tasks placeholder)
+    var topPadding: CGFloat = 255
+    var leadingPadding: CGFloat = 58
+    var trailingPadding: CGFloat = 30
+    var hintTopPadding: CGFloat = 10
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(line1.text)
+                    .foregroundStyle(line1.color)
+                    .font(line1.font)
+                Spacer()
+            }
+            .frame(height: line1.height)
+
+            HStack {
+                Text(line2.text)
+                    .foregroundStyle(line2.color)
+                    .font(line2.font)
+                Spacer()
+            }
+            .frame(height: line2.height)
+
+            HStack {
+                (Text(line3Text)
+                    .foregroundStyle(line3Color)
+                    .font(line3TextFont)
+                 +
+                 Text(line3Suffix)
+                    .foregroundStyle(line3Color)
+                    .font(line3SuffixFont)
+                )
+                Spacer()
+            }
+            .frame(height: line3Height)
+
+            HStack {
+                Text(hintText)
+                    .foregroundStyle(Color.custom(.pitchBlack))
+                    .font(.custom(Montserrat.medium.rawValue, size: 12))
+                Spacer()
+            }
+            .frame(height: 30)
+            .padding(.top, hintTopPadding)
+
+            Spacer()
+        }
+        .padding(.top, topPadding)
+        .padding(.leading, leadingPadding)
+        .padding(.trailing, trailingPadding)
+    }
+}
+
 
 // MARK: - Filters
 
@@ -234,9 +310,10 @@ struct TaskListView: View {
             
             if viewModel.groupedTasksByDate.isEmpty {
                 Image(ImageResource(name: "noTasksBackgroung", bundle: .main))
-                      .resizable()
-                      .scaledToFill()
-                      
+                    .resizable()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipped()
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
             } else {
                 Color.custom(.mainBackground).ignoresSafeArea()
                     .onTapGesture { hideKeyboard() }
@@ -247,62 +324,29 @@ struct TaskListView: View {
                 // MARK: - Placeholder or the List beginning
                 
                 if viewModel.groupedTasksByDate.isEmpty {
-       
-                    VStack {
-                        
-                        HStack {
-                            Text("ЗАДАНИЙ")
-                                .foregroundStyle(Color.custom(.taskViewYellow))
-                                .font(.custom(Montserrat.black.rawValue, size: 38))
-                            
-                                .multilineTextAlignment(.leading)
-                            Spacer()
-                        }
-                        .frame(height: 27)
-                        
-                        HStack {
-                            Text("ПОКА")
-                                .foregroundStyle(Color.custom(.taskCompleteGreen))
-                                .font(.custom(Montserrat.bold.rawValue, size: 38))
-                            
-                                .multilineTextAlignment(.leading)
-                            Spacer()
-                        }
-                        .frame(height: 27)
-                        
-                        HStack {
-                            Text("НЕТ")
-                                .foregroundStyle(Color.custom(.taskCanceledOrange))
-                                .font(.custom(Montserrat.regular.rawValue, size: 38))
-                            +
-                            Text("...")
-                                .foregroundStyle(Color.custom(.taskCanceledOrange))
-                                .font(.custom(Montserrat.black.rawValue, size: 38))
-                            Spacer()
-                        }
-                        .frame(height: 27)
-                        .multilineTextAlignment(.leading)
-                        
-                        HStack {
-                            Text("Создайте карточку задания, нажав на \nиконку “+“ в правом верхнем углу экрана")
-                                .foregroundStyle(Color.custom(.pitchBlack))
-                                .font(.custom(Montserrat.medium.rawValue, size: 12))
-                                Spacer()
-                        }
-                        .multilineTextAlignment(.leading)
-                        .frame(height: 30)
-                        .padding(.top, 18)
-                        Spacer()
-                    }
-                    .padding(.top, 255)
-                    .padding(.leading, 58)
-                    .padding(.trailing, 30)
-                
-                    
+                    EmptyListPlaceholderView(
+                        line1: .init(
+                            text: "ЗАДАНИЙ",
+                            color: Color.custom(.taskViewYellow),
+                            font: .custom(Montserrat.black.rawValue, size: 38),
+                            height: 27
+                        ),
+                        line2: .init(
+                            text: "ПОКА",
+                            color: Color.custom(.taskCompleteGreen),
+                            font: .custom(Montserrat.bold.rawValue, size: 38),
+                            height: 27
+                        ),
+                        line3Text: "НЕТ",
+                        line3TextFont: .custom(Montserrat.regular.rawValue, size: 38),
+                        line3Suffix: "...",
+                        line3SuffixFont: .custom(Montserrat.black.rawValue, size: 38),
+                        line3Color: Color.custom(.taskCanceledOrange),
+                        line3Height: 27,
+                        hintText: "Создайте карточку задания, нажав на \nиконку “+“ в середине нижней панели"
+                    )
                 } else {
-                   
-                    NavigationStack {
-                        List {
+                    List {
                             ForEach(viewModel.groupedTasksByDate.keys.sorted(by: >), id: \.self) { dateKey in
                                 Section(header:
                                     ZStack {
@@ -529,22 +573,11 @@ struct TaskListView: View {
                         }
                         
                         .listStyle(PlainListStyle())
-                        
-                        .navigationDestination(item: $selectedTask) { task in
-                            TaskView(task: task)
-                        }
-                        .navigationDestination(item: $selectedClient) { client in
-                            ClientProfileView(client: client)
-                        }
                         .onChange(of: selectedClient) { newValue in
                             if newValue != nil {
                                 showScrollToTopButton = false
                             }
                         }
-                    }
-                    
-                    .navigationTitle("")
-                    .navigationBarTitleDisplayMode(.inline)
                 }
             }
             
@@ -569,6 +602,7 @@ struct TaskListView: View {
                       .opacity(0.95)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .top) {
             VStack {
                 HStack {
@@ -646,27 +680,14 @@ struct TaskListView: View {
                             .frame(height: 15)
                             
                         case .idle:
-                            // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
                             Spacer().frame(height: 15)
                         }
                     }
                     
                     Spacer()
-                    
-                    
-                    Button(action: {
-                        
-                    }) {
-                        Image("plus")
-                            .resizable()
-                            .frame(width: 33, height: 33)
-                            .foregroundStyle(.pitchBlack)
-                            .opacity(0)
-                        
-                    }
-                    
+  
                 }
-                
+                .frame(maxWidth: .infinity)
                 .padding(.horizontal, 16)
                 
                 HStack {
@@ -719,9 +740,11 @@ struct TaskListView: View {
                         }
                     }
                 }
+                .frame(maxWidth: .infinity)
                 .padding(.top, 10)
                 .padding(.horizontal, 16)
             }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
             .padding(.top, 50)
             .padding(.bottom, 10)
             .background {
@@ -740,7 +763,9 @@ struct TaskListView: View {
                         )
                     )
             }
+            
             .ignoresSafeArea(edges: .top)
+            
         }
        
         
@@ -753,6 +778,14 @@ struct TaskListView: View {
                     .onAppear {
                         self.scrollProxy = proxy
                     }
+            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(item: $selectedTask) { task in
+                TaskView(task: task)
+            }
+            .navigationDestination(item: $selectedClient) { client in
+                ClientProfileView(client: client)
             }
         }
         .onChange(of: syncService.phase) { newPhase in
@@ -967,7 +1000,7 @@ struct TaskListView: View {
 //                          .resizable()
 //                          .frame(width: 33, height: 32)
 //                          .ifAvailableButtonStyleGlass()
-//                      
+//
 //                      DatePicker("",
 //                                 selection: $selectedDate,
 //                                 displayedComponents: .date

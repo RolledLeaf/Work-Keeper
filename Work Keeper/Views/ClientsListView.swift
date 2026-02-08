@@ -1,8 +1,5 @@
 import SwiftUI
 
-
-
-
 struct ClientsListView: View {
     @State private var showNewClientView = false
     @State private var showDeleteAlert = false
@@ -29,32 +26,54 @@ struct ClientsListView: View {
     @EnvironmentObject private var networkMonitor: NetworkMonitor
 
     
-    private let headerOverlayHeight: CGFloat = 80
+    private let headerOverlayHeight: CGFloat = 110
     var body: some View {
         
         NavigationStack {
             ZStack {
-                
-                Color.custom(.mainBackground).ignoresSafeArea()
-                    .onTapGesture {
-                        hideKeyboard()
-                    }
-                
+                // Always fill the screen so the top overlay has a stable layout container
+                Color.custom(.mainBackground)
+                    .ignoresSafeArea()
+
+                if viewModel.clients.isEmpty {
+                    Image(ImageResource(name: "noClientsBackground", bundle: .main))
+                        .resizable()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
+                        .ignoresSafeArea()
+                } else {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture { hideKeyboard() }
+                }
+
                 VStack {
   
                     if viewModel.clients.isEmpty {
                         
-                        VStack {
-                            
-                            Image("noClientsPlaceholder")
-                                .resizable()
-                                .frame(width: 276, height: 268)
-                            
-                            Text("Клиентов пока нет")
-                        }
-                        .padding(.top, 50)
+                        EmptyListPlaceholderView(
+                            line1: .init(
+                                text: "Клиентов",
+                                color: Color.custom(.taskViewYellow),
+                                font: .custom(Montserrat.black.rawValue, size: 38),
+                                height: 27
+                            ),
+                            line2: .init(
+                                text: "ПОКА",
+                                color: Color.custom(.taskCompleteGreen),
+                                font: .custom(Montserrat.bold.rawValue, size: 38),
+                                height: 27
+                            ),
+                            line3Text: "НЕТ",
+                            line3TextFont: .custom(Montserrat.regular.rawValue, size: 38),
+                            line3Suffix: "...",
+                            line3SuffixFont: .custom(Montserrat.black.rawValue, size: 38),
+                            line3Color: Color.custom(.taskCanceledOrange),
+                            line3Height: 27,
+                            hintText: "Создайте карточку клиента, нажав на \nиконку “+“ в правом верхнем углу экрана"
+                        )
                         
-                        Spacer()
+//                        Spacer()
                     } else {
                         
                         List {
@@ -75,6 +94,9 @@ struct ClientsListView: View {
                                 ) {
                                     ForEach(section.clients) { client in
                                         ClientRow(client: client, viewModel: viewModel)
+                                            .padding(.vertical, 5)
+                                            .listRowInsets(.init(top: 0, leading: 16, bottom: 0, trailing: 16))
+                                            .listRowSeparator(.hidden)
                                             .contentShape(Rectangle())
                                             .onTapGesture { selectedClient = client }
                                             .swipeActions(edge: .trailing) {
@@ -115,8 +137,12 @@ struct ClientsListView: View {
                         }
                     }
                 }
-                
+              
+
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(.keyboard, edges: .bottom)
+            
             .overlay(alignment: .top) {
                 VStack {
                     HStack {
@@ -208,7 +234,7 @@ struct ClientsListView: View {
                         }) {
                             Image("plusClients")
                                 .resizable()
-                                .frame(width: 33, height: 33)
+                                .frame(width: 30, height: 30)
                                 .foregroundStyle(.pitchBlack)
                                 .ifAvailableButtonStyleGlass()
                         }
@@ -263,9 +289,13 @@ struct ClientsListView: View {
                             
                         }
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 10)
                     .padding(.horizontal, 16)
-                    .padding(.top, 13)
                 }
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .padding(.top, 10)
+                .padding(.bottom, 10)
             }
             
         }

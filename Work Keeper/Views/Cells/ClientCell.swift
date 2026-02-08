@@ -27,7 +27,8 @@ struct ClientRow: View {
                 }
                 .padding(.leading, 13)
                 
-                VStack(spacing: 10) {
+//                VStack(spacing: 10) {
+                VStack {
                     Spacer()
                     HStack {
                         Text(highlighted(client.firstName?.uppercased() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
@@ -56,7 +57,7 @@ struct ClientRow: View {
                         }
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: 230, alignment: .leading)
-                            .frame(height: 15, alignment: .center)
+                            .frame(maxHeight: 15, alignment: .center)
 
                     } else {
                         
@@ -71,7 +72,7 @@ struct ClientRow: View {
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
                         }
                         .frame(maxWidth: 230, alignment: .leading)
-                        .frame(height: 15, alignment: .center)
+                        .frame(maxHeight: 15, alignment: .center)
                         .multilineTextAlignment(.leading)
                     }
 
@@ -123,6 +124,7 @@ struct ClientRow: View {
                 .padding(.vertical, 5)
             }
             .frame(height: 90)
+//            .frame(maxHeight: 90)
             
             
         }
@@ -140,6 +142,7 @@ struct ClientRow: View {
         }
         
     }
+    
 }
 
 #Preview {
