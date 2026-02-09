@@ -87,8 +87,10 @@ struct ClientsListView: View {
                                             .frame(height: 1)
                                     }
                                     .padding(.horizontal, 16)
-                                    .padding(.vertical, 6)
+                                    .padding(.top, -8)
+                                    .padding(.bottom, 6)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(height: 18)
                                     .background(Color.clear)
                                 ) {
                                     ForEach(section.clients) { client in
