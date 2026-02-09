@@ -2,6 +2,7 @@ import SwiftUI
 import CoreData
 
 struct SettingsView: View {
+    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.system.rawValue
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject private var auth: AuthService
     @Environment(\.dismiss) private var dismiss
@@ -80,6 +81,22 @@ struct SettingsView: View {
            
             .ifAvailableButtonStyleGlass()
             .disabled(isUploading)
+            
+            
+            HStack {
+                
+                Text("Тёмная тема")
+                    .font(.custom(Montserrat.regular.rawValue, size: 20))
+                Spacer()
+                
+                Picker("Тема", selection: $appThemeRaw) {
+                    Text("Система").tag(AppTheme.system.rawValue)
+                    Text("Светлая").tag(AppTheme.light.rawValue)
+                    Text("Тёмная").tag(AppTheme.dark.rawValue)
+                }
+                .pickerStyle(.segmented)
+                
+            }
 
             Spacer()
             

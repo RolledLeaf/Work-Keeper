@@ -44,6 +44,10 @@ struct EditTaskView: View {
     @State private var houseTextFieldColor: CustomColor = .pureWhite
     @State private var textFieldColor: CustomColor = .pureWhite
     @FocusState private var focusedField: Field?
+    
+    private var adaptiveCardRadius: CGFloat {
+        DeviceLayout.cardRadius(for: UIScreen.main.bounds.width)
+    }
  
    
     enum Field {
@@ -158,14 +162,15 @@ struct EditTaskView: View {
                             .frame(height: 20)
                     }
                     .background(
-                        RoundedCorner(radius: 26, corners: [.bottomLeft, .bottomRight])
+                        RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .fill(Color.custom(.bckgFieldGray))
                     )
                     .overlay(
-                        RoundedCorner(radius: 26, corners: [.bottomLeft, .bottomRight])
+                        RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
-                    
+                    .padding(.top, 1)
+                    .padding(.horizontal, 1)
                     
                     
                     
@@ -553,7 +558,7 @@ struct EditTaskView: View {
                             }
                         
                             .cornerRadius(30)
-                            .frame(width: 106, height: 40)
+                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(textFieldColor))
@@ -602,7 +607,7 @@ struct EditTaskView: View {
                                 Spacer()
                         
                             }
-                            .frame(width: 106, height: 40)
+                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(textFieldColor))
@@ -667,7 +672,7 @@ struct EditTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .frame(width: 165, alignment: .leading)
+                        .frame(alignment: .leading)
                         .disabled(viewModel.shouldBlockPrivate)
                         .onChange(of: viewModel.isPrivateHouse) { newValue in
                             if newValue == true {
@@ -689,7 +694,7 @@ struct EditTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .frame(width: 148, alignment: .trailing)
+                        .frame(alignment: .trailing)
                         
                         .disabled(viewModel.shouldBlockRemote)
                         .onChange(of: viewModel.isRemote) { _, newValue in

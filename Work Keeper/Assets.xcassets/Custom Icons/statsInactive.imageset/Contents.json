@@ -1,17 +1,50 @@
 {
   "images" : [
     {
-      "filename" : "Stat inactive.svg",
+      "filename" : "Group 896.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Stat inactive 1.svg",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Group 893.svg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "Group 897.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Stat inactive 2.svg",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Group 894.svg",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "Group 898.svg",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Group 895.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }

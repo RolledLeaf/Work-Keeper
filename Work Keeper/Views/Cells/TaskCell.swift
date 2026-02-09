@@ -65,7 +65,7 @@ struct TaskRow: View {
             
         }
         
-        return VStack {
+        return ZStack(alignment: .topLeading) {
             VStack {
                 
                 
@@ -264,7 +264,7 @@ struct TaskRow: View {
                 HStack {
                     Text("\(task.totalAmount.formattedCurrency())")
                         .font(.custom(Montserrat.bold.rawValue, size: 25))
-                                  .foregroundStyle(.mainBlack)
+                                  .foregroundStyle(task.totalAmount >= 0 ? .mainBlack : .red)
                     +
                     Text(" ₽")
                         .font(.custom(Montserrat.regular.rawValue, size: 25))
@@ -279,17 +279,21 @@ struct TaskRow: View {
                
             }
            
-            //Конец вертикального стека UI Элементов
+                    .padding(.leading, 20)
+                    .padding(.trailing, 10)
             
         }
-      
-        .padding(.leading, 20)
-        .padding(.trailing, 10)
         .background(
             Image(statusImage)
-                .resizable()
-                        .scaledToFill()
+                .resizable(
+                    resizingMode: .stretch
+                    
+                )
+                .frame(maxWidth: .infinity)
+                       .frame(height: 177)
+                       
         )
+        
        
  
         .overlay(alignment: .center) {

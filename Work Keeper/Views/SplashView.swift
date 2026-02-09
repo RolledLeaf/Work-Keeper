@@ -4,23 +4,42 @@ struct SplashView: View {
     var body: some View {
         ZStack {
             Color.custom(.splashBackground).edgesIgnoringSafeArea(.all)
-            
-            Image("SplashScreen")
-                .resizable()
-                .scaledToFill()
-                
-//                .offset(x: -30)
             VStack {
-   
-                ProgressView("Загрузка…")
-                    .foregroundStyle(.whiteOnly)
-                    .progressViewStyle(.circular)
-                    .font(.custom(Montserrat.regular.rawValue, size: 15))
-                    .padding(.top, 250)
+                Spacer()
+                
+                HStack {
+                    Image("splashLogo")
+                        .resizable()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 162)
+                }
+                
+                HStack {
+                    Text("WORK")
+                        .font(.custom(Montserrat.black.rawValue, size: 15))
+                    
+                    Text("KEEPER")
+                        .font(.custom(Montserrat.regular.rawValue, size: 15))
+                    Spacer()
+                }
+                .padding(.leading, 47)
+                
+
+                
+                Spacer()
             }
         }
-       
-       
+        .overlay(alignment: .bottomTrailing) {
+                            HStack {
+                                Spacer()
+                                ProgressView("Загрузка…")
+                                    .foregroundStyle(.mainBlack)
+                                    .progressViewStyle(.circular)
+                                    .font(.custom(Montserrat.regular.rawValue, size: 25))
+                                Spacer()
+                            }
+                            .padding(.bottom, 180)
+        }
     }
 }
 

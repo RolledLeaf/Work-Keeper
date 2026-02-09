@@ -12,16 +12,88 @@ struct ClientRow: View {
        
         
         ZStack {
-            Color.custom(.taskCellGray).ignoresSafeArea()
+         Color.custom(.taskCellGray).ignoresSafeArea()
             
             HStack {
                 ZStack {
                     Circle()
                         .fill(Color.randomColor()) // свой метод
-                        .frame(width: 57, height: 57)
+                        .frame(width: 60, height: 60)
                     Text("\(initials.uppercased())")
                         .font(.custom(Montserrat.bold.rawValue, size: 24))
                         .foregroundColor(.white)
+                    
+                 
+                }
+                .padding(.leading, 13)
+                
+//                VStack(spacing: 10) {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Text(highlighted(client.firstName?.uppercased() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                            .font(.custom(Montserrat.bold.rawValue, size: 15))
+                           
+  
+                        Text(highlighted(client.lastName?.uppercased() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                            .font(.custom(Montserrat.bold.rawValue, size: 15))
+                    }
+                    .frame(maxWidth: 230, alignment: .leading)
+                    .frame(maxHeight: 15, alignment: .center)
+                    
+                    
+                    Text(highlighted(client.phone ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
+                        .font(.custom(Montserrat.regular.rawValue, size: 15))
+                        .frame(maxWidth: 230, alignment: .leading)
+                        .frame(maxHeight: 15, alignment: .center)
+                        .multilineTextAlignment(.leading)
+                        .foregroundColor(.custom(.taskTextGray))
+                    
+                    if !client.hasAddress {
+                        HStack {
+                            
+                            Text("Клиент не давал адрес")
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                        }
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: 230, alignment: .leading)
+                            .frame(maxHeight: 15, alignment: .center)
+
+                    } else {
+                        
+                        HStack {
+                            
+                            
+                            Text(highlighted(client.primaryAddress?.street?.name ?? "Адрес не указан", query: viewModel.searchText, highlightColor: .highlightBlue))
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                
+                            
+                            Text("\(client.primaryAddress?.house ?? "")")
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                        }
+                        .frame(maxWidth: 230, alignment: .leading)
+                        .frame(maxHeight: 15, alignment: .center)
+                        .multilineTextAlignment(.leading)
+                    }
+
+                    Spacer()
+                }
+                .padding(.leading, 8)
+                
+                Spacer()
+                
+                VStack(spacing: 5) {
+                    ZStack {
+                        Rectangle()
+                            .foregroundColor(Color.custom(.taskCompleteGreen))
+                            .cornerRadius(12)
+                            .frame(width: 23, height: 23)
+                            .opacity(client.completedTasksCount > 0 ? 1 : 0)
+                        Text("\(client.completedTasksCount)")
+                            .font(.custom(Montserrat.regular.rawValue, size: 17))
+                            .foregroundColor(.custom(.mainBlack))
+                            .opacity(client.completedTasksCount > 0 ? 1 : 0)
+                    }
                     
                     ZStack {
                         Rectangle()
@@ -30,81 +102,9 @@ struct ClientRow: View {
                             .frame(width: 23, height: 23)
                             .opacity(client.scheduledTasksCount > 0 ? 1 : 0)
                         Text("\(client.scheduledTasksCount)")
-                        .opacity(client.scheduledTasksCount > 0 ? 1 : 0)
-                            .font(.custom(SFPro.regular.rawValue, size: 17))
-                            .foregroundColor(.white)
-                            
-                    }
-                    .offset(x: 22, y: -25)
-                }
-                .padding(.leading, 8)
-                
-                VStack {
-                    Text(highlighted(client.firstName?.uppercased() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
-                        .font(.custom(Montserrat.bold.rawValue, size: 24))
-                        .frame(maxWidth: 230, alignment: .leading)
-                        .frame(maxHeight: 25, alignment: .center)
-                        .padding(.top, 7)
-                        
-                    Spacer()
-                    
-                    if !client.hasAddress {
-                        HStack {
-                            
-                            Text("Клиент не давал адрес")
-                                .font(.custom(Montserrat.regular.rawValue, size: 19))
-                        }
-                            .multilineTextAlignment(.leading)
-                            .frame(maxWidth: 230, alignment: .leading)
-                            .frame(height: 34, alignment: .center)
-                            
-                            
-                    } else {
-                        
-                        HStack {
-                            
-                            
-                            Text(highlighted(client.primaryAddress?.street?.name ?? "Адрес не указан", query: viewModel.searchText, highlightColor: .highlightBlue))
-                                .font(.custom(SFPro.regular.rawValue, size: 19))
-                                .lineLimit(2, reservesSpace: false)
-                            
-                            Text("\(client.primaryAddress?.house ?? "")")
-                                .font(.custom(SFPro.regular.rawValue, size: 19))
-                        }
-                        
-                        .frame(maxWidth: 230, alignment: .leading)
-                        .frame(height: 34, alignment: .center)
-                        
-                        .minimumScaleFactor(0.8)
-                        .multilineTextAlignment(.leading)
-                    }
-                  
-                    Spacer()
-//                    Text(highlighted(client.phone?.formattedAsPhone() ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
-                    Text(highlighted(client.phone ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
-                        .font(.custom(Montserrat.regular.rawValue, size: 16))
-                        .frame(maxWidth: 230, alignment: .leading)
-                        .frame(maxHeight: 20, alignment: .center)
-                        .multilineTextAlignment(.leading)
-                        .foregroundColor(.custom(.taskTextGray))
-                        .padding(.bottom, 4)
-                    
-                }
-                .padding(.leading, 17)
-                
-                Spacer()
-                
-                VStack {
-                    ZStack {
-                        Rectangle()
-                            .foregroundColor(Color.custom(.completedTaskGreen))
-                            .cornerRadius(12)
-                            .frame(width: 23, height: 23)
-                            .opacity(client.completedTasksCount > 0 ? 1 : 0)
-                        Text("\(client.completedTasksCount)")
-                            .font(.custom(SFPro.regular.rawValue, size: 17))
-                            .foregroundColor(.white)
-                            .opacity(client.completedTasksCount > 0 ? 1 : 0)
+                            .font(.custom(Montserrat.regular.rawValue, size: 17))
+                            .foregroundColor(.custom(.mainBlack))
+                            .opacity(client.scheduledTasksCount > 0 ? 1 : 0)
                     }
                     
                     ZStack {
@@ -114,27 +114,35 @@ struct ClientRow: View {
                             .frame(width: 23, height: 23)
                             .opacity(client.canceledTasksCount > 0 ? 1 : 0)
                         Text("\(client.canceledTasksCount)")
-                            .font(.custom(SFPro.regular.rawValue, size: 17))
-                            .foregroundColor(.white)
+                            .font(.custom(Montserrat.regular.rawValue, size: 17))
+                            .foregroundColor(.custom(.mainBlack))
                             .opacity(client.canceledTasksCount > 0 ? 1 : 0)
                     }
-                    Spacer()
+                   
                 }
-                .padding(.trailing, 10)
-                .padding(.vertical, 7)
+                .padding(.trailing, 6)
+                .padding(.vertical, 5)
             }
-            .frame(height: 100)
-            .frame(maxWidth: .infinity)
+            .frame(height: 90)
+//            .frame(maxHeight: 90)
+            
             
         }
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-        )
-       
+
+        .background(.ultraThickMaterial, in: .rect)
+        .cornerRadius(left: 50, right: 15)
+        .overlay {
+            if #available(iOS 16.0, *) {
+                TwoSideRoundedRectangle(leftRadius: 50, rightRadius: 15)
+                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+            } else {
+                RoundedRectangle(cornerRadius: 15)
+                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+            }
+        }
         
     }
+    
 }
 
 #Preview {

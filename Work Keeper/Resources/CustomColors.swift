@@ -38,6 +38,7 @@ enum CustomColor: String {
     case whiteOnly = "whiteOnly"
     case inactiveColorsGray = "inactiveColorsGray"
     case splashBackground = "splashBackground"
+    case deepBlue = "deepBlue"
 }
 
 

@@ -1,17 +1,50 @@
 {
   "images" : [
     {
-      "filename" : "tasks tab bar inactive.svg",
+      "filename" : "Group 883.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "tasks tab bar inactive 1.svg",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Group 878.svg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "Group 884.svg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "tasks tab bar inactive 2.svg",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Group 879.svg",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "Group 885.svg",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Group 880.svg",
       "idiom" : "universal",
       "scale" : "3x"
     }

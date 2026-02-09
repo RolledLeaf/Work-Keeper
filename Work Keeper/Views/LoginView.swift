@@ -18,6 +18,8 @@ struct LoginView: View {
     }
     
     var body: some View {
+        let emailClean = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let passwordClean = password.trimmingCharacters(in: .whitespacesAndNewlines)
         NavigationStack {
             VStack(spacing: 16) {
                 Text("Вход")
@@ -28,6 +30,11 @@ struct LoginView: View {
                     .keyboardType(.emailAddress)
                     .autocorrectionDisabled(true)
                     .textFieldStyle(.roundedBorder)
+                    .onChange(of: email) { _, newValue in
+                           if newValue.contains(" ") {
+                               email = newValue.replacingOccurrences(of: " ", with: "")
+                           }
+                       }
                 
                 SecureField("Password", text: $password)
                     .textFieldStyle(.roundedBorder)
@@ -47,7 +54,7 @@ struct LoginView: View {
                     Button("Log In") {
                         Task {
                             isLoading = true
-                            await auth.signIn(email: email, password: password)
+                            await auth.signIn(email: emailClean, password: passwordClean)
                             isLoading = false
                         }
                     }

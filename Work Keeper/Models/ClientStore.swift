@@ -85,7 +85,7 @@ final class ClientStore: NSObject, ObservableObject {
     }
     
     func fetchClients(sortedBy keypath: String, ascending: Bool) -> [Client] {
-        print("Fetching and sorting clients...")
+        print("Fetching and sorting clients with \(keypath)...")
         let request: NSFetchRequest<Client> = Client.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: keypath, ascending: ascending)]
         request.predicate = NSPredicate(format: "deletedAt == nil")
@@ -252,18 +252,31 @@ final class ClientStore: NSObject, ObservableObject {
                       addresses: [Address],
                       phone: String
     ) {
-        
-        client.firstName = firstName
-        client.lastName = lastName
-        client.comment = comment
-        client.address = NSSet(array: addresses)
-        client.phone = phone
-        
+        client.firstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
+        client.lastName = lastName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        client.comment = comment?.trimmingCharacters(in: .whitespacesAndNewlines)
+        client.phone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // IMPORTANT:
+        // Address.client is required in the model. If we replace the relationship with a smaller set,
+        // CoreData will null out `client` on the removed Address objects, which fails validation.
+        // Therefore we MERGE updated addresses into existing ones instead of detaching.
+        let existing = (client.address as? Set<Address>) ?? []
+        let incoming = Set(addresses)
+        let merged = existing.union(incoming)
+
+        // Ensure inverse relationship is set for all attached addresses
+        for addr in merged {
+            if addr.client == nil { addr.client = client }
+        }
+
+        client.address = NSSet(set: merged)
+
         // Sync fields
-        //        client.deletedAt = nil - убрал чтобы случайно не "воскресить" клиента локально
+        // client.deletedAt = nil  // intentionally not restoring deleted
         client.updatedAt = Date()
         client.needsSync = true
-        
+
         do {
             try context.save()
         } catch {

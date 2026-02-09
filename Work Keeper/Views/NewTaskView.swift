@@ -220,6 +220,10 @@ struct NewTaskView: View {
     @State private var textFieldColor: CustomColor = .pureWhite
     @State private var showNewTaskAlert = false
     @FocusState private var focusedField: Field?
+    
+    private var adaptiveCardRadius: CGFloat {
+        DeviceLayout.cardRadius(for: UIScreen.main.bounds.width)
+    }
    
     
     init(onComplete: ((String) -> Void)? = nil) {
@@ -239,6 +243,22 @@ struct NewTaskView: View {
         case entrance
         case floor
         case contractAmount
+    }
+    
+    func clearAllFields() {
+        viewModel.description = ""
+        viewModel.firstName = ""
+        viewModel.phoneDigits = ""
+        viewModel.streetName = ""
+        viewModel.house = ""
+        viewModel.apartment = ""
+        viewModel.entrance = ""
+        viewModel.floor = ""
+        viewModel.contractAmountText = ""
+        viewModel.costText = ""
+        viewModel.isRemote = false
+        viewModel.isPrivateHouse = false
+        viewModel.scheduledAt = Date()
     }
     
     private func missingRequiredFieldsMessage() -> String? {
@@ -336,14 +356,18 @@ struct NewTaskView: View {
                         Spacer()
                             .frame(height: 20)
                     }
+                    
                     .background(
-                        RoundedCorner(radius: 26, corners: [.bottomLeft, .bottomRight])
+                        RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .fill(Color.custom(.bckgFieldGray))
+                       
                     )
                     .overlay(
-                        RoundedCorner(radius: 26, corners: [.bottomLeft, .bottomRight])
+                        RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
+                    .padding(.top, 1)
+                    .padding(.horizontal, 1)
                     
                     HStack {
                         ZStack {
@@ -443,7 +467,7 @@ struct NewTaskView: View {
                                             
                                             Image("clientsActive")
                                                 .resizable()
-                                                .frame(width: 14, height: 14)
+                                                .frame(width: 17.31, height: 14)
                                                 .tint(Color.custom(.pitchBlack))
                                         }
                                     }
@@ -576,9 +600,7 @@ struct NewTaskView: View {
                     //Street section end
                     
                         HStack {
-                            
-                            
-                            
+
                             HStack(spacing: 6) {
                                 Spacer()
                                 Text("дом")
@@ -659,7 +681,7 @@ struct NewTaskView: View {
                             }
                         
                             .cornerRadius(30)
-                            .frame(width: 106, height: 40)
+                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(textFieldColor))
@@ -708,7 +730,7 @@ struct NewTaskView: View {
                                 Spacer()
                         
                             }
-                            .frame(width: 106, height: 40)
+                            .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(  Color.custom(textFieldColor))
@@ -764,7 +786,7 @@ struct NewTaskView: View {
                         )
                         Spacer()
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.leading, 20)
                     
                     HStack {
                         Toggle(isOn: $viewModel.isPrivateHouse) {
@@ -773,7 +795,7 @@ struct NewTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .frame(width: 165, alignment: .leading)
+                        .frame(alignment: .leading)
                         .disabled(viewModel.shouldBlockPrivate)
                         .onChange(of: viewModel.isPrivateHouse) { newValue in
                             if newValue == true {
@@ -792,10 +814,11 @@ struct NewTaskView: View {
                         Toggle(isOn: $viewModel.isRemote) {
                             Text("Удалёнка")
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .frame(alignment: .trailing)
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .frame(width: 148, alignment: .trailing)
+                        
                         
                         .disabled(viewModel.shouldBlockRemote)
                         .onChange(of: viewModel.isRemote) { _, newValue in
@@ -950,18 +973,15 @@ struct NewTaskView: View {
                         )
                     .padding(.horizontal, 4)
                     
-                    
-             
-                    
-                    
+ 
                     HStack {
                         Button(action: {
-                            dismiss()
+                            clearAllFields()
                         }) {
                             ZStack {
                                 Rectangle()
                                     .tint(Color.custom(.taskCanceledOrange))
-                                Text("Отмена")
+                                Text("Очистить")
                                     .foregroundStyle(Color.custom(.pitchBlack))
                             }
                         }
@@ -978,7 +998,7 @@ struct NewTaskView: View {
                             } else {
                                 viewModel.saveTask()
                                 onComplete?(viewModel.description)
-                                dismiss()
+                            
                             }
                         }) {
                             ZStack {
@@ -1047,6 +1067,7 @@ struct NewTaskView: View {
         
         
         .onAppear {
+            print("width:", UIScreen.main.bounds.width)
             phoneMasked = maskRU(fromDigits: viewModel.phoneDigits)
             previousPhoneMasked = phoneMasked
 

@@ -10,7 +10,7 @@ struct EditClientView: View {
 
     private var maxFirstNameCharachtersCount: Int = 12
     private var maxLastNameCharachtersCount: Int = 12
-    private let maxBuildingCharachtersCount: Int = 8
+    private let maxBuildingCharachtersCount: Int = 9
     private let maxStreetCharachtersCount: Int = 44
     private let maxCommentCharachtersCount: Int = 65
     private let maxApartmentCharachtersCount: Int = 6

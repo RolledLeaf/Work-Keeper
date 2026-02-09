@@ -1,8 +1,29 @@
 import SwiftUI
 import CoreData
 
+enum AppTheme: String, CaseIterable {
+    case system
+    case light
+    case dark
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+}
+
 @main
 struct Work_KeeperApp: App {
+    @AppStorage("appTheme") private var appThemeRaw: String = AppTheme.system.rawValue
+
+    private var appTheme: AppTheme {
+        AppTheme(rawValue: appThemeRaw) ?? .system
+    }
+    
+    
     let persistence = CoreDataStack.shared
 
     @Environment(\.scenePhase) private var scenePhase
@@ -47,6 +68,9 @@ struct Work_KeeperApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .preferredColorScheme(
+                                   AppTheme(rawValue: appThemeRaw)?.colorScheme
+                               )
                 .environment(\.managedObjectContext, persistence.context)
                 .environmentObject(auth)
                 .environmentObject(syncService)
@@ -54,6 +78,7 @@ struct Work_KeeperApp: App {
                 .onOpenURL { url in
                                     auth.handleOpenURL(url)
                                 }
+               
                 .task {
                     if auth.purgeLocalDataHandler == nil {
                         auth.purgeLocalDataHandler = { purgeLocalCoreData() }
@@ -83,6 +108,7 @@ struct Work_KeeperApp: App {
                         await syncService.syncAll(ownerId: ownerId, trigger: .auto, debug: true)
                     }
                 }
+            
         }
     }
 }

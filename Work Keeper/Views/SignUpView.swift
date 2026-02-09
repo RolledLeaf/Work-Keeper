@@ -10,6 +10,8 @@ struct SignUpView: View {
     @State private var showConfirmationToast = false
     @State private var confirmationText = ""
     
+   
+    
     private func showErrorTemporarily() {
         errorMessagePresented = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
@@ -21,6 +23,9 @@ struct SignUpView: View {
     
     
     var body: some View {
+        let emailClean = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let passwordClean = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        
         VStack(spacing: 16) {
             Text("Регистрация")
                 .font(.custom(Montserrat.medium.rawValue, size: 22))
@@ -30,6 +35,7 @@ struct SignUpView: View {
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled(true)
                 .textFieldStyle(.roundedBorder)
+                
             
             SecureField("Password", text: $password)
                 .textFieldStyle(.roundedBorder)
@@ -49,7 +55,7 @@ struct SignUpView: View {
                     Button("Sign Up") {
                         Task {
                             isLoading = true
-                            await auth.signUp(email: email, password: password)
+                            await auth.signUp(email: emailClean, password: passwordClean)
                             isLoading = false
                         }
                     }
@@ -96,6 +102,9 @@ struct SignUpView: View {
                             .padding(.horizontal, 16)
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
+                }
+                .onAppear() {
+                    hideKeyboard()
                 }
         }
     }
