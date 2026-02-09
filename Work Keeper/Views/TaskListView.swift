@@ -38,7 +38,7 @@ struct EmptyListPlaceholderView: View {
     let hintText: String
 
     // Layout tuning (kept as defaults matching current Tasks placeholder)
-    var topPadding: CGFloat = 255
+    var topPadding: CGFloat = 299
     var leadingPadding: CGFloat = 58
     var trailingPadding: CGFloat = 30
     var hintTopPadding: CGFloat = 10
@@ -307,6 +307,8 @@ struct TaskListView: View {
     @ViewBuilder
     private func mainContent(proxy: ScrollViewProxy) -> some View {
         ZStack {
+            Color.custom(.mainBackground)
+                .ignoresSafeArea()
             
             if viewModel.groupedTasksByDate.isEmpty {
                 Image(ImageResource(name: "noTasksBackgroung", bundle: .main))
@@ -326,24 +328,24 @@ struct TaskListView: View {
                 if viewModel.groupedTasksByDate.isEmpty {
                     EmptyListPlaceholderView(
                         line1: .init(
-                            text: "ЗАДАНИЙ",
+                            text: viewModel.searchText.isBlank ? "ЗАДАНИЙ" : "НИЧЕГО",
                             color: Color.custom(.taskViewYellow),
                             font: .custom(Montserrat.black.rawValue, size: 38),
                             height: 27
                         ),
                         line2: .init(
-                            text: "ПОКА",
+                            text: viewModel.searchText.isBlank ? "ПОКА" : "НЕ",
                             color: Color.custom(.taskCompleteGreen),
                             font: .custom(Montserrat.bold.rawValue, size: 38),
                             height: 27
                         ),
-                        line3Text: "НЕТ",
+                        line3Text: viewModel.searchText.isBlank ? "НЕТ" : "НАЙДЕНО",
                         line3TextFont: .custom(Montserrat.regular.rawValue, size: 38),
                         line3Suffix: "...",
                         line3SuffixFont: .custom(Montserrat.black.rawValue, size: 38),
                         line3Color: Color.custom(.taskCanceledOrange),
                         line3Height: 27,
-                        hintText: "Создайте карточку задания, нажав на \nиконку “+“ в середине нижней панели"
+                        hintText: viewModel.searchText.isBlank ? "Создайте карточку задания, нажав на \nиконку “+“ в середине нижней панели" : ""
                     )
                 } else {
                     List {

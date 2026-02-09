@@ -467,7 +467,7 @@ struct NewTaskView: View {
                                             
                                             Image("clientsActive")
                                                 .resizable()
-                                                .frame(width: 14, height: 14)
+                                                .frame(width: 17.31, height: 14)
                                                 .tint(Color.custom(.pitchBlack))
                                         }
                                     }

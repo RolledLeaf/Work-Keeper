@@ -37,8 +37,7 @@ struct ClientsListView: View {
 
                 if viewModel.clients.isEmpty {
                     Image(ImageResource(name: "noClientsBackground", bundle: .main))
-                        .resizable()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        
                         .clipped()
                         .ignoresSafeArea()
                 } else {
@@ -53,24 +52,24 @@ struct ClientsListView: View {
                         
                         EmptyListPlaceholderView(
                             line1: .init(
-                                text: "Клиентов",
+                                text: viewModel.searchText.isBlank ? "Клиентов" : "Клиент",
                                 color: Color.custom(.taskViewYellow),
                                 font: .custom(Montserrat.black.rawValue, size: 38),
                                 height: 27
                             ),
                             line2: .init(
-                                text: "ПОКА",
+                                text: viewModel.searchText.isBlank ? "ПОКА" : "НЕ",
                                 color: Color.custom(.taskCompleteGreen),
                                 font: .custom(Montserrat.bold.rawValue, size: 38),
                                 height: 27
                             ),
-                            line3Text: "НЕТ",
+                            line3Text: viewModel.searchText.isBlank ? "НЕТ" : "НАЙДЕН",
                             line3TextFont: .custom(Montserrat.regular.rawValue, size: 38),
                             line3Suffix: "...",
                             line3SuffixFont: .custom(Montserrat.black.rawValue, size: 38),
                             line3Color: Color.custom(.taskCanceledOrange),
                             line3Height: 27,
-                            hintText: "Создайте карточку клиента, нажав на \nиконку “+“ в правом верхнем углу экрана"
+                            hintText: viewModel.searchText.isBlank ? "Создайте карточку клиента, нажав на \nиконку “+“ в правом верхнем углу экрана" : ""
                         )
                         
 //                        Spacer()
