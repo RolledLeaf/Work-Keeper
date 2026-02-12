@@ -658,6 +658,8 @@ struct NewTaskView: View {
                                 .frame(width: 25)
                    
                         }
+                        .disabled(viewModel.privateHouseBlock)
+                                
                                 Image("deviderVertical")
                         
                     
@@ -708,6 +710,7 @@ struct NewTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .frame(width: 32)
                         }
+                        .disabled(viewModel.privateHouseBlock)
                                 
                                 Image("deviderVertical")
                       

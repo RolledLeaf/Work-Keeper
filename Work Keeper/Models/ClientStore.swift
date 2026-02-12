@@ -404,12 +404,16 @@ extension Client {
         return true
     }
     
-    var addressesArray: [Address] {
-        (address as? Set<Address>)?.sorted { $0.house ?? "" < $1.house ?? "" } ?? []
-    }
+var addressesArray: [Address] {
+    let all = (address as? Set<Address>) ?? []
+    let alive = all.filter { $0.deletedAt == nil }
+    return alive.sorted { ($0.house ?? "") < ($1.house ?? "") }
+}
     
     var primaryAddress: Address? {
+        // only among non-deleted addresses
         addressesArray.first(where: { $0.isPrimary })
+            ?? addressesArray.first
     }
     
     var scheduledTasksCount: Int {
@@ -441,8 +445,8 @@ extension Client {
     }
     
     var formattedAddress: String {
-        guard let address = address?.allObjects.first as? Address else { return "Адрес не указан" }
-        return "\(address.street?.name ?? "") \(address.house ?? "")"
+        guard let addr = primaryAddress else { return "Адрес не указан" }
+        return "\(addr.street?.name ?? "") \(addr.house ?? "")"
     }
     
     

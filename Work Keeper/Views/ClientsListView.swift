@@ -38,11 +38,9 @@ struct ClientsListView: View {
                 if viewModel.clients.isEmpty {
                     Image(ImageResource(name: "noClientsBackground", bundle: .main))
                         .resizable()
-                        .scaledToFill()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .clipped()
-                        .ignoresSafeArea()
-                        .allowsHitTesting(false)
+                        .ignoresSafeArea(.keyboard, edges: .bottom)
                 } else {
                     Color.clear
                         .contentShape(Rectangle())

@@ -341,7 +341,7 @@ struct EditTaskView: View {
                                             
                                             Image("clientsActive")
                                                 .resizable()
-                                                .frame(width: 14, height: 14)
+                                                .frame(width: 17.31, height: 14)
                                                 .tint(Color.custom(.pitchBlack))
                                         }
                                     }
@@ -535,6 +535,8 @@ struct EditTaskView: View {
                                 .frame(width: 25)
                    
                         }
+                        .disabled(viewModel.privateHouseBlock)
+                                
                                 Image("deviderVertical")
                         
                     
@@ -585,6 +587,7 @@ struct EditTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .frame(width: 32)
                         }
+                        .disabled(viewModel.privateHouseBlock)
                                 
                                 Image("deviderVertical")
                       
@@ -1018,13 +1021,8 @@ struct EditTaskView: View {
         .sheet(isPresented: $showClientListToPickView, onDismiss: {
             if let selectedClient = clientsListViewModel.selectedClient {
                 viewModel.firstName = selectedClient.firstName ?? ""
-                let digitsAll = (selectedClient.phone ?? "").filter { $0.isNumber }
-                var nsn = digitsAll
-                if nsn.hasPrefix("7") { nsn.removeFirst() }
-                if nsn.count > 10 { nsn = String(nsn.suffix(10)) }
-                viewModel.phoneDigits = nsn
-                phoneMasked = maskRU(fromDigits: nsn)
-                previousPhoneMasked = phoneMasked
+                viewModel.phoneDigits = selectedClient.phone ?? ""
+
                 if let primaryAddress = selectedClient.address?.first(where: {
                     ($0 as? Address)?.isPrimary == true
                 }) as? Address {
