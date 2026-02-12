@@ -37,9 +37,12 @@ struct ClientsListView: View {
 
                 if viewModel.clients.isEmpty {
                     Image(ImageResource(name: "noClientsBackground", bundle: .main))
-                        
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .clipped()
                         .ignoresSafeArea()
+                        .allowsHitTesting(false)
                 } else {
                     Color.clear
                         .contentShape(Rectangle())
@@ -363,14 +366,14 @@ struct ClientsListView: View {
         }
         .alert("Вы уверены?",
                isPresented: $showDeleteAlert,
-               presenting: clientToDelete) {
-            client in
-            Button("Да", role: .destructive) {
-                
+               presenting: clientToDelete) { client in
+            Button(client.totalTasksCount > 0 ? "Удалить клиента и задания" : "Удалить клиента", role: .destructive) {
                 let name = client.firstName ?? "имя не указано"
                 lastDeletedClientName = name
+
                 viewModel.delete(client)
-                
+                clientToDelete = nil
+
                 withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                     showDeleteClientNotification = true
                 }
@@ -379,14 +382,24 @@ struct ClientsListView: View {
                         showDeleteClientNotification = false
                     }
                 }
+
                 syncService.runManualSync(auth: auth, debug: true)
             }
-                
-            Button("Нет", role: .cancel) {
-                
+
+            Button("Отмена", role: .cancel) {
+                clientToDelete = nil
             }
         } message: { client in
-            Text("Клиент \(client.firstName ?? "имя не указано") будет удалён")
+            if client.totalTasksCount > 0 {
+                Text(
+                    "У клиента есть \(client.totalTasksCount) заданий. При удалении клиента будут удалены и все его задания (в любых статусах).\n\n" +
+                    "Запланировано: \(client.scheduledTasksCount)\n" +
+                    "Выполнено: \(client.completedTasksCount)\n" +
+                    "Отменено: \(client.canceledTasksCount)"
+                )
+            } else {
+                Text("Клиент \(client.firstName ?? "имя не указано") будет удалён")
+            }
         }
         
     }
