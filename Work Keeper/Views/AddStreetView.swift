@@ -9,6 +9,8 @@ struct AddStreetView: View {
     @State private var maxStreetCharactersTextOpacity: Double = 0
     @State var saveButtomOpacity: Double = 0
     @State var streetNameAlreadyExists: Bool = false
+    @State private var roomType = "кв"
+    @State private var entranceType = "под"
 
     
     @ObservedObject  var viewModel: StreetListViewModel

@@ -449,17 +449,17 @@ extension Client {
     
     
     var apartmentNumber: String {
-        guard let address = address?.allObjects.first as? Address else { return "?" }
+        guard let address = primaryAddress else { return "?" }
         return address.apartment ?? "?"
     }
     
     var entranceNumber: String {
-        guard let address = address?.allObjects.first as? Address else { return "?" }
+        guard let address = primaryAddress else { return "?" }
         return address.entrance ?? "?"
     }
     
     var floorNumber: String {
-        guard let address = address?.allObjects.first as? Address else { return "?" }
+        guard let address = primaryAddress else { return "?" }
         return address.floor ?? "?"
     }
     

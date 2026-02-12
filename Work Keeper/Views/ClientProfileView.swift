@@ -1,5 +1,7 @@
 import SwiftUI
 
+
+
 struct PrimaryAddressPickMenu: View {
     
     @Environment(\.dismiss) private var dismiss
@@ -112,7 +114,7 @@ struct ClientProfileView: View {
     @EnvironmentObject private var syncService: SyncService
     @EnvironmentObject private var auth: AuthService
     
-    @ObservedObject var viewModel = ClientsListViewModel()
+    @StateObject private var viewModel = ClientsListViewModel()
     @ObservedObject var client: Client
     @State private var clientToEdit: Client?
     @State private var clientToDelete: Client?
@@ -121,130 +123,146 @@ struct ClientProfileView: View {
     @State private var didCopyAddress = false
     @State private var isPrimaryAddressPickerPresented = false
     @State private var showSingleAddressMessage = false
-   
+    @State private var showNewAddressView = false
     @State private var showEditClientView = false
     @State private var showDeleteAlert = false
     @State private var lastDeletedClientName = ""
     @State private var lastEditedClientName = ""
     
-        var body: some View {
-            VStack {
-              
+    var body: some View {
+        ScrollView {
+        VStack {
+            HStack {
+                Spacer()
                 
-                HStack {
-                    Spacer()
-                    
-                    Menu {
-                        Button {
-                            clientToEdit = client
-                        } label: {
-                            Label {
-                                Text("Редактировать")
-                                    .font(.custom(Montserrat.regular.rawValue, size: 17))
-                            } icon: {
-                                Image("pen")
-                            }
-                        }
-
-                        Button(role: .destructive) {
-                            showDeleteAlert = true
-                        } label: {
-                            Label {
-                                Text("Удалить")
-                            } icon: {
-                                Image(systemName: "trash")
-                            }
-                        }
+                Menu {
+                    Button {
+                        clientToEdit = client
                     } label: {
-                        Image(systemName: "ellipsis")
+                        Label {
+                            Text("Редактировать")
+                                .font(.custom(Montserrat.regular.rawValue, size: 17))
+                        } icon: {
+                            Image("pen")
+                        }
                     }
-                    .frame(width: 25, height: 25)
+                    
+                    Button {
+                        showNewAddressView = true
+                    } label: {
+                        Label {
+                            Text("Добавить адрес")
+                                .font(.custom(Montserrat.regular.rawValue, size: 17))
+                        } icon: {
+                            Image("plusClients")
+                        }
+                    }
+                    
+                    Button(role: .destructive) {
+                        showDeleteAlert = true
+                    } label: {
+                        Label {
+                            Text("Удалить")
+                        } icon: {
+                            Image(systemName: "trash")
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+                .ifAvailableButtonStyleGlass()
+                .frame(width: 35, height: 35)
+                
+                
+            }
+
+            .padding(.horizontal, 20)
+            
+            
+            .confirmationDialog("Удалить клиента?", isPresented: $showDeleteAlert, titleVisibility: .visible) {
+                Button("Удалить", role: .destructive) {
+                    let clientName = client.firstName
+                    lastDeletedClientName = clientName ?? "Неизвестный клиент"
+                    viewModel.delete(client)
+                    
+                    syncService.runManualSync(auth: auth, debug: true)
+                    
+                    UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                }
+                Button("Отмена", role: .cancel) { }
+            } message: {
+                Text("Клиент \(client.firstName ?? "без имени") будет удалён(на)")
+            }
+            
+            
+            
+            HStack {
+                Text(client.firstName ?? "имя не указано")
+                    .font(.custom(Montserrat.bold.rawValue, size: 32))
+                
+                Text(client.lastName ?? "")
+                    .font(.custom(Montserrat.bold.rawValue, size: 32))
+            }
+            .minimumScaleFactor(0.7)
+            .padding(.horizontal, 22)
+            .padding(.top, 15)
+            
+            Button(action: {
+                let text =
+                client.phone
+                UIPasteboard.general.string = text
+                withAnimation { didCopyPhoneNumber = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2 ) {
+                    withAnimation { didCopyPhoneNumber = false
+                    }
                 }
                 
-                .padding(.horizontal, 20)
-                
-             
-                    .confirmationDialog("Удалить клиента?", isPresented: $showDeleteAlert, titleVisibility: .visible) {
-                        Button("Удалить", role: .destructive) {
-                            let clientName = client.firstName
-                            lastDeletedClientName = clientName ?? "Неизвестный клиент"
-                            viewModel.delete(client)
-
-                            syncService.runManualSync(auth: auth, debug: true)
-                       
-                            UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                        }
-                        Button("Отмена", role: .cancel) { }
-                    } message: {
-                        Text("Клиент \(client.firstName ?? "без имени") будет удалён(на)")
-                    }
-                
-              
-                        
-                        HStack {
-                            Text(client.firstName ?? "имя не указано")
-                                .font(.custom(Montserrat.bold.rawValue, size: 32))
-                            
-                            Text(client.lastName ?? "")
-                                .font(.custom(Montserrat.bold.rawValue, size: 32))
-                        }
-                        .minimumScaleFactor(0.7)
-                        .padding(.horizontal, 22)
-                        .padding(.top, 15)
-                        
-                        Button(action: {
-                            let text =
-                            client.phone
-                            UIPasteboard.general.string = text
-                            withAnimation { didCopyPhoneNumber = true }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2 ) {
-                                withAnimation { didCopyPhoneNumber = false
-                                }
-                            }
-                            
-                        }) {
-//                            Text(client.phone?.formattedAsPhone() ?? "Телефон не указан")
-                            Text(client.phone ?? "Телефон не указан")
-                                .font(.custom(Montserrat.regular.rawValue, size: 19))
-                                .foregroundColor(.custom(.taskTextGray))
-                        }
-        
+            }) {
+                //                            Text(client.phone?.formattedAsPhone() ?? "Телефон не указан")
+                Text(client.phone ?? "Телефон не указан")
+                    .font(.custom(Montserrat.regular.rawValue, size: 19))
+                    .foregroundColor(.custom(.taskTextGray))
+            }
             
-                
-                if !client.hasAddress {
-                    HStack {
-                        Button(action: {
-                            if client.addressesArray.count > 1 {
-                                isPrimaryAddressPickerPresented = true
-                            } else if client.addressesArray.count == 1 {
-                                showSingleAddressMessage = true
-                            }
-                        }) {
-                            Image("home")
-                                .opacity(0.5)
-                        }
+            
+            
+            if !client.hasAddress {
+                HStack {
+                    Button(action: {
                         
-                        Spacer()
                         
-                        Text("Клиент не давал адрес")
-                            .frame(height: 48)
-                            .font(.custom(Montserrat.regular.rawValue, size: 24))
-                           
-                            .frame(width: 300, alignment: .center)
-                            .multilineTextAlignment(.center)
-                            
-                        Spacer()
+                    }) {
+                        Image("home")
+                            .opacity(0.5)
                     }
-                    .padding(.horizontal, 30)
-                    .padding(.top, 9)
                     
-        
+                    Spacer()
+                    
+                    Text("Клиент не давал адрес")
+                        .frame(height: 48)
+                        .font(.custom(Montserrat.regular.rawValue, size: 24))
+                    
+                        .frame(width: 300, alignment: .center)
+                        .multilineTextAlignment(.center)
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 30)
+                .padding(.top, 9)
+                
+                
             } else {
                 HStack {
                     
                     Button(action: {
                         if client.addressesArray.count > 1 {
                             isPrimaryAddressPickerPresented = true
+                        } else if client.addressesArray.count == 1 {
+                            withAnimation { showSingleAddressMessage = true }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5 ) {
+                                withAnimation { showSingleAddressMessage = false }
+                            }
+                            
                         }
                     }) {
                         Image("home")
@@ -263,16 +281,16 @@ struct ClientProfileView: View {
                         
                     }) {
                         HStack {
-                        Text(client.primaryAddress?.street?.name ?? "Адрес не указан")
-                        +
-                        Text(" \(client.primaryAddress?.house ?? "")")
-                    }
-                            .frame(height: 48)
-                            .font(.custom(Montserrat.regular.rawValue, size: 24))
-                            .lineLimit(2, reservesSpace: false)
-                            .frame(width: 300, alignment: .center)
-                            .multilineTextAlignment(.center)
-                            .minimumScaleFactor(0.7)
+                            Text(client.primaryAddress?.street?.name ?? "Адрес не указан")
+                            +
+                            Text(" \(client.primaryAddress?.house ?? "")")
+                        }
+                        .frame(height: 48)
+                        .font(.custom(Montserrat.regular.rawValue, size: 24))
+                        .lineLimit(2, reservesSpace: false)
+                        .frame(width: 300, alignment: .center)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.7)
                         Spacer()
                     }
                     Spacer()
@@ -280,17 +298,17 @@ struct ClientProfileView: View {
                 }
                 .padding(.horizontal, 30)
                 
-            
+                
                 
                 
                 if client.primaryAddress?.isPrivateHouse == false {
                     HStack { //not private house
-                        Text("\(client.addressesArray.first?.roomType ?? "кв.") \(client.apartmentNumber)")
+                        Text("\(client.primaryAddress?.roomType ?? "кв.") \(client.apartmentNumber)")
                             .font(.custom(Montserrat.regular.rawValue, size: 20))
                         
                         Spacer()
                         
-                        Text("\(client.addressesArray.first?.entranceType ?? "под.") \(client.entranceNumber)")
+                        Text("\(client.primaryAddress?.entranceType ?? "под.") \(client.entranceNumber)")
                             .font(.custom(Montserrat.regular.rawValue, size: 20))
                         
                         Spacer()
@@ -306,111 +324,112 @@ struct ClientProfileView: View {
                         .padding(.top, -10)
                 }
             }
-                
-                Text(client.comment ?? "")
-                    .font(.custom(Montserrat.italic.rawValue, size: 18))
-                    .foregroundColor(.custom(.taskTextGray))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .padding(.horizontal, 15)
-                    .padding(.top, 15)
-                
-                Spacer()
-                    .frame(height: 35)
-                
-                Text("Доход от клиента")
+            
+            Text(client.comment ?? "")
+                .font(.custom(Montserrat.italic.rawValue, size: 18))
+                .foregroundColor(.custom(.taskTextGray))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .padding(.horizontal, 15)
+                .padding(.top, 15)
+            
+            Spacer()
+                .frame(height: 35)
+            
+            Text("Доход от клиента")
+                .font(.custom(Montserrat.regular.rawValue, size: 20))
+                .foregroundColor(.custom(.taskTextGray))
+            
+            Spacer()
+                .frame(height: 15)
+            
+            Text(client.totalIncome.formattedCurrency())
+                .font(.custom(Montserrat.bold.rawValue, size: 32))
+            
+            
+            Spacer()
+                .frame(height: 18)
+            
+            Rectangle()
+                .frame(height: 0.5)
+                .padding(.horizontal, 30)
+                .foregroundColor(.custom(.separatorLineGray))
+            
+            HStack {
+                Text("Всего заданий")
                     .font(.custom(Montserrat.regular.rawValue, size: 20))
-                    .foregroundColor(.custom(.taskTextGray))
-                
-                Spacer()
-                    .frame(height: 15)
-                
-                Text(client.totalIncome.formattedCurrency())
-                    .font(.custom(Montserrat.bold.rawValue, size: 32))
                 
                 
-                Spacer()
-                    .frame(height: 18)
+                Text("\(client.totalTasksCount)")
+                    .font(.custom(SFPro.bold.rawValue, size: 24))
                 
-                Rectangle()
-                    .frame(height: 0.5)
-                    .padding(.horizontal, 30)
-                    .foregroundColor(.custom(.separatorLineGray))
-                
-                HStack {
-                    Text("Всего заданий")
-                        .font(.custom(Montserrat.regular.rawValue, size: 20))
-                        
-                    
-                    Text("\(client.totalTasksCount)")
-                        .font(.custom(SFPro.bold.rawValue, size: 24))
-                        
-                }
-                
-                Spacer()
-                    .frame(height: 19)
-                
-                HStack {
-                    Rectangle()
-                         .frame(width: 20, height: 20)
-                         .foregroundColor(Color.custom(.taskCompleteGreen))
-                    Text(" - \(client.completedTasksCount)")
-                    Spacer()
-                    Rectangle()
-                        .frame(width: 20, height: 20)
-                         .foregroundColor(Color.custom(.taskViewYellow))
-                    Text(" - \(client.scheduledTasksCount)")
-                    Spacer()
-                    Rectangle()
-                        .frame(width: 20, height: 20)
-                         .foregroundColor(Color.custom(.taskCanceledOrange))
-                    Text(" - \(client.canceledTasksCount)")
-                }
-                .padding(.horizontal, 58)
-           
-                Spacer()
-                    .frame(height: 31)
-                
-                // MARK: - Tasks list for this client
-                let defaultDate = Date()
-                
-                let clientTasks = (client.tasks as? Set<TaskEntity>)?.sorted(by: { ($0.scheduledAt ?? defaultDate) > ($1.scheduledAt ?? defaultDate) }) ?? []
-                
-                let actualTasks = clientTasks.filter { $0.deletedAt == nil }
-
-                if actualTasks.isEmpty {
-                    VStack(spacing: 12) {
-                        Image("noTasksPlaceholder")
-                            .padding(.leading, 50)
-                        Text("У этого клиента пока нет заданий")
-                            .font(.custom(SFPro.regular.rawValue, size: 22))
-                            .foregroundColor(.custom(.taskTextGray))
-                    }
-                    .padding(.top, 8)
-                } else {
-                    List {
-                        ForEach(actualTasks) { task in
-                            ClientTaskCell(task: task)
-                                .listRowSeparator(.hidden)
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    selectedTaskForDetails = task
-                                }
-                        }
-                    }
-                    .listStyle(.plain)
-                    .scrollContentBackground(.hidden)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
-                }
-
-                Spacer()
-                
-        }
-            .toolbar(.hidden, for: .tabBar)
-            .navigationDestination(item: $selectedTaskForDetails) { task in
-                TaskView(task: task)
             }
+            
+            Spacer()
+                .frame(height: 19)
+            
+            HStack {
+                Rectangle()
+                    .frame(width: 20, height: 20)
+                    .foregroundColor(Color.custom(.taskCompleteGreen))
+                Text(" - \(client.completedTasksCount)")
+                Spacer()
+                Rectangle()
+                    .frame(width: 20, height: 20)
+                    .foregroundColor(Color.custom(.taskViewYellow))
+                Text(" - \(client.scheduledTasksCount)")
+                Spacer()
+                Rectangle()
+                    .frame(width: 20, height: 20)
+                    .foregroundColor(Color.custom(.taskCanceledOrange))
+                Text(" - \(client.canceledTasksCount)")
+            }
+            .padding(.horizontal, 58)
+            
+            Spacer()
+                .frame(height: 31)
+            
+            // MARK: - Tasks list for this client
+            let defaultDate = Date()
+            
+            let clientTasks = (client.tasks as? Set<TaskEntity>)?.sorted(by: { ($0.scheduledAt ?? defaultDate) > ($1.scheduledAt ?? defaultDate) }) ?? []
+            
+            let actualTasks = clientTasks.filter { $0.deletedAt == nil }
+            
+            if actualTasks.isEmpty {
+                VStack(spacing: 12) {
+                    Image("noTasksPlaceholder")
+                        .padding(.leading, 50)
+                    Text("У этого клиента пока нет заданий")
+                        .font(.custom(SFPro.regular.rawValue, size: 22))
+                        .foregroundColor(.custom(.taskTextGray))
+                }
+                .padding(.top, 8)
+            } else {
+                List {
+                    ForEach(actualTasks) { task in
+                        ClientTaskCell(task: task)
+                            .listRowSeparator(.hidden)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                selectedTaskForDetails = task
+                            }
+                    }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 8)
+            }
+            
+            Spacer()
+            
+        }
+        .toolbar(.hidden, for: .tabBar)
+        .navigationDestination(item: $selectedTaskForDetails) { task in
+            TaskView(task: task)
+        }
+    }
             
             .overlay(alignment: .center) {
                 if didCopyPhoneNumber {
@@ -455,8 +474,13 @@ struct ClientProfileView: View {
                 PrimaryAddressPickMenu(client: client)
             }
             
+            .sheet(isPresented: $showNewAddressView, onDismiss: {
+                syncService.runManualSync(auth: auth, debug: true)
+            }) {
+                AddAddressView(clientsVM: viewModel, client: client)
+            }
+            
             .sheet(item: $clientToEdit, onDismiss: {
-               
             }) { client in
                 EditClientView(viewModel: EditClientViewModel(client: client),
                                onEdit: { editedName in

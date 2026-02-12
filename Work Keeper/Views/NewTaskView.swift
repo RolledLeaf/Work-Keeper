@@ -418,7 +418,7 @@ struct NewTaskView: View {
                         HStack {
                             Text("Клиент")
                                 .foregroundColor(Color.custom(.textTitleGray))
-                                .font(.custom(Montserrat.regular.rawValue, size: 12))
+      .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .background(Color.clear)
                                 .frame(maxWidth: .infinity,alignment: .leading)
                                 .frame(height: 12)

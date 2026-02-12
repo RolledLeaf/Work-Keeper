@@ -72,6 +72,8 @@ final class ClientsListViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     private let store = ClientStore()
+    private let streetStore = StreetStore()
+    private let addressStore = AddressStore()
     
     init() {
         rebuildClientsGroupedByFirstLetter()
@@ -229,6 +231,74 @@ final class ClientsListViewModel: ObservableObject {
             clients = store.fetchClients()
         }
         
+        func addAddress(
+            to client: Client,
+            streetName: String,
+            house: String,
+            apartment: String,
+            entrance: String,
+            floor: String,
+            isPrivateHouse: Bool,
+            roomType: String,
+            entranceType: String,
+            makePrimary: Bool,
+            debug: Bool = false
+        ) {
+            let trimmedStreet = streetName.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedHouse = house.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedApartment = apartment.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedEntrance = entrance.trimmingCharacters(in: .whitespacesAndNewlines)
+            let trimmedFloor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !trimmedStreet.isEmpty, !trimmedHouse.isEmpty else {
+                if debug { print("❌ addAddress: street/house are required") }
+                return
+            }
+
+            guard let street = streetStore.createOrFetchStreet(name: trimmedStreet) else {
+                if debug { print("❌ addAddress: failed to createOrFetchStreet") }
+                return
+            }
+
+            let existing = (client.address as? Set<Address>) ?? []
+            let hasNoAddresses = existing.isEmpty
+            let shouldBePrimary = makePrimary || hasNoAddresses
+
+            // If user wants it primary (or it is the first address) — drop primary flag from others.
+            if shouldBePrimary {
+                existing.forEach { $0.isPrimary = false }
+            }
+
+            let newAddress = addressStore.createOrFetchAddress(
+                house: trimmedHouse,
+                apartment: trimmedApartment,
+                entrance: trimmedEntrance,
+                floor: trimmedFloor,
+                isPrivateHouse: isPrivateHouse,
+                street: street,
+                client: client,
+                isPrimary: shouldBePrimary,
+                roomType: roomType,
+                entranceType: entranceType
+            )
+
+            // Keep all addresses + new one
+            var updatedAddresses = Array(existing)
+            updatedAddresses.append(newAddress)
+
+            store.updateClient(
+                client,
+                firstName: client.firstName ?? "",
+                lastName: client.lastName,
+                comment: client.comment,
+                addresses: updatedAddresses,
+                phone: client.phone ?? ""
+            )
+
+            // refresh list
+            loadClients()
+        }
+
         func delete(_ client: Client) {
             store.deleteClient(client)
             loadClients()
@@ -255,6 +325,9 @@ final class CreateClientViewModel: ObservableObject {
     
     @Published var roomType = "кв"
     @Published var entranceType = "под"
+    
+    let roomTypes = ["кв", "оф", "каб"]
+    let entranceTypes = ["под", "вход"]
     
     private let store = ClientStore()
     private let streetStore = StreetStore()
