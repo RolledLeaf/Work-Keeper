@@ -998,7 +998,7 @@ struct NewTaskView: View {
                             } else {
                                 viewModel.saveTask()
                                 onComplete?(viewModel.description)
-                            
+                                clearAllFields()
                             }
                         }) {
                             ZStack {
