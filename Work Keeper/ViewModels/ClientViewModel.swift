@@ -186,24 +186,26 @@ final class ClientsListViewModel: ObservableObject {
                 print("UserDefaults loaded: Clients sorted by NameZA")
                 
             }
+        } else {
+            loadClients()
         }
     }
         
     
-    func loadUserDefaultsAndApplySorting(sortingOption: SortOption) {
-        if let savedSorting = userDefaults.string(forKey: UserDefaultsKeys.clientsSorting.rawValue),
-           let sortingOption = SortOption(rawValue: savedSorting) {
-            
-            switch sortingOption {
-            case .nameAZ:
-                clients = store.fetchClients(sortedBy: "name", ascending: true)
-            case .nameZA:
-                clients = store.fetchClients(sortedBy: "name", ascending: false)
-                
-            }
-        }
-    }
-    
+//    func loadUserDefaultsAndApplySorting(sortingOption: SortOption) {
+//        if let savedSorting = userDefaults.string(forKey: UserDefaultsKeys.clientsSorting.rawValue),
+//           let sortingOption = SortOption(rawValue: savedSorting) {
+//            
+//            switch sortingOption {
+//            case .nameAZ:
+//                clients = store.fetchClients(sortedBy: "name", ascending: true)
+//            case .nameZA:
+//                clients = store.fetchClients(sortedBy: "name", ascending: false)
+//                
+//            }
+//        }
+//    }
+//    
     
     func applySort(option: SortOption) {
         if let key = option.sortKey {
