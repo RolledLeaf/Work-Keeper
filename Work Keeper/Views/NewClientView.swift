@@ -17,7 +17,7 @@ struct NewClientView: View {
     private let maxEntranceCharachtersCount: Int = 3
     private let maxFloorCharachtersCount: Int = 3
     private let maxCountryCodeCharactersCount: Int = 3
-    private let maxPhoneNumberCharactersCount: Int = 16
+    private let maxPhoneNumberCharactersCount: Int = 20
     @State private var maxStreetCharactersTextOpacity: Double = 0
     
     @State private var showNameAndPhoneAlert = false

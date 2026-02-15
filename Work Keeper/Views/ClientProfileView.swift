@@ -36,13 +36,13 @@ struct PrimaryAddressPickMenu: View {
                                 HStack(spacing: 4) {
                                     Text(address.house ?? "")
                                     if let apartment = address.apartment, !apartment.isEmpty {
-                                        Text("\(address.roomType ?? "кв.") \(apartment)")
+                                        Text("\(address.roomType ?? "кв") \(apartment)")
                                     }
                                     if let entrance = address.entrance, !entrance.isEmpty {
-                                        Text("\(address.entranceType ?? "под.") \(entrance)")
+                                        Text("\(address.entranceType ?? "под"). \(entrance)")
                                     }
                                     if let floor = address.floor, !floor.isEmpty {
-                                        Text("эт. \(floor)")
+                                        Text("эт \(floor)")
                                     }
                                 }
                                 .font(.custom(Montserrat.regular.rawValue, size: 14))
@@ -331,12 +331,12 @@ struct ClientProfileView: View {
                     
                     if client.primaryAddress?.isPrivateHouse == false {
                         HStack { //not private house
-                            Text("\(client.primaryAddress?.roomType ?? "кв.") \(client.apartmentNumber)")
+                            Text("\(client.primaryAddress?.roomType ?? "кв."). \(client.apartmentNumber)")
                                 .font(.custom(Montserrat.regular.rawValue, size: 20))
                             
                             Spacer()
                             
-                            Text("\(client.primaryAddress?.entranceType ?? "под.") \(client.entranceNumber)")
+                            Text("\(client.primaryAddress?.entranceType ?? "под."). \(client.entranceNumber)")
                                 .font(.custom(Montserrat.regular.rawValue, size: 20))
                             
                             Spacer()

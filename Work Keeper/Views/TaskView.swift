@@ -141,13 +141,13 @@ struct TaskView: View {
                                     
                                     if task.client?.primaryAddress?.isPrivateHouse == false {
                                     HStack {
-                                        Text("\(taskAddress?.roomType ?? "кв.") \(taskAddress?.apartment ?? "")")
+                                        Text("\(taskAddress?.roomType ?? "кв."). \(taskAddress?.apartment ?? "")")
                                             .foregroundColor(.custom(.taskTextGray))
                                             .font(.custom(SFPro.regular.rawValue, size: 17))
                                         
                                         Spacer()
                                         
-                                        Text("\(taskAddress?.entranceType ?? "" ) \(taskAddress?.entrance ?? "") ")
+                                        Text("\(taskAddress?.entranceType ?? "" ). \(taskAddress?.entrance ?? "") ")
                                             .foregroundColor(.custom(.taskTextGray))
                                             .font(.custom(SFPro.regular.rawValue, size: 17))
                                         

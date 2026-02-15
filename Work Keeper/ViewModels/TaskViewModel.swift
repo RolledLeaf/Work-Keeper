@@ -290,8 +290,8 @@ final class CreateTaskViewModel: ObservableObject {
     @Published var shouldBlockPrivate = false
     @Published var didCreateTask: Bool = false
     
-    @Published  var roomType: String?
-    @Published  var entranceType: String?
+    @Published var roomType = "кв"
+    @Published var entranceType = "под"
     
     var totalAmount: Double {
         contractAmount - (cost ?? 0)
@@ -361,8 +361,8 @@ final class CreateTaskViewModel: ObservableObject {
                 street: street,
                 client: client,
                 isPrimary: !hasAddress ? true : false,
-                roomType: roomType ?? "кв.",
-                entranceType: entranceType ?? "под."
+                roomType: roomType,
+                entranceType: entranceType
             )
 
             // link the address with the client
@@ -401,14 +401,14 @@ final class CreateTaskViewModel: ObservableObject {
              ✅ Задание успешно создано:
              📆 Дата: \(scheduledAt)
              👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
-             🏠 Адрес: \(streetName), дом: \(house), \(roomType ?? "") \(apartment), \(entranceType ?? "") \(entrance), этаж \(floor)
+             🏠 Адрес: \(streetName), дом: \(house), \(roomType ) \(apartment), \(entranceType) \(entrance), этаж \(floor)
              📝 Описание: \(description)
              💬 Комментарий: \(comment)
              🌍 Удалённо: Нет
              💵 Сумма по договору: \(contractAmount)
              💸 Издержки: \(cost ?? 0)
-             Тип помещения: \(roomType ?? "")
-             Тип входа: \(entranceType ?? "")
+             Тип помещения: \(roomType)
+             Тип входа: \(entranceType)
              🧾 Статус: \(status.rawValue)
              """)
         }
