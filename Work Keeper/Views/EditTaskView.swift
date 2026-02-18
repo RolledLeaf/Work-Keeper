@@ -284,7 +284,7 @@ struct EditTaskView: View {
                         }
                         
                     }
-                    .padding(.top, 10)
+                    .padding(.top, 8)
                     .padding(.horizontal, 24)
                     
                     

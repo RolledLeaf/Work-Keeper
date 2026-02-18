@@ -411,7 +411,7 @@ struct NewTaskView: View {
                         }
                         
                     }
-                    .padding(.top, 10)
+                    .padding(.top, 8)
                     .padding(.horizontal, 24)
                     
                     VStack { // Начало, клиент и телефон
@@ -754,7 +754,7 @@ struct NewTaskView: View {
                     HStack {
                         HStack(spacing: 6) {
                             Spacer()
-                        Text("эт.")
+                        Text("эт")
                             .font(.custom(Montserrat.regular.rawValue, size: 12))
                             .foregroundStyle(Color.custom(.textTitleGray))
                         

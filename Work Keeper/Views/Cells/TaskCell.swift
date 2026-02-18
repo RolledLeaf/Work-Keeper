@@ -244,7 +244,7 @@ struct TaskRow: View {
                      
                         Text(highlighted(task.taskDescription ?? "", query: viewModel.searchText, highlightColor: .highlightBlue))
                             .font(.custom(Montserrat.medium.rawValue, size: 12, ))
-                            .frame(maxWidth: 285, alignment: .leading)
+                            .frame(maxWidth: 250, alignment: .leading)
                             .foregroundStyle(.mainBlack)
                         
                         Spacer()

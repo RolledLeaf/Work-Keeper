@@ -139,6 +139,8 @@ struct PrimaryAddressPickMenu: View {
 
 struct ClientProfileView: View {
 
+    @Environment(\.dismiss) private var dismiss
+
     @EnvironmentObject private var syncService: SyncService
     @EnvironmentObject private var auth: AuthService
     
@@ -156,6 +158,12 @@ struct ClientProfileView: View {
     @State private var showDeleteAlert = false
     @State private var lastDeletedClientName = ""
     @State private var lastEditedClientName = ""
+    let onDismiss: (() -> Void)?
+
+    init(client: Client, onDismiss: (() -> Void)? = nil) {
+        self.client = client
+        self.onDismiss = onDismiss
+    }
     
     var body: some View {
         ScrollView {
@@ -211,11 +219,15 @@ struct ClientProfileView: View {
                     Button("Удалить", role: .destructive) {
                         let clientName = client.firstName
                         lastDeletedClientName = clientName ?? "Неизвестный клиент"
-                        viewModel.delete(client)
-                        
+
+                        viewModel.softDelete(client)
                         syncService.runManualSync(auth: auth, debug: true)
-                        
+
                         UINotificationFeedbackGenerator().notificationOccurred(.warning)
+
+                      
+                        onDismiss?()
+                        dismiss()
                     }
                     Button("Отмена", role: .cancel) { }
                 } message: {
@@ -459,7 +471,9 @@ struct ClientProfileView: View {
                 TaskView(task: task)
             }
         }
-            
+        .onDisappear {
+            onDismiss?()
+        }
             .overlay(alignment: .center) {
                 if didCopyPhoneNumber {
                     Text("Номер клиента скопирован")

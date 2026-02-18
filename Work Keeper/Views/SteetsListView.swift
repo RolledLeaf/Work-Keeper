@@ -74,7 +74,7 @@ struct StreetsListView: View {
                 Button(action: {
                     showAddStreetView = true
                 }) {
-                    Image("plus")
+                    Image("plusClients")
                         .frame(width: 30, height: 30)
                        
                         

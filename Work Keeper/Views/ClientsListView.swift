@@ -28,6 +28,11 @@ struct ClientsListView: View {
 
     
     private let headerOverlayHeight: CGFloat = 110
+    
+    private func refreshScreen() {
+        viewModel.loadUserDefaultsAndSort()
+        viewModel.loadRemovedClients()
+    }
     var body: some View {
         
         NavigationStack {
@@ -164,7 +169,7 @@ struct ClientsListView: View {
                         }
                         .background(Color.custom(.mainBackground))
                         .navigationDestination(item: $selectedClient) { client in
-                            ClientProfileView(client: client)
+                            ClientProfileView(client: client, onDismiss: { refreshScreen() })
                         }
                     }
                 }
@@ -271,7 +276,6 @@ struct ClientsListView: View {
                         }
                         
                     }
-                    
                     .padding(.horizontal, 36)
                     
                     HStack {
@@ -388,8 +392,7 @@ struct ClientsListView: View {
         
 
         .onAppear {
-            viewModel.loadUserDefaultsAndSort()
-            viewModel.loadRemovedClients()
+           refreshScreen()
             
         }
         .alert("Вы уверены?",

@@ -270,6 +270,15 @@ struct TaskListView: View {
         }
     }
     
+    private func refreshScreen() {
+        loadSavedStatuses()
+        let today = dayKey(Date())
+        let keys = Array(viewModel.groupedTasksByDate.keys)
+        if keys.contains(today) {
+            listScrollPosition = today
+        }
+    }
+    
     private func openDatePicker() {
         draftDate = selectedDate
         showDatePickerSheet = true
@@ -749,22 +758,7 @@ struct TaskListView: View {
             .frame(maxWidth: .infinity, alignment: .topLeading)
             .padding(.top, 50)
             .padding(.bottom, 10)
-            .background {
-                // material blur that fades out with a vertical gradient
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .mask(
-                        LinearGradient(
-                            stops: [
-                                .init(color: .black, location: 0.0),
-                                .init(color: .black, location: 0.35),
-                                .init(color: .clear, location: 1.0)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-            }
+           
             
             .ignoresSafeArea(edges: .top)
             
@@ -787,7 +781,7 @@ struct TaskListView: View {
                 TaskView(task: task)
             }
             .navigationDestination(item: $selectedClient) { client in
-                ClientProfileView(client: client)
+                ClientProfileView(client: client, onDismiss: { refreshScreen() })
             }
         }
         .onChange(of: syncService.phase) { newPhase in
@@ -960,12 +954,7 @@ struct TaskListView: View {
         
         
         .onAppear {
-            loadSavedStatuses()
-            let today = dayKey(Date())
-            let keys = Array(viewModel.groupedTasksByDate.keys)
-            if keys.contains(today) {
-                listScrollPosition = today
-            }
+           refreshScreen()
         }
         
         

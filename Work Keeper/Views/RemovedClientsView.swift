@@ -29,7 +29,7 @@ struct RemovedClientsView: View {
     @State private var clientToRestore: Client?
     @State private var client: Client?
     
-     var onClose: (() -> Void)?
+     let onClose: (() -> Void)?
    
     
     // MARK: - Sync Objects
