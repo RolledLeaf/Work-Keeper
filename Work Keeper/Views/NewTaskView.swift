@@ -652,7 +652,7 @@ struct NewTaskView: View {
                              
                             }
                         } label: {
-                            Text(viewModel.roomType ?? "кв.")
+                            Text(viewModel.roomType)
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .foregroundColor(Color.custom(.pitchBlack))
                                 .frame(width: 25)
@@ -705,7 +705,7 @@ struct NewTaskView: View {
                                 }
                             }
                         } label: {
-                            Text(viewModel.entranceType ?? "под.")
+                            Text(viewModel.entranceType)
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .frame(width: 32)

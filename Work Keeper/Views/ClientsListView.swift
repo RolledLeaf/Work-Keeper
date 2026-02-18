@@ -8,6 +8,7 @@ struct ClientsListView: View {
     @State private var showDeleteClientNotification = false
     @State private var showEditClientNotification = false
     @State private var isSpinning = false
+    @State private var removedClientsActive = false
     @State private var lastAddedClientName = ""
     @State private var lastDeletedClientName = ""
     @State private var lastEditedClientName = ""
@@ -77,6 +78,34 @@ struct ClientsListView: View {
                     } else {
                         
                         List {
+                            if !viewModel.removedClients.isEmpty {
+                                ZStack {
+                                    NavigationLink {
+                                        RemovedClientsView(onClose: {
+                                            viewModel.loadUserDefaultsAndSort()
+                                            viewModel.loadRemovedClients()
+                                        })
+                                    } label: {
+                                        EmptyView()
+                                    }
+                                    .opacity(0)
+
+                                    HStack(spacing: 15) {
+                                        Image(systemName: "xmark.bin")
+                                        Text("Удалённые клиенты")
+                                            .font(.custom(Montserrat.regular.rawValue, size: 14))
+                                            .foregroundStyle(.textTitleGray)
+
+                                        Spacer()
+
+                                        Text("\(viewModel.removedClients.count)")
+                                            .font(.custom(Montserrat.bold.rawValue, size: 12))
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .frame(height: 15)
+                                }
+                                .listRowSeparator(.hidden)
+                            }
                             ForEach(viewModel.clientsGroupedByFirstLetter, id: \.letter) { section in
                                 Section(header:
                                     HStack {
@@ -175,10 +204,10 @@ struct ClientsListView: View {
                                 
                                 Text("Нет сети, работа оффлайн")
                                     .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.pitchBlack)
                                 Image(systemName: "wifi.slash")
                                     .font(.system(size: 13))
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(.pitchBlack)
                             }
                             .frame(height: 15)
                             
@@ -360,6 +389,7 @@ struct ClientsListView: View {
 
         .onAppear {
             viewModel.loadUserDefaultsAndSort()
+            viewModel.loadRemovedClients()
             
         }
         .alert("Вы уверены?",
@@ -369,9 +399,10 @@ struct ClientsListView: View {
                 let name = client.firstName ?? "имя не указано"
                 lastDeletedClientName = name
 
-                viewModel.delete(client)
+                viewModel.softDelete(client)
                 clientToDelete = nil
-
+                viewModel.loadRemovedClients()
+                viewModel.loadUserDefaultsAndSort()
                 withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
                     showDeleteClientNotification = true
                 }

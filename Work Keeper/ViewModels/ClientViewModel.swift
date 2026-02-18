@@ -1,6 +1,7 @@
 
 import Foundation
 import Combine
+import CoreData
 
 enum SortOption: String, CaseIterable, Identifiable {
     case nameAZ = "По именам А-Я"
@@ -56,7 +57,9 @@ final class ClientsListViewModel: ObservableObject {
             rebuildClientsGroupedByFirstLetter()
         }
     }
-    /// Секции клиентов по первой букве имени (firstName)
+    @Published var removedClients: [Client] = []
+    
+    
     @Published var clientsGroupedByFirstLetter: [(letter: String, clients: [Client])] = []
     @Published var selectedClient: Client?
     @Published var pickedAddress: Address?
@@ -74,9 +77,22 @@ final class ClientsListViewModel: ObservableObject {
     private let store = ClientStore()
     private let streetStore = StreetStore()
     private let addressStore = AddressStore()
+    private let context: NSManagedObjectContext
+    private let tombstones: PendingDeleteStore
     
-    init() {
+    
+    var removedClientsSortedByDeletedAt: [Client] {
+        removedClients.sorted {
+            ($0.deletedAt ?? .distantPast) > ($1.deletedAt ?? .distantPast)
+        }
+    }
+
+   init(context: NSManagedObjectContext = CoreDataStack.shared.context) {
+        self.context = context
+        self.tombstones = PendingDeleteStore(context: context)
+
         rebuildClientsGroupedByFirstLetter()
+
         $searchText
             .debounce(for: .milliseconds(250), scheduler: RunLoop.main)
             .removeDuplicates()
@@ -87,6 +103,8 @@ final class ClientsListViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
+  
+    
     private func rebuildClientsGroupedByFirstLetter() {
         let grouped = Dictionary(grouping: clients) { client -> String in
             let name = (client.firstName ?? "")
@@ -94,40 +112,40 @@ final class ClientsListViewModel: ObservableObject {
             guard let first = name.first else { return "#" }
             return String(first).uppercased()
         }
-
+        
         let ascending = sortSelection.ascendingForSortKey
-
+        
         // Секции: А→Я или Я→А. "#" всегда в конце
         let sortedLetters = grouped.keys.sorted { a, b in
             if a == "#" { return false }
             if b == "#" { return true }
-
+            
             let cmp = a.localizedStandardCompare(b)
             return ascending ? (cmp == .orderedAscending) : (cmp == .orderedDescending)
         }
-
+        
         clientsGroupedByFirstLetter = sortedLetters.map { letter in
             let items = (grouped[letter] ?? []).sorted { a, b in
                 let aFirst = (a.firstName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
                 let bFirst = (b.firstName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-
+                
                 let firstCmp = aFirst.localizedStandardCompare(bFirst)
                 if firstCmp != .orderedSame {
                     return ascending ? (firstCmp == .orderedAscending) : (firstCmp == .orderedDescending)
                 }
-
+                
                 let aLast = (a.lastName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
                 let bLast = (b.lastName ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-
+                
                 let lastCmp = aLast.localizedStandardCompare(bLast)
                 if lastCmp != .orderedSame {
                     return ascending ? (lastCmp == .orderedAscending) : (lastCmp == .orderedDescending)
                 }
-
+                
                 // запасной стабильный ключ
                 return (a.phone ?? "") < (b.phone ?? "")
             }
-
+            
             return (letter: letter, clients: items)
         }
     }
@@ -165,7 +183,7 @@ final class ClientsListViewModel: ObservableObject {
         print("loading clients sorted by: \(sortingString), ascending: \(ascending)")
     }
     
-
+    
     func saveUserDefaults(option: SortOption, key: String) {
         userDefaults.set(option.rawValue, forKey: key)
         print("Clients \(option) sorting is saved")
@@ -190,48 +208,35 @@ final class ClientsListViewModel: ObservableObject {
             loadClients()
         }
     }
-        
     
-//    func loadUserDefaultsAndApplySorting(sortingOption: SortOption) {
-//        if let savedSorting = userDefaults.string(forKey: UserDefaultsKeys.clientsSorting.rawValue),
-//           let sortingOption = SortOption(rawValue: savedSorting) {
-//            
-//            switch sortingOption {
-//            case .nameAZ:
-//                clients = store.fetchClients(sortedBy: "name", ascending: true)
-//            case .nameZA:
-//                clients = store.fetchClients(sortedBy: "name", ascending: false)
-//                
-//            }
-//        }
-//    }
-//    
     
     func applySort(option: SortOption) {
         if let key = option.sortKey {
             loadSorted(sortingString: key, ascending: option.ascendingForSortKey)
             saveUserDefaults(option: option, key: UserDefaultsKeys.clientsSorting.rawValue)
-            
-            
+
         }
     }
+   
+    func pickClient(_ client: Client) {
+        selectedClient = client
+        // если адрес не выбирали явно, сбрасываем предыдущий выбор
+        pickedAddress = nil
+    }
     
-
-        
-        func pickClient(_ client: Client) {
-            selectedClient = client
-            // если адрес не выбирали явно, сбрасываем предыдущий выбор
-            pickedAddress = nil
-        }
-        
-        func pickClient(_ client: Client, address: Address) {
-            selectedClient = client
-            pickedAddress = address
-        }
-        
-        func loadClients() {
-            clients = store.fetchClients()
-        }
+    func pickClient(_ client: Client, address: Address) {
+        selectedClient = client
+        pickedAddress = address
+    }
+    
+    func loadClients() {
+        clients = store.fetchClients()
+    }
+    
+  
+    func loadRemovedClients() {
+        removedClients = store.fetchRemovedClients()
+    }
         
         func addAddress(
             to client: Client,
@@ -301,11 +306,37 @@ final class ClientsListViewModel: ObservableObject {
             loadClients()
         }
 
-        func delete(_ client: Client) {
-            store.deleteClient(client)
-            loadClients()
-        }
+    func restore(_ client: Client) {
+        store.restoreClient(client)
+        loadRemovedClients()
+    }
     
+    func softDelete(_ client: Client) {
+        store.deleteClient(client)
+        loadClients()
+    }
+
+    func delete(_ client: Client) {
+        if let rid = client.remoteId {
+            tombstones.enqueue(.clients, remoteId: rid)
+        }
+
+        store.purgeClient(client)
+        loadRemovedClients()
+    }
+
+    func purgeAllRemovedClients() {
+        // Enqueue tombstones for every removed client that exists on the server.
+        removedClients.forEach { c in
+            if let rid = c.remoteId {
+                tombstones.enqueue(.clients, remoteId: rid)
+            }
+        }
+        // Permanent local purge
+        let toDelete = removedClients
+        toDelete.forEach { store.purgeClient($0) }
+        loadRemovedClients()
+    }
 }
 
 final class CreateClientViewModel: ObservableObject {

@@ -84,6 +84,19 @@ final class ClientStore: NSObject, ObservableObject {
         }
     }
     
+    func fetchRemovedClients() -> [Client] {
+        let request: NSFetchRequest<Client> = Client.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Client.firstName, ascending: true)]
+        request.predicate = NSPredicate(format: "deletedAt != nil")
+        
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("❌ Error fetching removed clients: \(error)")
+            return []
+        }
+    }
+    
     func fetchClients(sortedBy keypath: String, ascending: Bool) -> [Client] {
         print("Fetching and sorting clients with \(keypath)...")
         let request: NSFetchRequest<Client> = Client.fetchRequest()
@@ -282,6 +295,34 @@ final class ClientStore: NSObject, ObservableObject {
         } catch {
             print("❌ Error updating client: \(error)")
         }
+    }
+    
+    func restoreClient(_ client: Client) {
+        guard client.deletedAt != nil else { return }
+        let now = Date()
+
+        if let addresses = client.address as? Set<Address> {
+            for address in addresses where address.deletedAt != nil {
+                address.deletedAt = nil
+                address.updatedAt = now
+                address.needsSync = true
+            }
+        }
+
+        if let tasks = client.tasks as? Set<TaskEntity> {
+            for task in tasks where task.deletedAt != nil {
+                task.deletedAt = nil
+                task.updatedAt = now
+                task.needsSync = true
+            }
+        }
+
+        client.deletedAt = nil
+        client.updatedAt = now
+        client.needsSync = true
+
+        do { try context.save() }
+        catch { print("❌ Error restoring client: \(error)") }
     }
     
     func deleteClient(_ client: Client) {

@@ -26,6 +26,8 @@ final class TaskListViewModel: ObservableObject {
     
     private let store = TaskStore()
     private var cancelables = Set<AnyCancellable>()
+    private let context: NSManagedObjectContext
+    private let tombstones: PendingDeleteStore
 
     func scheduleTask(_ task: TaskEntity, at date: Date) {
         task.scheduledAt = date
@@ -44,10 +46,12 @@ final class TaskListViewModel: ObservableObject {
         }
     }
  
-    init() {
-        // initial load
+    init(context: NSManagedObjectContext = CoreDataStack.shared.context) {
+        self.context = context
+        self.tombstones = PendingDeleteStore(context: context)
+
         loadTasks()
-        // Debounce searchText changes and apply combined filters after user stops typing
+
         $searchText
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
             .removeDuplicates()
@@ -56,7 +60,6 @@ final class TaskListViewModel: ObservableObject {
             }
             .store(in: &cancelables)
 
-        // React to status selection changes immediately
         $selectedStatuses
             .sink { [weak self] _ in
                 self?.applyFiltersAsync()
@@ -135,10 +138,14 @@ final class TaskListViewModel: ObservableObject {
         }
     }
     
-    func loadTasks() {
-        tasks = store.fetchTasks()
-    }
+//    func loadTasks() {
+//        tasks = store.fetchTasks()
+//    }
 
+    func loadTasks() {
+        applyCurrentFiltersUsingDB()
+    }
+    
      func applyFiltersAsync() {
         print("[TaskListViewModel] applyFiltersAsync called with searchText:", searchText)
         Task { // без [weak self]
@@ -189,7 +196,53 @@ final class TaskListViewModel: ObservableObject {
     
     func delete(_ task: TaskEntity) {
         store.deleteTask(task)
-        loadTasks()
+        // Re-apply current filters/search so UI updates while staying on the current filter state
+        applyCurrentFiltersUsingDB()
+    }
+
+    /// Hard delete: removes the task from CoreData permanently, but writes a tombstone so the server can be notified.
+    /// Use this for "delete forever" flows (e.g. Removed items screen), not for normal delete.
+    func hardDelete(_ task: TaskEntity, debug: Bool = false) {
+        // Build remoteId (preferred) or fall back to local id
+        let remoteIdUUID: UUID? = task.remoteId
+        let fallbackLocalId: UUID? = task.id
+
+        let resolvedUUID: UUID? = {
+            if let u = remoteIdUUID { return u }
+            if let u = fallbackLocalId { return u }
+            return nil
+        }()
+
+        guard let tombstoneId = resolvedUUID else {
+            if debug { print("❌ hardDelete(Task): cannot resolve UUID for tombstone. remoteId=\(String(describing: remoteIdUUID)) localId=\(String(describing: fallbackLocalId))") }
+            // Even if we can't make a tombstone, we still purge locally to satisfy UX.
+            store.purgeTask(task)
+            applyCurrentFiltersUsingDB()
+            return
+        }
+
+        // Write tombstone into the same CoreData store (PendingDelete entity) so Push can send it later.
+        // We use KVC to avoid tight coupling to the generated NSManagedObject subclass.
+        if let entity = NSEntityDescription.entity(forEntityName: "PendingDelete", in: context) {
+            let tomb = NSManagedObject(entity: entity, insertInto: context)
+            tomb.setValue(UUID(), forKey: "id")
+            tomb.setValue("tasks", forKey: "objectName")
+            tomb.setValue(tombstoneId, forKey: "remoteId")
+            tomb.setValue(Date(), forKey: "deletedAt")
+
+            do {
+                try context.save()
+                if debug { print("🪦 Tombstone saved for Task. remoteId=\(tombstoneId)") }
+            } catch {
+                print("❌ Failed to save Task tombstone:", error)
+            }
+        } else {
+            if debug { print("⚠️ PendingDelete entity not found in model; skipping tombstone") }
+        }
+
+        // Purge the task locally
+        store.purgeTask(task)
+        applyCurrentFiltersUsingDB()
     }
     
     

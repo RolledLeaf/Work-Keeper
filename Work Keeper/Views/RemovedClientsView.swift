@@ -1,5 +1,14 @@
 import SwiftUI
 
+private enum RemovedClientsFormatters {
+    static let deletedAt: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ru_RU")
+        f.dateFormat = "dd.MM.yyyy"
+        return f
+    }()
+}
+
 struct RemovedClientsView: View {
     @State private var showNewClientView = false
     @State private var showDeleteAlert = false
@@ -11,13 +20,16 @@ struct RemovedClientsView: View {
     @State private var lastAddedClientName = ""
     @State private var lastDeletedClientName = ""
     @State private var lastEditedClientName = ""
+    @State private var showPurgeAllDialog = false
     
     @StateObject private var viewModel = ClientsListViewModel()
 
     @State private var selectedClient: Client?
     @State private var clientToDelete: Client?
-    @State private var clientToEdit: Client?
+    @State private var clientToRestore: Client?
     @State private var client: Client?
+    
+     var onClose: (() -> Void)?
    
     
     // MARK: - Sync Objects
@@ -29,7 +41,6 @@ struct RemovedClientsView: View {
     private let headerOverlayHeight: CGFloat = 110
     var body: some View {
         
-        NavigationStack {
             ZStack {
                 // Always fill the screen so the top overlay has a stable layout container
                 Color.custom(.mainBackground)
@@ -49,17 +60,19 @@ struct RemovedClientsView: View {
 
                 VStack {
   
-                    if viewModel.clients.isEmpty {
+                   
+                    
+                    if viewModel.removedClients.isEmpty {
                         
                         EmptyListPlaceholderView(
                             line1: .init(
-                                text: viewModel.searchText.isBlank ? "Клиентов" : "Клиент",
+                                text: viewModel.searchText.isBlank ? "УДАЛЁННЫХ" : "Клиент",
                                 color: Color.custom(.taskViewYellow),
                                 font: .custom(Montserrat.black.rawValue, size: 38),
                                 height: 27
                             ),
                             line2: .init(
-                                text: viewModel.searchText.isBlank ? "ПОКА" : "НЕ",
+                                text: viewModel.searchText.isBlank ? "КЛИЕНТОВ" : "НЕ",
                                 color: Color.custom(.taskCompleteGreen),
                                 font: .custom(Montserrat.bold.rawValue, size: 38),
                                 height: 27
@@ -70,57 +83,55 @@ struct RemovedClientsView: View {
                             line3SuffixFont: .custom(Montserrat.black.rawValue, size: 38),
                             line3Color: Color.custom(.taskCanceledOrange),
                             line3Height: 27,
-                            hintText: viewModel.searchText.isBlank ? "Создайте карточку клиента, нажав на \nиконку “+“ в правом верхнем углу экрана" : ""
+                            hintText: viewModel.searchText.isBlank ? "" : ""
                         )
                         
 //                        Spacer()
                     } else {
                         
                         List {
-                            ForEach(viewModel.clientsGroupedByFirstLetter, id: \.letter) { section in
-                                Section(header:
-                                    HStack {
-                                        Rectangle()
-                                            .frame(height: 1)
-                                        Text(section.letter)
-                                            .font(.custom(Montserrat.bold.rawValue, size: 15))
-                                        Rectangle()
-                                            .frame(height: 1)
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.top, -8)
-                                    .padding(.bottom, 6)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .frame(height: 18)
-                                    .background(Color.clear)
-                                ) {
-                                    ForEach(section.clients) { client in
-                                        ClientRow(client: client, viewModel: viewModel)
-                                            .padding(.vertical, 5)
-                                            .listRowInsets(.init(top: 0, leading: 16, bottom: 0, trailing: 16))
-                                            .listRowSeparator(.hidden)
-                                            .contentShape(Rectangle())
-                                            .onTapGesture { selectedClient = client }
-                                            .swipeActions(edge: .trailing) {
-                                                Button {
-                                                    clientToDelete = client
-                                                    showDeleteAlert = true
-                                                } label: {
-                                                    Image("delete")
-                                                    Text("Удалить")
-                                                }
-                                                .tint(Color.custom(.pureWhite))
+                            HStack {
+                                Spacer()
+                                Text("Удалённые клиенты")
+                                    .font(.custom(Montserrat.bold.rawValue, size: 15))
+                                    .foregroundStyle(.pitchBlack)
+                                Spacer()
+                            }
+                            ForEach(viewModel.removedClientsSortedByDeletedAt) { client in
+                                ZStack(alignment: .topTrailing) {
+                                    ClientRow(client: client, viewModel: viewModel)
 
-                                                Button {
-                                                    clientToEdit = client
-                                                    // Edit uses the `.sheet(item: $clientToEdit, ...)` below
-                                                } label: {
-                                                    Image("edit")
-                                                    Text("Редактировать")
-                                                }
-                                                .tint(Color.custom(.pureWhite))
-                                            }
+                                    if let deletedAt = client.deletedAt {
+                                        Text(RemovedClientsFormatters.deletedAt.string(from: deletedAt))
+                                            .font(.custom(Montserrat.regular.rawValue, size: 11))
+                                            .foregroundStyle(.textTitleGray)
+                                            .padding(.top, 8)
+                                            .padding(.trailing, 10)
                                     }
+                                }
+                                .padding(.vertical, 5)
+                                .listRowInsets(.init(top: 0, leading: 16, bottom: 0, trailing: 16))
+                                .listRowSeparator(.hidden)
+                                .contentShape(Rectangle())
+                                .onTapGesture { selectedClient = client }
+                                .swipeActions(edge: .trailing) {
+                                    Button {
+                                        clientToDelete = client
+                                        showDeleteAlert = true
+                                    } label: {
+                                        Image("delete")
+                                        Text("Удалить")
+                                    }
+                                    .tint(Color.custom(.pureWhite))
+
+                                    Button {
+                                        clientToRestore = client
+                                        viewModel.restore(client)
+                                    } label: {
+                                        Image("edit")
+                                        Text("Восстановить")
+                                    }
+                                    .tint(Color.custom(.pureWhite))
                                 }
                             }
                             .listRowBackground(Color.custom(.mainBackground))
@@ -147,104 +158,6 @@ struct RemovedClientsView: View {
             
             .overlay(alignment: .top) {
                 VStack {
-                    HStack {
-                        Button(action: {
-                            switch viewModel.sortSelection {
-                            case .nameAZ:
-                            
-                                viewModel.sortSelection = .nameZA
-                                viewModel.applySort(option: viewModel.sortSelection)
-                            case .nameZA:
-                                
-                                viewModel.sortSelection = .nameAZ
-                                viewModel.applySort(option: viewModel.sortSelection)
-                            }
-                        }) {
-                            Image(viewModel.sortSelection == .nameAZ ? "sortAZ" : "sortZA" )
-                                .resizable()
-                                .frame(width: 30, height: 30)
-                                
-                                
-                        }
-//                        .padding(.leading, 3)
-                        
-                        Spacer()
-                        
-                        if !networkMonitor.isOnline {
-                            HStack(alignment: .center ) {
-                                
-                                Text("Нет сети, работа оффлайн")
-                                    .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                    .foregroundColor(.secondary)
-                                Image(systemName: "wifi.slash")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(.secondary)
-                            }
-                            .frame(height: 15)
-                            
-                            
-                        } else {
-                            
-                            switch syncService.phase {
-                            case .syncing:
-                                HStack {
-                                   
-                                    Text("синхронизация")
-                                        .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                    Image("sync")
-                                        .resizable()
-                                        .frame(width: 13.55, height: 15)
-                                        .rotationEffect(.degrees(isSpinning ? 360 : 0))
-                                        .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: isSpinning)
-                                        .onAppear { isSpinning = true }
-                                        .onDisappear { isSpinning = false }
-                                }
-                                
-                                .frame(height: 15)
-                                
-                            case .success:
-                                HStack {
-                                   
-                                    Text("синхронизировано")
-                                        .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                    Image("syncCompleted")
-                                        .resizable()
-                                        .frame(width: 13.55, height: 15)
-                                }
-                                .frame(height: 15)
-                                
-                            case .failure:
-                                HStack {
-                                   
-                                    Text("ошибка синхронизации")
-                                        .font(.custom(Montserrat.regular.rawValue, size: 11))
-                                    Image("syncError")
-                                        .resizable()
-                                        .frame(width: 13.55, height: 15)
-                                }
-                                .frame(height: 15)
-                                
-                            case .idle:
-                                // Keep layout stable (optional). Remove this Spacer if you prefer the UI to collapse.
-                                Spacer().frame(height: 15)
-                            }
-                        }
-                        Spacer()
-                        
-                        Button(action: {
-                            showNewClientView = true
-                        }) {
-                            Image("plusClients")
-                                .resizable()
-                                .frame(width: 30, height: 30)
-                                .foregroundStyle(.pitchBlack)
-                                .ifAvailableButtonStyleGlass()
-                        }
-                        
-                    }
-                    
-                    .padding(.horizontal, 36)
-                    
                     HStack {
                         HStack {
                             Image("magnifyingGlass")
@@ -300,6 +213,31 @@ struct RemovedClientsView: View {
                 .padding(.bottom, 10)
             }
             
+        
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if !viewModel.removedClients.isEmpty {
+                    Button {
+                        showPurgeAllDialog = true
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(Color.custom(.pitchBlack))
+                    }
+                }
+            }
+        }
+        .confirmationDialog(
+            "Удалить всех удалённых клиентов?",
+            isPresented: $showPurgeAllDialog,
+            titleVisibility: .visible
+        ) {
+            Button("Удалить навсегда", role: .destructive) {
+                viewModel.purgeAllRemovedClients()
+                syncService.runManualSync(auth: auth, debug: true)
+            }
+            Button("Отмена", role: .cancel) { }
+        } message: {
+            Text("Это действие удалит \(viewModel.removedClients.count) клиентов навсегда.")
         }
         
         
@@ -337,38 +275,19 @@ struct RemovedClientsView: View {
                 viewModel.loadUserDefaultsAndSort()
             })
         }
-        
-        .sheet(item: $clientToEdit, onDismiss: {
-            viewModel.loadUserDefaultsAndSort()
-        }) { client in
-            EditClientView(viewModel: EditClientViewModel(client: client),
-                           onEdit: { editedName in
-                lastEditedClientName = editedName
-                withAnimation(.spring(response: 0.35, dampingFraction: 1.25)) {
-                    showEditClientNotification = true
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    withAnimation(.easeOut(duration: 0.25)) {
-                        showEditClientNotification = false
-                    }
-                }
-                syncService.runManualSync(auth: auth, debug: true)
-            })
-        }
-        
-        
-
+ 
         .onAppear {
-            viewModel.loadUserDefaultsAndSort()
+            viewModel.loadRemovedClients()
             
         }
+        
+        .onDisappear { onClose?() }
         .alert("Вы уверены?",
                isPresented: $showDeleteAlert,
                presenting: clientToDelete) { client in
             Button(client.totalTasksCount > 0 ? "Удалить клиента и задания" : "Удалить клиента", role: .destructive) {
                 let name = client.firstName ?? "имя не указано"
                 lastDeletedClientName = name
-
                 viewModel.delete(client)
                 clientToDelete = nil
 
@@ -403,6 +322,3 @@ struct RemovedClientsView: View {
     }
     
 }
-
-
-
