@@ -141,7 +141,7 @@ struct EditTaskView: View {
                             
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
                                 .foregroundStyle(Color.custom(.pitchBlack))
-                                .padding(.horizontal, 16)
+                                .padding(.horizontal, 12)
                                 .frame(height: 80)
                                 .multilineTextAlignment(.leading)
                                 .scrollContentBackground(.hidden) // скрыть внутренний фон
@@ -169,6 +169,7 @@ struct EditTaskView: View {
                         Spacer()
                             .frame(height: 20)
                     }
+                    
                     .background(
                         RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .fill(Color.custom(.bckgFieldGray))
@@ -177,16 +178,9 @@ struct EditTaskView: View {
                         RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
-                    .padding(.top, 1)
-                    .padding(.horizontal, 1)
-                    
-                    
-                    
-                    
-                    
+                    .padding(.horizontal, 0)
+            
                     VStack {
-                    
-
                             Text("Комментарий")
                                
                                 .foregroundColor(Color.custom(.textTitleGray))
@@ -203,7 +197,7 @@ struct EditTaskView: View {
                             
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
                                 .foregroundStyle(Color.custom(.pitchBlack))
-                                .padding(.horizontal, 16)
+                                .padding(.horizontal, 12)
                                 .frame(height: 80)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .multilineTextAlignment(.leading)
@@ -212,7 +206,7 @@ struct EditTaskView: View {
                                 .onChange(of: viewModel.comment) { newValue in
                                     if newValue.count > maxDescriptionCharactersCount {
                                         viewModel.comment = String(newValue.prefix(maxDescriptionCharactersCount))
-                                    }    
+                                    }
                                 }
                             
                         }
@@ -379,9 +373,10 @@ struct EditTaskView: View {
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     .padding(.horizontal, 4)
+                   
 
                   
-                    VStack {
+                    VStack(spacing: 4) {
                     //address section
                     HStack {
                         Text("Улица")
@@ -391,11 +386,12 @@ struct EditTaskView: View {
                             
                         Spacer()
                     }
-                    .padding(.leading, 36)
+                    .padding(.leading, 37)
                     .frame(height: 12)
                     
-                        HStack {
-                            HStack(spacing: 6) {
+                        ZStack {
+                            Color.custom(viewModel.isRemote ? .inactiveFiledGray : .pureWhite)
+                            HStack {
                                 TextEditor(text: $viewModel.streetName)
                                     .font(.custom(Montserrat.regular.rawValue, size: 15))
                                     .foregroundStyle(Color.custom(.pitchBlack))
@@ -428,19 +424,17 @@ struct EditTaskView: View {
                                 .disabled(viewModel.isRemote ? true : false)
                                 
                             }
-                            .frame(height: 40)
-                            .padding(.trailing, 10)
-                            .padding(.leading, 10)
-                            .background(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .fill(  Color.custom(streetTextFieldColor))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                            )
+                           
+                            .padding(.leading, 12)
+                            .padding(.trailing, 17)
                         }
-                        .padding(.horizontal, 20)
+                        .cornerRadius(30)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 30)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                        )
+                        .frame(height: 40)
+                        .padding(.horizontal, 21)
                     
                     
                     
@@ -706,6 +700,7 @@ struct EditTaskView: View {
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                             .padding(.horizontal, 4)
+                            .padding(.top, -4)
 
                     
                     VStack {

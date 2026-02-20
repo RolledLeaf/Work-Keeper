@@ -338,7 +338,7 @@ struct NewTaskView: View {
                             
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
                                 .foregroundStyle(Color.custom(.pitchBlack))
-                                .padding(.horizontal, 16)
+                                .padding(.horizontal, 12)
                                 .frame(height: 80)
                                 .multilineTextAlignment(.leading)
                                 .scrollContentBackground(.hidden) // скрыть внутренний фон
@@ -355,14 +355,14 @@ struct NewTaskView: View {
                                 .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                         
-                        .padding(.horizontal, 24)
+                        .padding(.horizontal, 20)
                         .padding(.top, 7)
                         
                         
                         Spacer()
                             .frame(height: 20)
                     }
-                    
+                   
                     .background(
                         RoundedCorner(radius: adaptiveCardRadius, corners: [.allCorners])
                             .fill(Color.custom(.bckgFieldGray))
@@ -373,7 +373,7 @@ struct NewTaskView: View {
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     .padding(.top, 1)
-                    .padding(.horizontal, 1)
+                    .padding(.horizontal, 4)
                     
                     HStack {
                         ZStack {
@@ -466,6 +466,7 @@ struct NewTaskView: View {
                             }
                             
                             Spacer()
+                                .frame(width: 11)
                             
                             VStack(spacing: 4) {
                                 Text("Контакт")
@@ -510,9 +511,8 @@ struct NewTaskView: View {
                     )
                     .padding(.horizontal, 4)
                     
-                    
-                    VStack {
-                    //address section
+                    //address section begings
+                    VStack(spacing: 4) {
                     HStack {
                         Text("Улица")
                             .foregroundColor(Color.custom(.textTitleGray))
@@ -521,18 +521,19 @@ struct NewTaskView: View {
                             
                         Spacer()
                     }
-                    .padding(.leading, 36)
+                    .padding(.leading, 37)
                     .frame(height: 12)
                     
-                        HStack {
-                            HStack(spacing: 6) {
+                        ZStack {
+                            Color.custom(viewModel.isRemote ? .inactiveFiledGray : .pureWhite)
+                            HStack {
                                 TextEditor(text: $viewModel.streetName)
                                     .font(.custom(Montserrat.regular.rawValue, size: 15))
                                     .foregroundStyle(Color.custom(.pitchBlack))
                                     .frame(height: 40, alignment: .center)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                     .multilineTextAlignment(.leading)
                                     .disabled(viewModel.remoteEditingBlock)
-                                 
                                     .scrollContentBackground(.hidden)
                                     .onChange(of: viewModel.streetName) { _, newValue in
                                         if newValue.count > maxStreetCharactersCount {
@@ -553,24 +554,22 @@ struct NewTaskView: View {
                                 }) {
                                     Image("chevronRight")
                                         .opacity(streetChevronOpacity)
+                                        .frame(width: 12, height: 6.61)
                                 }
                                 .tint(Color.custom(.pitchBlack))
                                 .disabled(viewModel.isRemote ? true : false)
                                 
                             }
-                            .frame(height: 40)
-                            .padding(.trailing, 10)
-                            .padding(.leading, 10)
-                            .background(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .fill(  Color.custom(streetTextFieldColor))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                            )
+                            .padding(.leading, 12)
+                            .padding(.trailing, 17)
                         }
-                        .padding(.horizontal, 20)
+                        .cornerRadius(30)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 30)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                        )
+                        .frame(height: 40)
+                        .padding(.horizontal, 21)
                     
                     
                     
@@ -838,6 +837,7 @@ struct NewTaskView: View {
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                             .padding(.horizontal, 4)
+                            .padding(.top, -4)
                
                     
                     VStack {

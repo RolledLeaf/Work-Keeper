@@ -3,6 +3,7 @@ import SwiftUI
 enum DeviceLayout {
     static func cardRadius(for width: CGFloat) -> CGFloat {
         switch width {
+            
         case 393: //iPhone 16 Pro, 16, 15 Pro, 15, 14 Pro
             return 36
         case 414: //iPhone 11 Pro Max, XS Max, 11, XR, 8 Plus, 7 Plus, 6s Plus, 6 Plus
