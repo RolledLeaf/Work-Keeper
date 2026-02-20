@@ -66,7 +66,7 @@ struct RemovedClientsView: View {
                         
                         EmptyListPlaceholderView(
                             line1: .init(
-                                text: viewModel.searchText.isBlank ? "УДАЛЁННЫХ" : "Клиент",
+                                text: viewModel.searchText.isBlank ? "УДАЛЁННЫХ" : "КЛИЕНТ",
                                 color: Color.custom(.taskViewYellow),
                                 font: .custom(Montserrat.black.rawValue, size: 38),
                                 height: 27

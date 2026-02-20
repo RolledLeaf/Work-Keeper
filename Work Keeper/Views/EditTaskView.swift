@@ -101,12 +101,20 @@ struct EditTaskView: View {
                     
                     VStack  {
                         HStack {
-                            Text("• РЕДАКТИРОВАТЬ ")
-                                .font(.custom(Montserrat.bold.rawValue, size: 20))
+                            Text("• ")
+                                .font(.custom(Montserrat.black.rawValue, size: 20))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                             +
-                            Text("ЗАДАНИЕ •")
+                            Text("РЕДАКТИРОВАТЬ ")
+                                .font(.custom(Montserrat.black.rawValue, size: 20))
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                            +
+                            Text("ЗАДАНИЕ")
                                 .font(.custom(Montserrat.regular.rawValue, size: 20))
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                            +
+                            Text(" •")
+                                .font(.custom(Montserrat.black.rawValue, size: 20))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .frame(height: 22)
@@ -960,7 +968,7 @@ struct EditTaskView: View {
                         
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                    .padding(.top, 15)
                 } // end of main VStack
                 
 

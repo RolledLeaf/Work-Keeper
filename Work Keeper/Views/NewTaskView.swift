@@ -298,12 +298,20 @@ struct NewTaskView: View {
                 VStack {
                     VStack  {
                         HStack {
-                            Text("• НОВОЕ ")
-                                .font(.custom(Montserrat.bold.rawValue, size: 20))
+                            Text("• ")
+                                .font(.custom(Montserrat.black.rawValue, size: 20))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                             +
-                            Text("ЗАДАНИЕ •")
+                            Text("НОВОЕ ")
+                                .font(.custom(Montserrat.black.rawValue, size: 20))
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                            +
+                            Text("ЗАДАНИЕ")
                                 .font(.custom(Montserrat.regular.rawValue, size: 20))
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                            +
+                            Text(" •")
+                                .font(.custom(Montserrat.black.rawValue, size: 20))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .frame(height: 22)
@@ -418,7 +426,7 @@ struct NewTaskView: View {
                         HStack {
                             Text("Клиент")
                                 .foregroundColor(Color.custom(.textTitleGray))
-      .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .background(Color.clear)
                                 .frame(maxWidth: .infinity,alignment: .leading)
                                 .frame(height: 12)
@@ -815,10 +823,13 @@ struct NewTaskView: View {
                         Spacer()
                         
                         Toggle(isOn: $viewModel.isRemote) {
-                            Text("Удалёнка")
-                                .font(.custom(Montserrat.regular.rawValue, size: 15))
-                                .frame(alignment: .trailing)
-                                .foregroundStyle(Color.custom(.pitchBlack))
+                            HStack {
+                                Spacer()
+                                Text("Удалёнка")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                    .frame(alignment: .trailing)
+                                    .foregroundStyle(Color.custom(.pitchBlack))
+                            }
                         }
                         .tint(Color.custom(.taskCompleteGreen))
                         
@@ -957,7 +968,7 @@ struct NewTaskView: View {
                             .frame(height: 17)
                         
                         HStack {
-                            Text("Итого:")
+                            Text("ИТОГО:")
                                 .font(.custom(Montserrat.bold.rawValue, size: 15))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                             
@@ -1018,7 +1029,10 @@ struct NewTaskView: View {
                         
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                    .padding(.top, 15)
+                    
+                    Spacer()
+                        .frame(height: 20)
                 } // end of main VStack
                 
             }
