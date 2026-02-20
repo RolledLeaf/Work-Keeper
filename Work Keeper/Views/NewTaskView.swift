@@ -347,9 +347,7 @@ struct NewTaskView: View {
                                     if newValue.count > maxDescriptionCharactersCount {
                                         viewModel.description = String(newValue.prefix(maxDescriptionCharactersCount))
                                     }
-           
                                 }
-                            
                         }
                         .cornerRadius(20)
                         .overlay(
@@ -424,83 +422,60 @@ struct NewTaskView: View {
                     
                     VStack { // Начало, клиент и телефон
                         HStack {
-                            Text("Клиент")
-                                .foregroundColor(Color.custom(.textTitleGray))
-                                .font(.custom(Montserrat.regular.rawValue, size: 12))
-                                .background(Color.clear)
-                                .frame(maxWidth: .infinity,alignment: .leading)
-                                .frame(height: 12)
-                            
-                            Spacer()
-                            
-                            Text("Контакт")
-                               
-                                .foregroundColor(Color.custom(.textTitleGray))
-                                .font(.custom(Montserrat.regular.rawValue, size: 12))
-                                .background(Color.clear)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                                .frame(height: 12)
-                            
-                        }
-                        .padding(.top, 16)
-                        .padding(.leading, 36)
-                        .padding(.trailing, 126)
-                        
-                        HStack {
-                            ZStack {
-                                Color.custom(.pureWhite)
+                            VStack(spacing: 4) {
+                                Text("Клиент")
+                                    .foregroundColor(Color.custom(.textTitleGray))
+                                    .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                    .background(Color.clear)
+                                    .frame(maxWidth: .infinity,alignment: .leading)
+                                    .frame(height: 12)
+                                    .padding(.leading, 16)
                                 
-                                
-                                HStack {
-                                    TextField("Имя", text: $viewModel.firstName)
-                                        .font(.custom(Montserrat.regular.rawValue, size: 15))
-                                        .foregroundStyle(Color.custom(.pitchBlack))
-                                        .padding(.leading, 16)
-                                        .background( Color.custom(.pureWhite))
-                                        .submitLabel(.next)
-                                        .onChange(of: viewModel.firstName) { newValue in
-                                            if newValue.count > maxFirstNameCharactersCount { viewModel.firstName = String(newValue.prefix(maxFirstNameCharactersCount))
-                                                
+                                ZStack {
+                                    Color.custom(.pureWhite)
+                                    HStack {
+                                        TextField("Имя", text: $viewModel.firstName)
+                                            .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                            .foregroundStyle(Color.custom(.pitchBlack))
+                                            .padding(.leading, 16)
+                                            .background( Color.custom(.pureWhite))
+                                            .submitLabel(.next)
+                                            .onChange(of: viewModel.firstName) { newValue in
+                                                if newValue.count > maxFirstNameCharactersCount { viewModel.firstName = String(newValue.prefix(maxFirstNameCharactersCount))
+                                                }
                                             }
-                                        }
-                                    
-                                    
-                                    Button(action: {
-                                        showClientListToPickView = true
-                                    })
-                                    {
-                                        ZStack {
-                                            Circle()
-                                                .tint(Color.custom(.bckgFieldGray))
+                                      
                                             
-                                            Image("clientsActive")
-                                                .resizable()
-                                                .frame(width: 17.31, height: 14)
-                                                .tint(Color.custom(.pitchBlack))
+                                        Button(action: {
+                                            showClientListToPickView = true
+                                        })
+                                        {
+    
                                         }
+                                        .buttonStyle(PressImageButtonStyle(normalImage: "clientsInactive", pressedImage: "clientsActive"))
+                                        .padding(.trailing, 5)
                                     }
                                     
-                                    .frame(height: 30)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                                    )
-                                    .padding(.trailing, 5)
                                 }
-                                
+                                .cornerRadius(60)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 60)
+                                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                                )
+                                .frame(height: 40, alignment: .center)
                             }
-                            .cornerRadius(60)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 60)
-                                
-                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                            )
-                           
-                            .frame(height: 40, alignment: .center)
                             
                             Spacer()
                             
-                            HStack {
+                            VStack(spacing: 4) {
+                                Text("Контакт")
+                                
+                                    .foregroundColor(Color.custom(.textTitleGray))
+                                    .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                    .background(Color.clear)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(height: 12)
+                                    .padding(.leading, 16)
                                 
                                 ZStack {
                                     Color.custom(.pureWhite)
@@ -508,30 +483,23 @@ struct NewTaskView: View {
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundColor(.custom(.pitchBlack))
                                         .padding(.leading, 16)
-                                       
-                                        .textContentType(.telephoneNumber)
                                         .onChange(of: viewModel.phoneDigits) { newValue in
                                             if newValue.count > maxPhoneNumberCharactersCount { viewModel.phoneDigits = String(newValue.prefix(maxPhoneNumberCharactersCount))
-                                                
                                             }
                                         }
-//
                                 }
                                 .cornerRadius(60)
-                                
                                 .frame(height: 40)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 60)
                                         .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                 )
-                                
                             }
-                            
-                            
                         }
-                        .frame(height: 40)
+                        .padding(.top, 17)
                         .padding(.horizontal, 20)
-                        
+
+             
                         Spacer()
                     } // Клиент и телефон, конец
                     .frame(height: 93)
@@ -541,6 +509,7 @@ struct NewTaskView: View {
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     .padding(.horizontal, 4)
+                    
                     
                     VStack {
                     //address section
