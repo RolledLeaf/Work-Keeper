@@ -224,6 +224,10 @@ struct NewTaskView: View {
     private var adaptiveCardRadius: CGFloat {
         DeviceLayout.cardRadius(for: UIScreen.main.bounds.width)
     }
+
+    private var smallPhoneFontSize: CGFloat {
+        UIScreen.main.bounds.width <= 375 ? 13 : 15
+    }
    
     
     init(onComplete: ((String) -> Void)? = nil) {
@@ -295,7 +299,7 @@ struct NewTaskView: View {
             
             ScrollView {
 
-                VStack {
+                VStack(spacing: 3) {
                     VStack  {
                         HStack {
                             Text("• ")
@@ -417,7 +421,7 @@ struct NewTaskView: View {
                         }
                         
                     }
-                    .padding(.top, 8)
+                    .padding(.top, 7)
                     .padding(.horizontal, 24)
                     
                     VStack { // Начало, клиент и телефон
@@ -510,9 +514,12 @@ struct NewTaskView: View {
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                     )
                     .padding(.horizontal, 4)
+                    .padding(.top, 7)
                     
                     //address section begings
                     VStack(spacing: 4) {
+                        Spacer()
+                                .frame(height: 20)
                     HStack {
                         Text("Улица")
                             .foregroundColor(Color.custom(.textTitleGray))
@@ -575,139 +582,190 @@ struct NewTaskView: View {
                     
                     //Street section end
                     
-                        HStack {
-
+                        //дом квартира падик секция - начало
+                        HStack(spacing: 4) {
+                            
+                            VStack(spacing: 10) {
+                                HStack(spacing: 6) {
+                                    Spacer()
+                                    Text("дом")
+                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                        .foregroundStyle(Color.custom(.textTitleGray))
+                                    
+                                    Image("deviderVertical")
+                                    
+                                    TextField("", text: $viewModel.house)
+                                        .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                        .foregroundStyle(Color.custom(.pitchBlack))
+                                        .multilineTextAlignment(.center)
+                                        .focused($focusedField, equals: .house)
+                                        .submitLabel(.next)
+                                        .onSubmit {
+                                            focusedField = .apartment
+                                        }
+                                        .disabled(viewModel.remoteEditingBlock)
+                                    
+                                        .onChange(of: viewModel.house) { newValue in
+                                            if newValue.count > maxBuildingCharactersCount {
+                                                viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
+                                            }
+                                        }
+                                    Spacer()
+                                }
+                                
+                                .cornerRadius(30)
+                                .frame(height: 40)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 30)
+                                        .fill(  Color.custom(houseTextFieldColor))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 30)
+                                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                                )
+                                
+                                HStack(spacing: 6) {
+                                    Spacer()
+                                    Text("эт")
+                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                        .foregroundStyle(Color.custom(.textTitleGray))
+                                    
+                                    Image("deviderVertical")
+                                    TextField("", text: $viewModel.floor)
+                                        .multilineTextAlignment(.center)
+                                        .disabled(viewModel.privateHouseBlock)
+                                        .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                        .foregroundStyle(Color.custom(.pitchBlack))
+                                        .focused($focusedField, equals: .floor)
+                                        .submitLabel(.next)
+                                        .onSubmit {
+                                            focusedField = .contractAmount
+                                        }
+                                        .onChange(of: viewModel.floor) { newValue in
+                                            if newValue.count > maxFloorCharacters {
+                                                viewModel.floor = String(newValue.prefix(maxFloorCharacters))
+                                            }
+                                        }
+                                    Spacer()
+                                }
+                                
+                                .cornerRadius(30)
+                                .frame(height: 40)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 30)
+                                        .fill(  Color.custom(textFieldColor))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 30)
+                                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                                )
+                                
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            VStack {
+                                HStack(spacing: 6) {
+                                    Spacer()
+                                    Menu {
+                                        ForEach(viewModel.roomTypes, id: \.self) { type in
+                                            Button(type) {
+                                                viewModel.roomType = type
+                                            }
+                                            
+                                        }
+                                    } label: {
+                                        HStack(spacing: 1) {
+                                            Text(viewModel.roomType)
+                                                .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                                .foregroundColor(Color.custom(.pitchBlack))
+                                                .frame(width: 25)
+                                            
+                                            Image("menuTriangle")
+                                                .padding(.leading, -2)
+                                                .offset(y: 1.2)
+                                        }
+                                        .frame(height: 15, alignment: .center)
+                                    }
+                                    .disabled(viewModel.privateHouseBlock)
+                                    
+                                    Image("deviderVertical")
+                                    
+                                    
+                                    TextField("", text: $viewModel.apartment)
+                                        .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                        .foregroundStyle(Color.custom(.pitchBlack))
+                                        .multilineTextAlignment(.center)
+                                        .disabled(viewModel.privateHouseBlock)
+                                        .focused($focusedField, equals: .apartment)
+                                        .submitLabel(.next)
+                                        .onSubmit {
+                                            focusedField = .entrance
+                                        }
+                                        .onChange(of: viewModel.apartment) { newValue in
+                                            if newValue.count > maxApartmentCharactersCount {
+                                                viewModel.apartment = String(newValue.prefix(maxApartmentCharactersCount))
+                                            }
+                                        }
+                                    
+                                    Spacer()
+                                }
+                                
+                                .cornerRadius(30)
+                                .frame(height: 40)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 30)
+                                        .fill(  Color.custom(textFieldColor))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 30)
+                                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                                )
+                                Spacer()
+                            }
+                            
+                            
+                            VStack {
                             HStack(spacing: 6) {
                                 Spacer()
-                                Text("дом")
-                                    .font(.custom(Montserrat.regular.rawValue, size: 12))
-                                    .foregroundStyle(Color.custom(.textTitleGray))
+                                Menu {
+                                    ForEach(viewModel.entranceTypes, id: \.self) { type in
+                                        Button(type) {
+                                            viewModel.entranceType = type
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 1) {
+                                    Text(viewModel.entranceType)
+                                        .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                        .foregroundStyle(Color.custom(.pitchBlack))
+                                        .frame(width: 32)
+                                        Image("menuTriangle")
+                                            .padding(.leading, -2)
+                                            .offset(y: 1.2)
+                                }
+                                }
+                                .disabled(viewModel.privateHouseBlock)
                                 
                                 Image("deviderVertical")
                                 
-                                TextField("", text: $viewModel.house)
+                                TextField("", text: $viewModel.entrance)
                                     .font(.custom(Montserrat.regular.rawValue, size: 15))
                                     .foregroundStyle(Color.custom(.pitchBlack))
+                                    .frame(width: 32)
                                     .multilineTextAlignment(.center)
-                                    .focused($focusedField, equals: .house)
+                                    .disabled(viewModel.privateHouseBlock)
+                                    .focused($focusedField, equals: .entrance)
                                     .submitLabel(.next)
                                     .onSubmit {
-                                        focusedField = .apartment
+                                        focusedField = .floor
                                     }
-                                    .disabled(viewModel.remoteEditingBlock)
-                                
-                                    .onChange(of: viewModel.house) { newValue in
-                                        if newValue.count > maxBuildingCharactersCount {
-                                            viewModel.house = String(newValue.prefix(maxBuildingCharactersCount))
+                                    .onChange(of: viewModel.entrance) { newValue in
+                                        if newValue.count > maxEntranceCharactersCount {
+                                            viewModel.entrance = String(newValue.prefix(maxEntranceCharactersCount))
                                         }
                                     }
                                 Spacer()
-                            }
-                            
-                            .cornerRadius(30)
-                            .frame(height: 40)
-                            .background(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .fill(  Color.custom(houseTextFieldColor))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                            )
-                        
-                        
-                        Spacer()
-                        
-                            HStack(spacing: 6) {
-                                Spacer()
-                        Menu {
-                            ForEach(viewModel.roomTypes, id: \.self) { type in
-                                Button(type) {
-                                    viewModel.roomType = type
-                                }
-                             
-                            }
-                        } label: {
-                            Text(viewModel.roomType)
-                                .font(.custom(Montserrat.regular.rawValue, size: 12))
-                                .foregroundColor(Color.custom(.pitchBlack))
-                                .frame(width: 25)
-                   
-                        }
-                        .disabled(viewModel.privateHouseBlock)
                                 
-                                Image("deviderVertical")
-                        
-                    
-                            TextField("", text: $viewModel.apartment)
-                                .font(.custom(Montserrat.regular.rawValue, size: 15))
-                                .foregroundStyle(Color.custom(.pitchBlack))
-                                .multilineTextAlignment(.center)
-                                .disabled(viewModel.privateHouseBlock)
-                                .focused($focusedField, equals: .apartment)
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .entrance
-                                }
-                                .onChange(of: viewModel.apartment) { newValue in
-                                    if newValue.count > maxApartmentCharactersCount {
-                                        viewModel.apartment = String(newValue.prefix(maxApartmentCharactersCount))
-                                    }
-                                }
-                       
-                                Spacer()
-                            }
-                        
-                            .cornerRadius(30)
-                            .frame(height: 40)
-                            .background(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .fill(  Color.custom(textFieldColor))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                            )
-                                
-                                
-                        Spacer()
-                        
-                            HStack(spacing: 6) {
-                                Spacer()
-                        Menu {
-                            ForEach(viewModel.entranceTypes, id: \.self) { type in
-                                Button(type) {
-                                    viewModel.entranceType = type
-                                }
-                            }
-                        } label: {
-                            Text(viewModel.entranceType)
-                                .font(.custom(Montserrat.regular.rawValue, size: 12))
-                                .foregroundStyle(Color.custom(.pitchBlack))
-                                .frame(width: 32)
-                        }
-                        .disabled(viewModel.privateHouseBlock)
-                                
-                                Image("deviderVertical")
-                      
-                            TextField("", text: $viewModel.entrance)
-                                .font(.custom(Montserrat.regular.rawValue, size: 15))
-                                .foregroundStyle(Color.custom(.pitchBlack))
-                                .frame(width: 32)
-                                .multilineTextAlignment(.center)
-                                .disabled(viewModel.privateHouseBlock)
-                                .focused($focusedField, equals: .entrance)
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .floor
-                                }
-                                .onChange(of: viewModel.entrance) { newValue in
-                                    if newValue.count > maxEntranceCharactersCount {
-                                        viewModel.entrance = String(newValue.prefix(maxEntranceCharactersCount))
-                                    }
-                                }
-                                Spacer()
-                        
                             }
                             .frame(height: 40)
                             .background(
@@ -718,59 +776,20 @@ struct NewTaskView: View {
                                 RoundedRectangle(cornerRadius: 30)
                                     .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                             )
-                       
-                            
+                                Spacer()
+                        }
+                          
                     }
+                        .frame(height: 90)
                     .padding(.top, 10)
                     .padding(.horizontal, 20)
+                    //Дом кв падик секция - конец
                     
-                    
-                    
-                    // Стек Этаж , Начало
-                    HStack {
-                        HStack(spacing: 6) {
-                            Spacer()
-                        Text("эт")
-                            .font(.custom(Montserrat.regular.rawValue, size: 12))
-                            .foregroundStyle(Color.custom(.textTitleGray))
-                        
-                            Image("deviderVertical")
-                            TextField("", text: $viewModel.floor)
-                                .multilineTextAlignment(.center)
-                                .disabled(viewModel.privateHouseBlock)
-                                .font(.custom(Montserrat.regular.rawValue, size: 15))
-                                .foregroundStyle(Color.custom(.pitchBlack))
-                                .focused($focusedField, equals: .floor)
-                                .submitLabel(.next)
-                                .onSubmit {
-                                    focusedField = .contractAmount
-                                }
-                                .onChange(of: viewModel.floor) { newValue in
-                                    if newValue.count > maxFloorCharacters {
-                                        viewModel.floor = String(newValue.prefix(maxFloorCharacters))
-                                    }
-                                }
-                            Spacer()
-                        }
-                    
-                        .cornerRadius(30)
-                        .frame(width: 106, height: 40)
-                        .background(
-                            RoundedRectangle(cornerRadius: 30)
-                                .fill(  Color.custom(textFieldColor))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 30)
-                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
-                        )
-                        Spacer()
-                    }
-                    .padding(.leading, 20)
-                    
+ 
                     HStack {
                         Toggle(isOn: $viewModel.isPrivateHouse) {
                             Text("Только дом")
-                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
                                 .foregroundStyle(Color.custom(.pitchBlack))
                         }
                         .tint(Color.custom(.taskCompleteGreen))
@@ -794,14 +813,12 @@ struct NewTaskView: View {
                             HStack {
                                 Spacer()
                                 Text("Удалёнка")
-                                    .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                    .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
                                     .frame(alignment: .trailing)
                                     .foregroundStyle(Color.custom(.pitchBlack))
                             }
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        
-                        
                         .disabled(viewModel.shouldBlockRemote)
                         .onChange(of: viewModel.isRemote) { _, newValue in
                             if newValue == true {
@@ -825,19 +842,21 @@ struct NewTaskView: View {
                             }
                         }
                     }
+                    .padding(.top, 13)
                     .padding(.leading, 38)
                     .padding(.trailing, 21)
                       
-                    
+                    Spacer()
+                            .frame(height: 20)
                 }
-                    .frame(height: 230)
+                    .frame(maxHeight: 260)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color.custom(.bckgFieldGray))
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                             .padding(.horizontal, 4)
-                            .padding(.top, -4)
+                           
                
                     
                     VStack {

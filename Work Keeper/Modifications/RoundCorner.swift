@@ -12,7 +12,7 @@ enum DeviceLayout {
             return 36
         case 390: //iPhone 14, 13 Pro, 13, 12 Pro, 12
             return 12
-            //375 pt: iPhone 13 mini, 12 mini, 11 Pro, XS, X, SE (3rd/2nd gen), 8, 7, 6s, 6
+            
         default:
             return 36
         }
