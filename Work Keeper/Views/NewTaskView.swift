@@ -324,7 +324,6 @@ struct NewTaskView: View {
                         
                         HStack {
                             Text("Описание")
-                               
                                 .foregroundColor(Color.custom(.textTitleGray))
                                 .font(.custom(Montserrat.regular.rawValue, size: 12))
                                 .background(Color.clear)

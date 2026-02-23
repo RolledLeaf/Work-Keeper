@@ -153,11 +153,7 @@ struct EditTaskView: View {
                                     if newValue.count > maxDescriptionCharactersCount {
                                         viewModel.descriptionText = String(newValue.prefix(maxDescriptionCharactersCount))
                                     }
-                                    
-                                    
-                                    
                                 }
-                            
                         }
                         .cornerRadius(20)
                         .overlay(

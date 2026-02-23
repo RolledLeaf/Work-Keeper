@@ -204,6 +204,9 @@ struct TaskListView: View {
     @Binding var pendingCreatedTaskToast: String?
     
     private let headerOverlayHeight: CGFloat = 110
+    private var dynamicFraction: CGFloat {
+        DeviceLayout.cardRadiusForFraction(for: UIScreen.main.bounds.width)
+    }
     private let timing = 2.0
     private var cellGap: CGFloat {
         if #available(iOS 26, *) {
@@ -917,7 +920,11 @@ struct TaskListView: View {
                 presentTaskToast(kind: .completed, description: taskDescription, finalAmount: finalAmount)
                 syncService.runManualSync(auth: auth, debug: true)
             }
+            .presentationDetents([.fraction(dynamicFraction)])
         }
+       
+        
+        
         .popover(isPresented: $showFilters) {
             NavigationStack {
                 TasksFilterView(selectedFilters: $viewModel.selectedFilters)
