@@ -217,6 +217,15 @@ final class PullSyncService {
                     continue
                 }
 
+                // IMPORTANT: do not recreate locally hard-deleted objects.
+                // If remote is deleted but local object is missing, skip creation.
+                if r.deleted_at != nil, self.fetchOne(Client.self, remoteId: r.id) == nil {
+                    if debug {
+                        print("🚫 Skip creating deleted Client (hard-deleted locally). remoteId=\(r.id) deleted_at=\(String(describing: r.deleted_at))")
+                    }
+                    continue
+                }
+
                 let local = self.findOrCreateClient(remoteId: r.id)
 
                 if !self.shouldApplyRemoteUpdate(
@@ -244,7 +253,6 @@ final class PullSyncService {
                 }
                 local.updatedAt = r.updated_at ?? r.deleted_at ?? Date()
                 local.needsSync = false
-              
             }
 
             try self.purgeInvalidClients(debug: debug)

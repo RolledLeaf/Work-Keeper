@@ -25,6 +25,7 @@ final class SyncService: ObservableObject {
     private let remoteTaskStore = RemoteTaskStore()
     private let remoteAddressStore = RemoteAddressStore()
     private let remoteClientStore = RemoteClientStore()
+    private let remoteStreetStore = RemoteStreetStore()
     
     private var isRunning = false
     
@@ -84,6 +85,7 @@ final class SyncService: ObservableObject {
         // We use KVC to avoid tight coupling to generated NSManagedObject subclasses.
         let req = NSFetchRequest<NSManagedObject>(entityName: "PendingDelete")
         req.returnsObjectsAsFaults = false
+        req.predicate = NSPredicate(format: "needsSync == YES")
 
         let rows = try context.fetch(req)
         if debug { print("🪦 PendingDelete to push: \(rows.count)") }
@@ -93,11 +95,11 @@ final class SyncService: ObservableObject {
 
         for row in rows {
             let objectName = (row.value(forKey: "objectName") as? String) ?? ""
-            let remoteIdStr = (row.value(forKey: "remoteId") as? String) ?? ""
+            let remoteUUID = (row.value(forKey: "remoteId") as? UUID)
             let deletedAt = (row.value(forKey: "deletedAt") as? Date) ?? Date()
 
-            guard let remoteUUID = UUID(uuidString: remoteIdStr) else {
-                if debug { print("⚠️ PendingDelete skip: bad remoteId=\(remoteIdStr) objectName=\(objectName)") }
+            guard let remoteUUID else {
+                if debug { print("⚠️ PendingDelete skip: missing remoteId objectName=\(objectName)") }
                 continue
             }
 
@@ -120,6 +122,12 @@ final class SyncService: ObservableObject {
                 // Mark as deleted on server (soft-delete via deleted_at). This prevents resurrection.
                 _ = try await remoteClientStore.softDelete(clientId: remoteUUID, ownerId: ownerId, deletedAt: deletedAt)
                 if debug { print("🗑️ Pushed tombstone -> server soft-delete Client \(remoteUUID)") }
+                context.delete(row)
+                didDeleteAny = true
+
+            case "streets":
+                _ = try await remoteStreetStore.softDelete(streetId: remoteUUID, ownerId: ownerId, deletedAt: deletedAt)
+                if debug { print("🗑️ Pushed tombstone -> server soft-delete Street \(remoteUUID)") }
                 context.delete(row)
                 didDeleteAny = true
 

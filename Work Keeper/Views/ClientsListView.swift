@@ -55,7 +55,7 @@ struct ClientsListView: View {
 
                 VStack {
   
-                    if viewModel.clients.isEmpty {
+                    if viewModel.clients.isEmpty && viewModel.removedClients.isEmpty {
                         
                         EmptyListPlaceholderView(
                             line1: .init(
@@ -78,8 +78,39 @@ struct ClientsListView: View {
                             line3Height: 27,
                             hintText: viewModel.searchText.isBlank ? "Создайте карточку клиента, нажав на \nиконку “+“ в правом верхнем углу экрана" : ""
                         )
-                        
-//                        Spacer()
+                    } else if viewModel.clients.isEmpty && !viewModel.removedClients.isEmpty {
+                        VStack(spacing: 18) {
+                            HStack {
+                                Text("Все клиенты удалены.\nСоздайте новых или восстановите\nранее удалённых ")
+                                    .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                    .foregroundStyle(.pitchBlack)
+                                Spacer()
+                            }
+                            ZStack {
+                                NavigationLink {
+                                    RemovedClientsView(onClose: {
+                                        viewModel.loadUserDefaultsAndSort()
+                                        viewModel.loadRemovedClients()
+                                    })
+                                } label: {
+                                    HStack(spacing: 15) {
+                                        Text("Удалённые клиенты")
+                                            .font(.custom(Montserrat.bold.rawValue, size: 17))
+                                            .foregroundStyle(.cancelButtonRed)
+
+                                        Text("(\(viewModel.removedClients.count))")
+                                            .font(.custom(Montserrat.bold.rawValue, size: 17))
+                                        Spacer()
+                                    }
+                                    
+                                    .frame(height: 15)
+                                }
+ 
+                            }
+                            .listRowSeparator(.hidden)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 46)
                     } else {
                         
                         List {
