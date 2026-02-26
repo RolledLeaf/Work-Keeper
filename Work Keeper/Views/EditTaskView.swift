@@ -2,7 +2,7 @@ import SwiftUI
 
 struct EditTaskView: View {
     
-    @ObservedObject var viewModel: EditTaskViewModel
+    @StateObject var viewModel: EditTaskViewModel
     var onSave: ((String) -> Void)?
     @StateObject private var clientsListViewModel = ClientsListViewModel()
     @StateObject private var streetListViewModel = StreetListViewModel()
@@ -90,7 +90,7 @@ struct EditTaskView: View {
     
     
     init(viewModel: EditTaskViewModel, onSave: ((String) -> Void)? = nil) {
-        self._viewModel = ObservedObject(wrappedValue: viewModel)
+        self._viewModel = StateObject(wrappedValue: viewModel)
         self.onSave = onSave
     }
     var body: some View {

@@ -40,7 +40,7 @@ struct EmptyListPlaceholderView: View {
     // Layout tuning (kept as defaults matching current Tasks placeholder)
     var topPadding: CGFloat = 299
     var leadingPadding: CGFloat = 58
-    var trailingPadding: CGFloat = 30
+    var trailingPadding: CGFloat = 0
     var hintTopPadding: CGFloat = 10
 
     var body: some View {

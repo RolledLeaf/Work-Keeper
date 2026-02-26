@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CompleteTaskView: View {
     
-    @ObservedObject var viewModel: CompleteTaskViewModel
+    @StateObject var viewModel: CompleteTaskViewModel
     
     private let maxCommentCharactersCount: Int = 300
     private let maxContractAmountCharacters: Int = 7
@@ -13,6 +13,11 @@ struct CompleteTaskView: View {
     private var dismiss
     private var adaptiveCardRadius: CGFloat {
         DeviceLayout.cardRadius(for: UIScreen.main.bounds.width)
+    }
+    
+    init(viewModel: CompleteTaskViewModel, onComplete: ((String, Double) -> Void)? = nil) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.onComplete = onComplete
     }
     
     var body: some View {
@@ -71,11 +76,6 @@ struct CompleteTaskView: View {
                     .onChange(of: viewModel.comment) { newValue in
                         if newValue.count > maxCommentCharactersCount {
                             viewModel.comment = String(newValue.prefix(maxCommentCharactersCount))
-                        }
-                        if viewModel.comment.count >= maxCommentCharactersCount {
-                            commentTextOpacity = 1
-                        } else {
-                            commentTextOpacity = 0
                         }
                     }
             }
