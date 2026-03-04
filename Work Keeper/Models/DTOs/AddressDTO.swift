@@ -12,6 +12,7 @@ struct AddressDTO: Codable, Identifiable, Equatable {
     let entrance_type: String?
     let room_type: String?
     let floor: String?
+    let note: String?
 
     let is_primary: Bool
     let is_private_house: Bool
@@ -32,6 +33,7 @@ struct AddressInsertDTO: Codable {
     let entrance_type: String?
     let room_type: String?
     let floor: String?
+    let note: String?
 
     let is_primary: Bool
     let is_private_house: Bool
@@ -45,6 +47,7 @@ struct AddressUpdateDTO: Codable {
     let entrance_type: String?
     let room_type: String?
     let floor: String?
+    let note: String?
 
     let is_primary: Bool
     let is_private_house: Bool

@@ -308,6 +308,7 @@ final class PullSyncService {
                 local.entranceType = r.entrance_type
                 local.roomType = r.room_type
                 local.floor = r.floor
+                local.note = r.note
                 local.isPrimary = r.is_primary
                 local.isPrivateHouse = r.is_private_house
 
@@ -392,10 +393,12 @@ final class PullSyncService {
                 local.comment = r.comment
 
                 local.isRemote = r.is_remote
+                local.isAtMyPlace = r.is_at_my_place
                 if local.isRemote == false, local.address == nil {
                     if debug { print("⚠️ Skip remote Task: non-remote but address is nil after mapping. remoteId=\(r.id)") }
                     continue
                 }
+                
                 local.statusString = r.statusString
 
                 local.contractAmount = r.contract_amount

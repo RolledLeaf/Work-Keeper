@@ -16,7 +16,8 @@ final class AddressStore: NSObject {
                        isPrivateHouse: Bool,
                        street: Street,
                        roomType: String,
-                           entranceType: String
+                           entranceType: String,
+                       note: String?
     ) -> Address {
         let address = Address(context: context)
         address.house = house.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -27,6 +28,7 @@ final class AddressStore: NSObject {
         address.street = street
         address.roomType = roomType.trimmingCharacters(in: .whitespacesAndNewlines)
         address.entranceType = entranceType.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.note = note?.trimmingCharacters(in: .whitespacesAndNewlines)
         
         // Sync fields
         address.remoteId = nil
@@ -49,7 +51,8 @@ final class AddressStore: NSObject {
         client: Client,
         isPrimary: Bool,
         roomType: String,
-        entranceType: String
+        entranceType: String,
+        note: String?
     ) -> Address {
 
         let request: NSFetchRequest<Address> = Address.fetchRequest()
@@ -89,7 +92,8 @@ final class AddressStore: NSObject {
                     isPrivateHouse: isPrivateHouse,
                     street: street,
                     roomType: roomType,
-                    entranceType: entranceType
+                    entranceType: entranceType,
+                    note: note
                 )
                 address.client = client
                 address.isPrimary = isPrimary
@@ -122,7 +126,8 @@ final class AddressStore: NSObject {
                 isPrivateHouse: isPrivateHouse,
                 street: street,
                 roomType: roomType,
-                entranceType: entranceType
+                entranceType: entranceType,
+                note: note
             )
             address.client = client
             address.isPrimary = isPrimary
@@ -138,7 +143,8 @@ final class AddressStore: NSObject {
                      floor: String,
                      isPrivateHouse: Bool,
                        roomType: String,
-                           entranceType: String
+                           entranceType: String,
+                       note: String?
     ) {
         address.house = house.trimmingCharacters(in: .whitespacesAndNewlines)
         address.apartment = apartment?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -147,6 +153,7 @@ final class AddressStore: NSObject {
         address.isPrivateHouse = isPrivateHouse
         address.entranceType = entranceType.trimmingCharacters(in: .whitespacesAndNewlines)
         address.roomType = roomType.trimmingCharacters(in: .whitespacesAndNewlines)
+        address.note = note?.trimmingCharacters(in: .whitespacesAndNewlines)
 
         // Sync fields
         address.updatedAt = Date()

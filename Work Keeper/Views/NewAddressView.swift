@@ -17,6 +17,7 @@ struct AddAddressView: View {
     @State private var apartment: String = ""
     @State private var entrance: String = ""
     @State private var floor: String = ""
+    @State private var addressNote: String = ""
     @State private var isPrivateHouse: Bool = false
     @State private var makePrimary: Bool = false
     
@@ -351,7 +352,8 @@ struct AddAddressView: View {
                         isPrivateHouse: isPrivateHouse,
                         roomType: roomType,
                         entranceType: entranceType,
-                        makePrimary: makePrimary
+                        makePrimary: makePrimary,
+                        note: addressNote
                     )
                     dismiss()
                 }) {

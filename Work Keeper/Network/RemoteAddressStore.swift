@@ -92,6 +92,7 @@ final class RemoteAddressStore {
             entrance_type: payload.entrance_type,
             room_type: payload.room_type,
             floor: payload.floor,
+            note: payload.note,
             is_primary: false,
             is_private_house: payload.is_private_house
         )
@@ -124,6 +125,7 @@ final class RemoteAddressStore {
             entrance_type: payload.entrance_type,
             room_type: payload.room_type,
             floor: payload.floor,
+            note: payload.note,
             is_primary: false,
             is_private_house: payload.is_private_house
         )

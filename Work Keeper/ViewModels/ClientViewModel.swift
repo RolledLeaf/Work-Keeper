@@ -249,6 +249,7 @@ final class ClientsListViewModel: ObservableObject {
             roomType: String,
             entranceType: String,
             makePrimary: Bool,
+            note: String?,
             debug: Bool = false
         ) {
             let trimmedStreet = streetName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -286,7 +287,8 @@ final class ClientsListViewModel: ObservableObject {
                 client: client,
                 isPrimary: shouldBePrimary,
                 roomType: roomType,
-                entranceType: entranceType
+                entranceType: entranceType,
+                note: note
             )
 
             // Keep all addresses + new one
@@ -347,6 +349,7 @@ final class CreateClientViewModel: ObservableObject {
     @Published var addresses: [Address] = []
     @Published var apartment: String = ""
     @Published var comment: String = ""
+    @Published var addressNote: String = ""
     @Published var entrance = ""
     @Published var floor = ""
     @Published var street = ""
@@ -445,7 +448,8 @@ final class CreateClientViewModel: ObservableObject {
             client: client,
             isPrimary: true,
             roomType: roomType,
-            entranceType: entranceType
+            entranceType: entranceType,
+            note: addressNote
         )
 
         // 4) Обновляем клиента, чтобы адрес оказался в его наборе адресов
@@ -474,6 +478,7 @@ final class EditClientViewModel: ObservableObject {
     @Published var phoneNumber: String
     @Published var phoneDigits: String = ""
     @Published var comment: String
+    @Published var addressNote: String?
     
     let roomTypes = ["кв", "оф", "каб"]
     let entranceTypes = ["под", "вход"]
@@ -611,7 +616,8 @@ final class EditClientViewModel: ObservableObject {
                 client: client,
                 isPrimary: true,
                 roomType: roomType,
-                entranceType: entranceType
+                entranceType: entranceType,
+                note: addressNote
             )
             resultingAddresses = [newAddress]
         }

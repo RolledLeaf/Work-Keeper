@@ -10,6 +10,7 @@ struct TaskDTO: Codable, Identifiable, Equatable {
     let comment: String?
 
     let is_remote: Bool
+    let is_at_my_place: Bool
     let statusString: String   // Swift-имя оставляем удобным
 
     let contract_amount: Double
@@ -27,6 +28,7 @@ struct TaskDTO: Codable, Identifiable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id, owner_id, scheduled_at, task_description, payment_type, comment
         case is_remote
+        case is_at_my_place
         case statusString = "status"     // ✅ ВАЖНО: колонка в БД называется status
         case contract_amount, cost, extra_payment, total_amount
         case client_id, address_id
@@ -42,6 +44,7 @@ struct TaskInsertDTO: Codable {
     let comment: String?
 
     let is_remote: Bool
+    let is_at_my_place: Bool
     let statusString: String   // Swift-имя
 
     let contract_amount: Double
@@ -54,6 +57,7 @@ struct TaskInsertDTO: Codable {
     enum CodingKeys: String, CodingKey {
         case owner_id, scheduled_at, task_description, payment_type, comment
         case is_remote
+        case is_at_my_place
         case statusString = "status"     // ✅
         case contract_amount, cost, extra_payment
         case client_id, address_id
@@ -67,6 +71,7 @@ struct TaskUpdateDTO: Codable {
     let comment: String?
 
     let is_remote: Bool
+    let is_at_my_place: Bool
     let statusString: String   // Swift-имя
 
     let contract_amount: Double
@@ -79,6 +84,7 @@ struct TaskUpdateDTO: Codable {
     enum CodingKeys: String, CodingKey {
         case scheduled_at, task_description, payment_type, comment
         case is_remote
+        case is_at_my_place
         case statusString = "status"     // ✅
         case contract_amount, cost, extra_payment
         case client_id, address_id

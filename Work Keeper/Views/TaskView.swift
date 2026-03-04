@@ -9,6 +9,7 @@ struct TaskView: View {
     @State private var didCopyPhoneNumber = false
     @State private var didCopyAddress = false
     
+    
     let task: TaskEntity
     
     private var taskAddress: Address? {
@@ -39,18 +40,24 @@ struct TaskView: View {
             }
         }()
         
+        var placeLabel: String? {
+            if task.isAtMyPlace { return "У себя" }
+            if task.isRemote { return "Удалённо" }
+            return nil
+        }
+        
         return   ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             VStack {
                 
                 Text("Просмотр задания")
-                    .font(.custom(SFPro.regular.rawValue, size: 27))
+                    .font(.custom(Montserrat.regular.rawValue, size: 27))
                     .frame(height: 20)
                 HStack {
                     
                     VStack {
                         Text(task.client?.firstName ?? "")
-                            .font(.custom(SFPro.bold.rawValue, size: 26))
+                            .font(.custom(Montserrat.bold.rawValue, size: 26))
                         Spacer()
                             .frame(height: 6)
                         
@@ -67,7 +74,7 @@ struct TaskView: View {
                             }
                         }) {
                             Text(task.client?.phone ?? "")
-                                .font(.custom(SFPro.regular.rawValue, size: 19))
+                                .font(.custom(Montserrat.regular.rawValue, size: 19))
                                 .foregroundColor(.custom(.taskTextGray))
                         }
                         
@@ -109,10 +116,15 @@ struct TaskView: View {
                             
                             Spacer()
                             
-                            if task.isRemote {
-                                Text("Удалёнка")
-                                    .font(.custom(SFPro.regular.rawValue, size: 24))
-                                    .multilineTextAlignment(.center)
+                            if task.isRemote || task.isAtMyPlace {
+                                
+                                HStack(spacing: 7) {
+                                    Image(systemName: task.isRemote ? "globe" : "house")
+                                    
+                                    Text(placeLabel ?? "Адрес не указан")
+                                        .font(.custom(Montserrat.regular.rawValue, size: 24))
+                                       
+                                }
                                     .lineLimit(2)
                                     .frame(maxWidth: 306)
                                     .offset(x: -7, y: 7)
@@ -130,7 +142,7 @@ struct TaskView: View {
                                         }
                                     }) {
                                         Text(addressText)
-                                            .font(.custom(SFPro.regular.rawValue, size: 22))
+                                            .font(.custom(Montserrat.regular.rawValue, size: 22))
                                             .multilineTextAlignment(.center)
                                             .lineLimit(2)
                                             .minimumScaleFactor(0.7)
@@ -143,19 +155,19 @@ struct TaskView: View {
                                     HStack {
                                         Text("\(taskAddress?.roomType ?? "кв."). \(taskAddress?.apartment ?? "")")
                                             .foregroundColor(.custom(.taskTextGray))
-                                            .font(.custom(SFPro.regular.rawValue, size: 17))
+                                            .font(.custom(Montserrat.regular.rawValue, size: 17))
                                         
                                         Spacer()
                                         
                                         Text("\(taskAddress?.entranceType ?? "" ). \(taskAddress?.entrance ?? "") ")
                                             .foregroundColor(.custom(.taskTextGray))
-                                            .font(.custom(SFPro.regular.rawValue, size: 17))
+                                            .font(.custom(Montserrat.regular.rawValue, size: 17))
                                         
                                         Spacer()
                                         
                                         Text("эт. \(taskAddress?.floor ?? "")")
                                             .foregroundColor(.custom(.taskTextGray))
-                                            .font(.custom(SFPro.regular.rawValue, size: 17))
+                                            .font(.custom(Montserrat.regular.rawValue, size: 17))
                                     }
                                     .padding(.horizontal, 50)
                                     
@@ -163,7 +175,7 @@ struct TaskView: View {
                                     HStack {
  
                                                 Text("(Только дом)")
-                                                    .font(.custom(SFPro.italic.rawValue, size: 20))
+                                                    .font(.custom(Montserrat.italic.rawValue, size: 20))
                                                     .foregroundColor(.custom(.taskTextGray))
                                     }
                                 }
@@ -195,13 +207,13 @@ struct TaskView: View {
                             
                             
                             Text(task.scheduledAt?.formattedAsDate() ?? "")
-                                .font(.custom(SFPro.regular.rawValue, size: 20))
+                                .font(.custom(Montserrat.regular.rawValue, size: 20))
                             Spacer()
                             
                             Image(systemName: "clock")
                             
                             Text(task.scheduledAt?.formattedAsTime() ?? "")
-                                .font(.custom(SFPro.regular.rawValue, size: 20))
+                                .font(.custom(Montserrat.regular.rawValue, size: 20))
                             
                         }
                         .padding(.leading, 21)
@@ -225,7 +237,7 @@ struct TaskView: View {
                 
                 HStack {
                     Text("Задание")
-                        .font(.custom(SFPro.regular.rawValue, size: 19))
+                        .font(.custom(Montserrat.regular.rawValue, size: 19))
                         .foregroundColor(.custom(.taskTextGray))
                     
                     Spacer()
@@ -256,7 +268,7 @@ struct TaskView: View {
                     VStack {
                         
                         Text(task.taskDescription ?? "")
-                            .font(.custom(SFPro.regular.rawValue, size: 20))
+                            .font(.custom(Montserrat.regular.rawValue, size: 20))
                             .multilineTextAlignment(.center)
                             .frame(height: 82, alignment: .center)
                             .padding(.horizontal, 5)
@@ -274,7 +286,7 @@ struct TaskView: View {
                 
                 HStack {
                     Text("Комментарий")
-                        .font(.custom(SFPro.regular.rawValue, size: 19))
+                        .font(.custom(Montserrat.regular.rawValue, size: 19))
                         .foregroundColor(.custom(.taskTextGray))
                     
                     Spacer()
@@ -307,7 +319,7 @@ struct TaskView: View {
                     VStack {
                         
                         Text(task.comment ?? "")
-                            .font(.custom(SFPro.regular.rawValue, size: 20))
+                            .font(.custom(Montserrat.regular.rawValue, size: 20))
                             .multilineTextAlignment(.center)
                         
                             .frame(height: 96, alignment: .center)
@@ -329,7 +341,7 @@ struct TaskView: View {
                 
                 HStack {
                     Text("Оплата")
-                        .font(.custom(SFPro.regular.rawValue, size: 19))
+                        .font(.custom(Montserrat.regular.rawValue, size: 19))
                         .foregroundColor(.custom(.taskTextGray))
                     
                     Spacer()
@@ -341,10 +353,10 @@ struct TaskView: View {
                     VStack {
                         HStack {
                             Text("Договорились")
-                                .font(.custom(SFPro.regular.rawValue, size: 20))
+                                .font(.custom(Montserrat.regular.rawValue, size: 20))
                             Spacer()
                             Text("\(task.contractAmount.formattedCurrency())")
-                                .font(.custom(SFPro.regular.rawValue, size: 20))
+                                .font(.custom(Montserrat.regular.rawValue, size: 20))
                         }
                         .padding(.leading, 29)
                         .padding(.trailing, 18)
@@ -359,10 +371,10 @@ struct TaskView: View {
                         
                         HStack {
                             Text("Издержки")
-                                .font(.custom(SFPro.regular.rawValue, size: 20))
+                                .font(.custom(Montserrat.regular.rawValue, size: 20))
                             Spacer()
                             Text("\(task.cost.formattedCurrency())")
-                                .font(.custom(SFPro.regular.rawValue, size: 20))
+                                .font(.custom(Montserrat.regular.rawValue, size: 20))
                         }
                         .padding(.leading, 29)
                         .padding(.trailing, 18)
@@ -377,10 +389,10 @@ struct TaskView: View {
                         
                         HStack {
                             Text("Доплата")
-                                .font(.custom(SFPro.regular.rawValue, size: 20))
+                                .font(.custom(Montserrat.regular.rawValue, size: 20))
                             Spacer()
                             Text("\(task.extraPaymentValue?.formattedCurrency() ?? 0.formattedCurrency())")
-                                .font(.custom(SFPro.regular.rawValue, size: 20))
+                                .font(.custom(Montserrat.regular.rawValue, size: 20))
                         }
                         .padding(.leading, 29)
                         .padding(.trailing, 18)
@@ -395,10 +407,10 @@ struct TaskView: View {
                         
                         HStack {
                             Text("Итого")
-                                .font(.custom(SFPro.bold.rawValue, size: 24))
+                                .font(.custom(Montserrat.bold.rawValue, size: 24))
                             Spacer()
                             Text("\(task.totalAmount.formattedCurrency())")
-                                .font(.custom(SFPro.bold.rawValue, size: 24))
+                                .font(.custom(Montserrat.bold.rawValue, size: 24))
                         }
                         .padding(.leading, 29)
                         .padding(.trailing, 18)
@@ -424,7 +436,7 @@ struct TaskView: View {
             if didCopyTaskDescription {
                 
                 Text("Текст задания скопирован")
-                    .font(.custom(SFPro.regular.rawValue, size: 18))
+                    .font(.custom(Montserrat.regular.rawValue, size: 18))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial)
@@ -435,7 +447,7 @@ struct TaskView: View {
         .overlay(alignment: .center) {
             if didCopyTaskComment {
                 Text("Комментарий скопирован")
-                    .font(.custom(SFPro.regular.rawValue, size: 18))
+                    .font(.custom(Montserrat.regular.rawValue, size: 18))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial)
@@ -447,7 +459,7 @@ struct TaskView: View {
         .overlay(alignment: .center) {
             if didCopyPhoneNumber {
                 Text("Номер клиента скопирован")
-                    .font(.custom(SFPro.regular.rawValue, size: 18))
+                    .font(.custom(Montserrat.regular.rawValue, size: 18))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial)
@@ -459,7 +471,7 @@ struct TaskView: View {
         .overlay(alignment: .center) {
             if didCopyAddress {
                 Text("Адрес клиента скопирован")
-                    .font(.custom(SFPro.regular.rawValue, size: 18))
+                    .font(.custom(Montserrat.regular.rawValue, size: 18))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
                     .background(.ultraThinMaterial)

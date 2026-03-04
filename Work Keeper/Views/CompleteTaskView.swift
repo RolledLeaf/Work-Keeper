@@ -51,7 +51,7 @@ struct CompleteTaskView: View {
                 
                 //СТек коментария
                 HStack {
-                    Text("Коментарий")
+                    Text("Комментарий")
                         .foregroundColor(Color.custom(.textTitleGray))
                         .font(.custom(Montserrat.regular.rawValue, size: 12))
                         .background(Color.clear)

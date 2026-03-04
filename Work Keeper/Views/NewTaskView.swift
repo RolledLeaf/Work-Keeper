@@ -195,6 +195,7 @@ struct NewTaskView: View {
     private let maxBuildingCharactersCount: Int = 9
     private let maxStreetCharactersCount: Int = 49
     private let maxDescriptionCharactersCount: Int = 85
+    private let maxAddressNoteCharactersCount: Int = 60
     private let maxApartmentCharactersCount: Int = 6
     private let maxEntranceCharactersCount: Int = 4
     private let maxFloorCharactersCount: Int = 4
@@ -220,6 +221,7 @@ struct NewTaskView: View {
     @State private var textFieldColor: CustomColor = .pureWhite
     @State private var showNewTaskAlert = false
     @FocusState private var focusedField: Field?
+    
     
     private var adaptiveCardRadius: CGFloat {
         DeviceLayout.cardRadius(for: UIScreen.main.bounds.width)
@@ -531,7 +533,7 @@ struct NewTaskView: View {
                     .frame(height: 12)
                     
                         ZStack {
-                            Color.custom(viewModel.isRemote ? .inactiveFiledGray : .pureWhite)
+                            Color.custom(viewModel.isRemote || viewModel.isAtMyPlace ? .inactiveFiledGray : .pureWhite)
                             HStack {
                                 TextEditor(text: $viewModel.streetName)
                                     .font(.custom(Montserrat.regular.rawValue, size: 15))
@@ -539,7 +541,7 @@ struct NewTaskView: View {
                                     .frame(height: 40, alignment: .center)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .multilineTextAlignment(.leading)
-                                    .disabled(viewModel.remoteEditingBlock)
+                                    .disabled(viewModel.remoteEditingBlock || viewModel.isAtMyPlace)
                                     .scrollContentBackground(.hidden)
                                     .onChange(of: viewModel.streetName) { _, newValue in
                                         if newValue.count > maxStreetCharactersCount {
@@ -559,11 +561,11 @@ struct NewTaskView: View {
                                     showStreetsView = true
                                 }) {
                                     Image("chevronRight")
-                                        .opacity(streetChevronOpacity)
+                                        .opacity(viewModel.isRemote || viewModel.isAtMyPlace ? 0 : 1)
                                         .frame(width: 12, height: 6.61)
                                 }
                                 .tint(Color.custom(.pitchBlack))
-                                .disabled(viewModel.isRemote ? true : false)
+                                .disabled(viewModel.remoteEditingBlock || viewModel.isAtMyPlace)
                                 
                             }
                             .padding(.leading, 12)
@@ -602,7 +604,7 @@ struct NewTaskView: View {
                                         .onSubmit {
                                             focusedField = .apartment
                                         }
-                                        .disabled(viewModel.remoteEditingBlock)
+                                        .disabled(viewModel.isRemote || viewModel.isAtMyPlace)
                                     
                                         .onChange(of: viewModel.house) { newValue in
                                             if newValue.count > maxBuildingCharactersCount {
@@ -616,7 +618,7 @@ struct NewTaskView: View {
                                 .frame(height: 40)
                                 .background(
                                     RoundedRectangle(cornerRadius: 30)
-                                        .fill(  Color.custom(houseTextFieldColor))
+                                        .fill(Color.custom(viewModel.isRemote || viewModel.isAtMyPlace ? .inactiveFiledGray : .pureWhite))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 30)
@@ -632,7 +634,7 @@ struct NewTaskView: View {
                                     Image("deviderVertical")
                                     TextField("", text: $viewModel.floor)
                                         .multilineTextAlignment(.center)
-                                        .disabled(viewModel.privateHouseBlock)
+                                        .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundStyle(Color.custom(.pitchBlack))
                                         .focused($focusedField, equals: .floor)
@@ -652,7 +654,7 @@ struct NewTaskView: View {
                                 .frame(height: 40)
                                 .background(
                                     RoundedRectangle(cornerRadius: 30)
-                                        .fill(  Color.custom(textFieldColor))
+                                        .fill(Color.custom(viewModel.isRemote || viewModel.isAtMyPlace || viewModel.isPrivateHouse ? .inactiveFiledGray : .pureWhite))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 30)
@@ -685,7 +687,7 @@ struct NewTaskView: View {
                                         }
                                         .frame(height: 15, alignment: .center)
                                     }
-                                    .disabled(viewModel.privateHouseBlock)
+                                    .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                     
                                     Image("deviderVertical")
                                     
@@ -694,7 +696,7 @@ struct NewTaskView: View {
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundStyle(Color.custom(.pitchBlack))
                                         .multilineTextAlignment(.center)
-                                        .disabled(viewModel.privateHouseBlock)
+                                        .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                         .focused($focusedField, equals: .apartment)
                                         .submitLabel(.next)
                                         .onSubmit {
@@ -713,7 +715,7 @@ struct NewTaskView: View {
                                 .frame(height: 40)
                                 .background(
                                     RoundedRectangle(cornerRadius: 30)
-                                        .fill(  Color.custom(textFieldColor))
+                                        .fill(Color.custom(viewModel.isRemote || viewModel.isAtMyPlace || viewModel.isPrivateHouse ? .inactiveFiledGray : .pureWhite))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 30)
@@ -743,7 +745,7 @@ struct NewTaskView: View {
                                             .offset(y: 1.2)
                                 }
                                 }
-                                .disabled(viewModel.privateHouseBlock)
+                                .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                 
                                 Image("deviderVertical")
                                 
@@ -752,7 +754,7 @@ struct NewTaskView: View {
                                     .foregroundStyle(Color.custom(.pitchBlack))
                                     .frame(width: 32)
                                     .multilineTextAlignment(.center)
-                                    .disabled(viewModel.privateHouseBlock)
+                                    .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                     .focused($focusedField, equals: .entrance)
                                     .submitLabel(.next)
                                     .onSubmit {
@@ -769,13 +771,35 @@ struct NewTaskView: View {
                             .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
-                                    .fill(  Color.custom(textFieldColor))
+                                    .fill(Color.custom(viewModel.isRemote || viewModel.isAtMyPlace || viewModel.isPrivateHouse ? .inactiveFiledGray : .pureWhite))
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 30)
                                     .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                             )
                                 Spacer()
+                                HStack {
+                                    Spacer()
+                                Toggle(isOn: $viewModel.isAtMyPlace) {
+                                    Text("У себя")
+                                        .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
+                                        .foregroundStyle(Color.custom(.pitchBlack))
+                                }
+                                }
+                                .tint(Color.custom(.taskCompleteGreen))
+                                .frame(alignment: .leading)
+                                .disabled(viewModel.isPrivateHouse || viewModel.isRemote)
+                                .onChange(of: viewModel.isPrivateHouse) { newValue in
+                                    if newValue == true {
+                                        viewModel.shouldBlockRemote = true
+                                        viewModel.privateHouseBlock = true
+                                        textFieldColor = CustomColor.inactiveFiledGray
+                                    } else {
+                                        viewModel.privateHouseBlock = false
+                                        viewModel.shouldBlockRemote = false
+                                        textFieldColor = .pureWhite
+                                    }
+                                }
                         }
                           
                     }
@@ -786,14 +810,18 @@ struct NewTaskView: View {
                     
  
                     HStack {
+                        
                         Toggle(isOn: $viewModel.isPrivateHouse) {
-                            Text("Только дом")
-                                .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
-                                .foregroundStyle(Color.custom(.pitchBlack))
+                            HStack {
+                                Spacer()
+                                Text("Только дом")
+                                    .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
+                                    .foregroundStyle(Color.custom(.pitchBlack))
+                            }
                         }
                         .tint(Color.custom(.taskCompleteGreen))
                         .frame(alignment: .leading)
-                        .disabled(viewModel.shouldBlockPrivate)
+                        .disabled(viewModel.shouldBlockPrivate || viewModel.isAtMyPlace)
                         .onChange(of: viewModel.isPrivateHouse) { newValue in
                             if newValue == true {
                                 viewModel.shouldBlockRemote = true
@@ -818,7 +846,7 @@ struct NewTaskView: View {
                             }
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .disabled(viewModel.shouldBlockRemote)
+                        .disabled(viewModel.shouldBlockRemote || viewModel.isAtMyPlace)
                         .onChange(of: viewModel.isRemote) { _, newValue in
                             if newValue == true {
                                 viewModel.remoteEditingBlock = true
@@ -845,18 +873,58 @@ struct NewTaskView: View {
                     .padding(.leading, 38)
                     .padding(.trailing, 21)
                       
-                    Spacer()
-                            .frame(height: 20)
+                        HStack {
+                            Text("Комментарий к адресу")
+                                .foregroundColor(Color.custom(.textTitleGray))
+                                .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                .background(Color.clear)
+                                
+                            Spacer()
+                        }
+                        .padding(.leading, 37)
+                        .frame(height: 12)
+                        .padding(.top, 17)
+                        
+                        ZStack {
+                            Color.custom(.pureWhite)
+                            
+                            TextEditor(text: $viewModel.addressNote)
+                            
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                                .padding(.horizontal, 12)
+                                .frame(height: 60)
+                                .multilineTextAlignment(.leading)
+                                .scrollContentBackground(.hidden) // скрыть внутренний фон
+                                .background(Color.custom(.pureWhite))
+                                .onChange(of: viewModel.addressNote) { newValue in
+                                    if newValue.count > maxAddressNoteCharactersCount {
+                                        viewModel.addressNote = String(newValue.prefix(maxAddressNoteCharactersCount))
+                                    }
+                                }
+                        }
+                        .cornerRadius(20)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                        )
+                        
+                        .padding(.horizontal, 20)
+    
+                        Spacer()
+                                .frame(height: 20)
+
+                    
                 }
-                    .frame(maxHeight: 260)
+                    .frame(maxHeight: 450)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color.custom(.bckgFieldGray))
                             .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                         )
                             .padding(.horizontal, 4)
-                           
-               
+                    
+                                   
                     
                     VStack {
                         HStack {

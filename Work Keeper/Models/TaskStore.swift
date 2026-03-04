@@ -16,6 +16,7 @@ final class TaskStore: NSObject, ObservableObject {
                     address: Address?,
                     description: String?,
                     isRemote: Bool,
+                    isAtMyPlace: Bool,
                     status: Status,
                     contractAmount: Double,
                     cost: Double?,
@@ -37,6 +38,7 @@ final class TaskStore: NSObject, ObservableObject {
         task.client = client
         task.taskDescription = description
         task.isRemote = isRemote
+        task.isAtMyPlace = isAtMyPlace
         task.statusString = status.rawValue
 
         // Address: for remote tasks we must not persist an Address relationship
@@ -162,6 +164,7 @@ final class TaskStore: NSObject, ObservableObject {
                     taskDescription: String?,
                     comment: String?,
                     isRemote: Bool,
+                    isAtMyPlace: Bool,
                     status: Status,
                     contractAmount: Double,
                     extraPaymentValue: Double?,
@@ -174,7 +177,7 @@ final class TaskStore: NSObject, ObservableObject {
         task.taskDescription = taskDescription
         task.comment = comment
         task.isRemote = isRemote
-        
+        task.isAtMyPlace = isAtMyPlace
         // Update status
         task.statusString = status.rawValue
         

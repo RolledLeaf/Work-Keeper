@@ -327,8 +327,10 @@ final class CreateTaskViewModel: ObservableObject {
   
     @Published var phoneDigits: String = ""
     @Published var comment: String = ""
+    @Published var addressNote: String = ""
     @Published var description: String = ""
     @Published var isRemote: Bool = false
+    @Published var isAtMyPlace: Bool = false
     @Published var status: Status = .scheduled
     @Published var contractAmountText: String = ""
     @Published var contractAmount: Double = 0
@@ -415,7 +417,8 @@ final class CreateTaskViewModel: ObservableObject {
                 client: client,
                 isPrimary: !hasAddress ? true : false,
                 roomType: roomType,
-                entranceType: entranceType
+                entranceType: entranceType,
+                note: addressNote
             )
 
             // link the address with the client
@@ -430,6 +433,7 @@ final class CreateTaskViewModel: ObservableObject {
             address: taskAddress,
             description: description,
             isRemote: isRemote,
+            isAtMyPlace: isAtMyPlace,
             status: status,
             contractAmount: contractAmount,
             cost: cost,
@@ -577,7 +581,9 @@ final class EditTaskViewModel: ObservableObject {
     @Published var apartment: String
     @Published var entrance: String
     @Published var floor: String
+    @Published var addressNote: String
     @Published var isPrivateHouse: Bool
+    @Published var isAtMyPlace: Bool
   
     @Published var remoteEditingBlock = false
     @Published var privateHouseBlock = false
@@ -621,6 +627,7 @@ final class EditTaskViewModel: ObservableObject {
         self.descriptionText = task.taskDescription ?? ""
         self.comment = task.comment ?? ""
         self.isRemote = task.isRemote
+        self.isAtMyPlace = task.isAtMyPlace
         self.status = Status(rawValue: task.statusString ?? "") ?? .scheduled
         self.contractAmountText = String(format: "%.0f", task.contractAmount)
         self.contractAmount = task.contractAmount
@@ -634,7 +641,7 @@ final class EditTaskViewModel: ObservableObject {
         } else {
             self.extraPaymentText = ""
         }
-       
+        
 
         // Populate client info
         self.firstName = task.client?.firstName ?? ""
@@ -651,6 +658,7 @@ final class EditTaskViewModel: ObservableObject {
             self.isPrivateHouse = taskAddress.isPrivateHouse
             self.roomType = taskAddress.roomType ?? "кв."
             self.entranceType = taskAddress.entranceType ?? "под."
+            self.addressNote = taskAddress.note ?? ""
         } else if let primaryAddress = (task.client?.address as? Set<Address>)?.first(where: { $0.isPrimary }) {
             self.streetName = primaryAddress.street?.name ?? ""
             self.house = primaryAddress.house ?? ""
@@ -660,6 +668,7 @@ final class EditTaskViewModel: ObservableObject {
             self.isPrivateHouse = primaryAddress.isPrivateHouse
             self.roomType = primaryAddress.roomType ?? "кв."
             self.entranceType = primaryAddress.entranceType ?? "под."
+            self.addressNote = primaryAddress.note ?? ""
         } else {
             self.streetName = ""
             self.house = ""
@@ -669,6 +678,7 @@ final class EditTaskViewModel: ObservableObject {
             self.isPrivateHouse = false
             self.roomType =  ""
             self.entranceType = ""
+            self.addressNote =  ""
         }
     }
 
@@ -716,6 +726,7 @@ final class EditTaskViewModel: ObservableObject {
                 existingAddress.isPrivateHouse = isPrivateHouse
                 existingAddress.entranceType = entranceType
                 existingAddress.roomType = roomType
+                existingAddress.note = addressNote
             } else {
                 // Если у задачи ещё нет адреса, создаём/находим его и привязываем
                 let newAddress = addressStore.createOrFetchAddress(
@@ -728,7 +739,8 @@ final class EditTaskViewModel: ObservableObject {
                     client: client,
                     isPrimary: false,
                     roomType: roomType ?? "кв.",
-                    entranceType: entranceType ?? "под."
+                    entranceType: entranceType ?? "под.",
+                    note: addressNote
                 )
                 client.addToAddress(newAddress)
                 task.address = newAddress
@@ -743,6 +755,7 @@ final class EditTaskViewModel: ObservableObject {
             taskDescription: descriptionText.isEmpty ? nil : descriptionText,
             comment: comment.isEmpty ? nil : comment,
             isRemote: isRemote,
+            isAtMyPlace: isAtMyPlace,
             status: status,
             contractAmount: contractAmount,
             extraPaymentValue: extraPayment,
@@ -758,6 +771,7 @@ final class EditTaskViewModel: ObservableObject {
          📝 Описание: \(descriptionText)
          💬 Комментарий: \(comment)
          🌍 Удалённо: \(isRemote ? "Да" : "Нет")
+            У Себя: \(isAtMyPlace ? "Да" : "Нет")
          💵 Сумма по договору: \(contractAmount)
          💸 Издержки: \(cost ?? 0)
          Тип помещения: \(roomType ?? "")

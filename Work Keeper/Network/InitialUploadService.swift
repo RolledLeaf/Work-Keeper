@@ -409,6 +409,7 @@ final class InitialUploadService {
                             entrance_type: a.entranceType,
                             room_type: a.roomType,
                             floor: a.floor,
+                            note: a.note,
                             is_primary: true,
                             is_private_house: a.isPrivateHouse
                         )
@@ -433,7 +434,7 @@ final class InitialUploadService {
                 entrance: a.entrance,
                 entrance_type: a.entranceType,
                 room_type: a.roomType,
-                floor: a.floor,
+                floor: a.floor, note: a.note,
                 is_primary: a.isPrimary,
                 is_private_house: a.isPrivateHouse
             )
@@ -475,6 +476,7 @@ final class InitialUploadService {
                     entrance_type: a.entranceType,
                     room_type: a.roomType,
                     floor: a.floor,
+                    note: a.note,
                     is_primary: a.isPrimary,
                     is_private_house: a.isPrivateHouse
                 )
@@ -573,6 +575,7 @@ final class InitialUploadService {
                             entrance_type: a.entranceType,
                             room_type: a.roomType,
                             floor: a.floor,
+                            note: a.note,
                             is_primary: true,
                             is_private_house: a.isPrivateHouse
                         )
@@ -599,6 +602,7 @@ final class InitialUploadService {
                 entrance_type: a.entranceType,
                 room_type: a.roomType,
                 floor: a.floor,
+                note: a.note,
                 is_primary: a.isPrimary,
                 is_private_house: a.isPrivateHouse
             )
@@ -679,6 +683,7 @@ final class InitialUploadService {
                 payment_type: t.paymentType,
                 comment: t.comment,
                 is_remote: isRemote,
+                is_at_my_place: t.isAtMyPlace,
                 statusString: status,
                 contract_amount: t.contractAmount,
                 cost: t.cost,
@@ -730,6 +735,8 @@ final class InitialUploadService {
                 payment_type: t.paymentType,
                 comment: t.comment,
                 is_remote: isRemote,
+                is_at_my_place:
+                    t.isAtMyPlace,
                 statusString: status,
                 contract_amount: t.contractAmount,
                 cost: t.cost,
@@ -854,6 +861,7 @@ final class InitialUploadService {
                 payment_type: t.paymentType,
                 comment: t.comment,
                 is_remote: isRemote,
+                is_at_my_place: t.isAtMyPlace,
                 statusString: status,
                 contract_amount: t.contractAmount,
                 cost: t.cost,

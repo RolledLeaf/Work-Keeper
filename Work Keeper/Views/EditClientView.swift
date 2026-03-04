@@ -391,7 +391,7 @@ struct EditClientView: View {
                     .frame(height: 21)
                 
                 HStack {
-                    Text("Коментарий")
+                    Text("Комментарий")
                         .foregroundColor(Color.custom(.textTitleGray))
                         .font(.system(size: 19, weight: .regular, design: .default))
                     Spacer()
