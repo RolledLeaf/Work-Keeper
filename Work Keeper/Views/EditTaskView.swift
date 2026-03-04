@@ -16,6 +16,7 @@ struct EditTaskView: View {
     private let maxStreetCharactersCount: Int = 49
     private let maxDescriptionCharactersCount: Int = 85
     private let maxCommentCharactersCount: Int = 85
+    private let maxAddressNoteCharactersCount: Int = 60
     private let maxApartmentCharactersCount: Int = 6
     private let maxEntranceCharactersCount: Int = 4
     private let maxFloorCharactersCount: Int = 4
@@ -391,15 +392,14 @@ struct EditTaskView: View {
                     .frame(height: 12)
                     
                         ZStack {
-                            Color.custom(viewModel.isRemote ? .inactiveFiledGray : .pureWhite)
+                            Color.custom(viewModel.isRemote || viewModel.isAtMyPlace ? .inactiveFiledGray : .pureWhite)
                             HStack {
                                 TextEditor(text: $viewModel.streetName)
                                     .font(.custom(Montserrat.regular.rawValue, size: 15))
                                     .foregroundStyle(Color.custom(.pitchBlack))
                                     .frame(height: 40, alignment: .center)
                                     .multilineTextAlignment(.leading)
-                                    .disabled(viewModel.remoteEditingBlock)
-                                 
+                                    .disabled(viewModel.remoteEditingBlock || viewModel.isAtMyPlace)
                                     .scrollContentBackground(.hidden)
                                     .onChange(of: viewModel.streetName) { _, newValue in
                                         if newValue.count > maxStreetCharactersCount {
@@ -419,7 +419,7 @@ struct EditTaskView: View {
                                     showStreetsView = true
                                 }) {
                                     Image("chevronRight")
-                                        .opacity(streetChevronOpacity)
+                                        .opacity(viewModel.isRemote || viewModel.isAtMyPlace ? 0 : 1)
                                 }
                                 .tint(Color.custom(.pitchBlack))
                                 .disabled(viewModel.isRemote ? true : false)
@@ -460,7 +460,7 @@ struct EditTaskView: View {
                                         .onSubmit {
                                             focusedField = .apartment
                                         }
-                                        .disabled(viewModel.remoteEditingBlock)
+                                        .disabled(viewModel.isRemote || viewModel.isAtMyPlace)
                                     
                                         .onChange(of: viewModel.house) { newValue in
                                             if newValue.count > maxBuildingCharactersCount {
@@ -474,7 +474,7 @@ struct EditTaskView: View {
                                 .frame(height: 40)
                                 .background(
                                     RoundedRectangle(cornerRadius: 30)
-                                        .fill(  Color.custom(houseTextFieldColor))
+                                        .fill(Color.custom(viewModel.isRemote || viewModel.isAtMyPlace ? .inactiveFiledGray : .pureWhite))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 30)
@@ -490,7 +490,7 @@ struct EditTaskView: View {
                                     Image("deviderVertical")
                                     TextField("", text: $viewModel.floor)
                                         .multilineTextAlignment(.center)
-                                        .disabled(viewModel.privateHouseBlock)
+                                        .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                         .font(.custom(Montserrat.regular.rawValue, size: 15))
                                         .foregroundStyle(Color.custom(.pitchBlack))
                                         .focused($focusedField, equals: .floor)
@@ -510,7 +510,7 @@ struct EditTaskView: View {
                                 .frame(height: 40)
                                 .background(
                                     RoundedRectangle(cornerRadius: 30)
-                                        .fill(  Color.custom(textFieldColor))
+                                        .fill(Color.custom(viewModel.isRemote || viewModel.isAtMyPlace || viewModel.isPrivateHouse ? .inactiveFiledGray : .pureWhite))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 30)
@@ -541,7 +541,7 @@ struct EditTaskView: View {
                                             .offset(y: 1.2)
                                     }
                                 }
-                                .disabled(viewModel.privateHouseBlock)
+                                .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                 
                                 Image("deviderVertical")
                                 
@@ -550,7 +550,7 @@ struct EditTaskView: View {
                                     .font(.custom(Montserrat.regular.rawValue, size: 15))
                                     .foregroundStyle(Color.custom(.pitchBlack))
                                     .multilineTextAlignment(.center)
-                                    .disabled(viewModel.privateHouseBlock)
+                                    .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                     .focused($focusedField, equals: .apartment)
                                     .submitLabel(.next)
                                     .onSubmit {
@@ -569,7 +569,7 @@ struct EditTaskView: View {
                             .frame(height: 40)
                             .background(
                                 RoundedRectangle(cornerRadius: 30)
-                                    .fill(  Color.custom(textFieldColor))
+                                    .fill(Color.custom(viewModel.isRemote || viewModel.isAtMyPlace || viewModel.isPrivateHouse ? .inactiveFiledGray : .pureWhite))
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 30)
@@ -581,7 +581,7 @@ struct EditTaskView: View {
                         
                             VStack {
                                 HStack(spacing: 6) {
-                                    Spacer()
+                                  
                                     Menu {
                                         ForEach(viewModel.entranceTypes, id: \.self) { type in
                                             Button(type) {
@@ -590,16 +590,17 @@ struct EditTaskView: View {
                                         }
                                     } label: {
                                         HStack(spacing: 1) {
-                                        Text(viewModel.entranceType ?? "под.")
+                                        Text(viewModel.entranceType ?? "под")
                                             .font(.custom(Montserrat.regular.rawValue, size: 12))
                                             .foregroundStyle(Color.custom(.pitchBlack))
                                             .frame(width: 32)
                                             Image("menuTriangle")
-                                                .padding(.leading, -2)
+                                                .padding(.leading, 2)
                                                 .offset(y: 1.2)
                                         }
+                                        .padding(.leading, 13)
                                     }
-                                    .disabled(viewModel.privateHouseBlock)
+                                    .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                     
                                     Image("deviderVertical")
                                     
@@ -608,7 +609,7 @@ struct EditTaskView: View {
                                         .foregroundStyle(Color.custom(.pitchBlack))
                                         .frame(width: 32)
                                         .multilineTextAlignment(.center)
-                                        .disabled(viewModel.privateHouseBlock)
+                                        .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
                                         .focused($focusedField, equals: .entrance)
                                         .submitLabel(.next)
                                         .onSubmit {
@@ -625,28 +626,59 @@ struct EditTaskView: View {
                                 .frame(height: 40)
                                 .background(
                                     RoundedRectangle(cornerRadius: 30)
-                                        .fill(  Color.custom(textFieldColor))
+                                        .fill(Color.custom(viewModel.isRemote || viewModel.isAtMyPlace || viewModel.isPrivateHouse ? .inactiveFiledGray : .pureWhite))
                                 )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 30)
                                         .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                                 )
+                                
                              Spacer()
+                                
+                               
+                                    
+                                    Spacer()
+                                    
+                                Toggle(isOn: $viewModel.isAtMyPlace) {
+                                    HStack {
+                                        Spacer()
+                                        Text("У себя")
+                                            .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
+                                            .foregroundStyle(Color.custom(.pitchBlack))
+                                    }
+                                }
+                                .tint(Color.custom(.taskCompleteGreen))
+                                .frame(alignment: .leading)
+                                .disabled(viewModel.isPrivateHouse || viewModel.isRemote)
+                                .onChange(of: viewModel.isPrivateHouse) { newValue in
+                                    if newValue == true {
+                                        viewModel.shouldBlockRemote = true
+                                        viewModel.privateHouseBlock = true
+                                        textFieldColor = CustomColor.inactiveFiledGray
+                                    } else {
+                                        viewModel.privateHouseBlock = false
+                                        viewModel.shouldBlockRemote = false
+                                        textFieldColor = .pureWhite
+                                    }
+                                }
                             }
                     }
                         .frame(height: 90)
                     .padding(.top, 10)
                     .padding(.horizontal, 20)
  
-                    HStack {
+                        HStack(spacing: 10) {
                         Toggle(isOn: $viewModel.isPrivateHouse) {
-                            Text("Только дом")
-                                .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
-                                .foregroundStyle(Color.custom(.pitchBlack))
+                            HStack {
+                                Spacer()
+                                Text("Только дом")
+                                    .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
+                                    .foregroundStyle(Color.custom(.pitchBlack))
+                            }
                         }
                         .tint(Color.custom(.taskCompleteGreen))
                         .frame(alignment: .leading)
-                        .disabled(viewModel.shouldBlockPrivate)
+                        .disabled(viewModel.shouldBlockPrivate || viewModel.isAtMyPlace)
                         .onChange(of: viewModel.isPrivateHouse) { newValue in
                             if newValue == true {
                                 viewModel.shouldBlockRemote = true
@@ -671,7 +703,7 @@ struct EditTaskView: View {
                             }
                         }
                         .tint(Color.custom(.taskCompleteGreen))
-                        .disabled(viewModel.shouldBlockRemote)
+                        .disabled(viewModel.shouldBlockRemote || viewModel.isAtMyPlace)
                         .onChange(of: viewModel.isRemote) { _, newValue in
                             if newValue == true {
                                 viewModel.remoteEditingBlock = true
@@ -697,11 +729,51 @@ struct EditTaskView: View {
                     .padding(.top, 13)
                     .padding(.leading, 38)
                     .padding(.trailing, 21)
+                        
+                        
+                        HStack {
+                            Text("Комментарий к адресу")
+                                .foregroundColor(Color.custom(.textTitleGray))
+                                .font(.custom(Montserrat.regular.rawValue, size: 12))
+                                .background(Color.clear)
+                                
+                            Spacer()
+                        }
+                        .padding(.leading, 37)
+                        .frame(height: 12)
+                        .padding(.top, 17)
+                        
+                        ZStack {
+                            Color.custom(.pureWhite)
+                            
+                            TextEditor(text: $viewModel.addressNote)
+                            
+                                .font(.custom(Montserrat.regular.rawValue, size: 15))
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                                .padding(.horizontal, 12)
+                                .frame(height: 60)
+                                .multilineTextAlignment(.leading)
+                                .scrollContentBackground(.hidden) // скрыть внутренний фон
+                                .background(Color.custom(.pureWhite))
+                                .onChange(of: viewModel.addressNote) { newValue in
+                                    if newValue.count > maxAddressNoteCharactersCount {
+                                        viewModel.addressNote = String(newValue.prefix(maxAddressNoteCharactersCount))
+                                    }
+                                }
+                        }
+                        .cornerRadius(20)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                        )
+                        
+                        .padding(.horizontal, 20)
+    
                       
                         Spacer()
                                 .frame(height: 20)
                     }
-                        .frame(maxHeight: 260)
+                        .frame(maxHeight: 450)
                     .background(
                         RoundedRectangle(cornerRadius: 20)
                             .fill(Color.custom(.bckgFieldGray))
