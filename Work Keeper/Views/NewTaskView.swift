@@ -204,6 +204,7 @@ struct NewTaskView: View {
     private let maxContractAmountCharacters: Int = 7
     private let maxCostCharacters: Int = 7
     private let maxFloorCharacters: Int = 4
+    private let addressUnitsPadding: CGFloat = 4
     
     @State private var phoneMasked: String = ""
     @State private var previousPhoneMasked: String = ""
@@ -698,6 +699,7 @@ struct NewTaskView: View {
                                                 }
 
                                                 .frame(height: 15, alignment: .center)
+                                                .frame(width: 38)
                                             }
                                             .padding(.leading, 13)
                                             .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
@@ -752,12 +754,14 @@ struct NewTaskView: View {
                                                         .padding(.leading, 2)
                                                         .offset(y: 1.2)
                                                 }
-
+                                                .frame(height: 15, alignment: .center)
+                                                .frame(width: 38)
                                             }
                                             .padding(.leading, 13)
                                             .disabled(viewModel.isRemote || viewModel.isPrivateHouse || viewModel.isAtMyPlace)
 
                                             Image("deviderVertical")
+                                                .padding(.leading, 2)
 
                                             TextField("", text: $viewModel.entrance)
                                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
