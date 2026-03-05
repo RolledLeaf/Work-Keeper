@@ -46,8 +46,12 @@ struct TaskView: View {
             return nil
         }
         
+        let addressDescription: String = taskAddress?.note ?? ""
+        
         return   ZStack {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
+            
+            ScrollView {
             VStack {
                 
                 Text("Просмотр задания")
@@ -104,30 +108,33 @@ struct TaskView: View {
                 .padding(.leading, 32)
                 .padding(.trailing, 20)
                 
-                Spacer()
-                    .frame(height: 28)
+               
                 
+                //Стек адреса, времени и даты - начало
                 ZStack {
                     Color.custom(.inactiveFiledGray)
                     
-                    VStack {
+                    VStack(spacing: 1) {
+                        Spacer()
+                            .frame(height: 15)
                         HStack {
-                         
                             
-                            Spacer()
+                            
+//                            Spacer()
                             
                             if task.isRemote || task.isAtMyPlace {
                                 
                                 HStack(spacing: 7) {
+                                    Spacer()
                                     Image(systemName: task.isRemote ? "globe" : "house")
                                     
                                     Text(placeLabel ?? "Адрес не указан")
                                         .font(.custom(Montserrat.regular.rawValue, size: 24))
-                                       
+                                    Spacer()
                                 }
-                                    .lineLimit(2)
-                                    .frame(maxWidth: 306)
-                                    .offset(x: -7, y: 7)
+                                .frame(height: 24)
+//                                .frame(maxWidth: 306)
+                                .offset(x: -7, y: 7)
                                 
                             } else {
                                 
@@ -146,58 +153,62 @@ struct TaskView: View {
                                             .multilineTextAlignment(.center)
                                             .lineLimit(2)
                                             .minimumScaleFactor(0.7)
-                                            .frame(width: 320)
-                                            .frame(height: 37)
-                                            .padding(.top, 8)
+                                            .frame(maxWidth: 320)
+                                            .frame(maxHeight: 44)
+                                            
                                     }
                                     
                                     if task.client?.primaryAddress?.isPrivateHouse == false {
-                                    HStack {
-                                        Text("\(taskAddress?.roomType ?? "кв."). \(taskAddress?.apartment ?? "")")
-                                            .foregroundColor(.custom(.taskTextGray))
-                                            .font(.custom(Montserrat.regular.rawValue, size: 17))
+                                        HStack {
+                                            Text("\(taskAddress?.roomType ?? "кв."). \(taskAddress?.apartment ?? "")")
+                                                .foregroundColor(.custom(.taskTextGray))
+                                                .font(.custom(Montserrat.regular.rawValue, size: 17))
+                                            
+                                            Spacer()
+                                            
+                                            Text("\(taskAddress?.entranceType ?? "" ). \(taskAddress?.entrance ?? "") ")
+                                                .foregroundColor(.custom(.taskTextGray))
+                                                .font(.custom(Montserrat.regular.rawValue, size: 17))
+                                            
+                                            Spacer()
+                                            
+                                            Text("эт. \(taskAddress?.floor ?? "")")
+                                                .foregroundColor(.custom(.taskTextGray))
+                                                .font(.custom(Montserrat.regular.rawValue, size: 17))
+                                        }
+                                        .padding(.horizontal, 50)
                                         
-                                        Spacer()
-                                        
-                                        Text("\(taskAddress?.entranceType ?? "" ). \(taskAddress?.entrance ?? "") ")
-                                            .foregroundColor(.custom(.taskTextGray))
-                                            .font(.custom(Montserrat.regular.rawValue, size: 17))
-                                        
-                                        Spacer()
-                                        
-                                        Text("эт. \(taskAddress?.floor ?? "")")
-                                            .foregroundColor(.custom(.taskTextGray))
-                                            .font(.custom(Montserrat.regular.rawValue, size: 17))
+                                    } else {
+                                        HStack {
+                                            
+                                            Text("(Только дом)")
+                                                .font(.custom(Montserrat.italic.rawValue, size: 20))
+                                                .foregroundColor(.custom(.taskTextGray))
+                                        }
                                     }
-                                    .padding(.horizontal, 50)
                                     
-                                } else {
-                                    HStack {
- 
-                                                Text("(Только дом)")
-                                                    .font(.custom(Montserrat.italic.rawValue, size: 20))
-                                                    .foregroundColor(.custom(.taskTextGray))
+                                    if !addressDescription.isBlank {
+                                        HStack {
+                                            Text("\(taskAddress?.note ?? "")")
+                                                .font(.custom(Montserrat.italic.rawValue, size: 14))
+                                                .multilineTextAlignment(.center)
+                                                   .lineLimit(2, reservesSpace: false)
+                                        }
+                                        .padding(.top, 10)
                                     }
-                                }
-                                    
                                 }
                                 
                             }
-                            
-                            Spacer()
-                     
                         }
-                        
-                        Spacer()
-                        
+
                         HStack{
                             Spacer()
                             Rectangle()
                                 .frame(width: 345, height: 0.5)
-                                .padding(.top, 5)
+                                
                         }
-                        
-                        Spacer()
+                        .padding(.top, 15)
+                
                         
                         HStack {
                             Image("calendar")
@@ -218,8 +229,10 @@ struct TaskView: View {
                         }
                         .padding(.leading, 21)
                         .padding(.trailing, 21)
+                        .padding(.top, 15)
                         
                         Spacer()
+                            .frame(height: 15)
                     }
                     
                 }
@@ -229,11 +242,12 @@ struct TaskView: View {
                         .stroke(Color.black, lineWidth: 0.5)
                         .opacity(0.5)
                 )
-                .frame(height: 105)
+                .frame(maxHeight: 250)
                 .padding(.horizontal, 16)
+                .padding(.top, 20)
+                //Стек адреса, времени и даты - конец
                 
-                Spacer()
-                    .frame(height: 15)
+              
                 
                 HStack {
                     Text("Задание")
@@ -256,6 +270,7 @@ struct TaskView: View {
                             .resizable()
                             .foregroundColor(.black)
                             .frame(width: 18, height: 25)
+                            .foregroundStyle(.pitchBlack)
                     }
                     
                 }
@@ -306,6 +321,7 @@ struct TaskView: View {
                             .resizable()
                             .foregroundColor(.black)
                             .frame(width: 18, height: 25)
+                            .foregroundStyle(.pitchBlack)
                     }
                     
                     
@@ -314,6 +330,8 @@ struct TaskView: View {
                 .padding(.trailing, 45)
                 .offset(y: 5)
                 
+                
+                //Стек оплаты - начало
                 ZStack {
                     Color.custom(.inactiveFiledGray)
                     VStack {
@@ -432,6 +450,7 @@ struct TaskView: View {
             .toolbar(.hidden, for: .tabBar)
             .navigationBarBackButtonHidden(false)
         }
+        }
         .overlay(alignment: .center) {
             if didCopyTaskDescription {
                 
@@ -458,7 +477,7 @@ struct TaskView: View {
         
         .overlay(alignment: .center) {
             if didCopyPhoneNumber {
-                Text("Номер клиента скопирован")
+                Text("Контакт клиента скопирован")
                     .font(.custom(Montserrat.regular.rawValue, size: 18))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
