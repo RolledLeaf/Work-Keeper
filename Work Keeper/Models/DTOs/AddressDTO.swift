@@ -48,7 +48,6 @@ struct AddressUpdateDTO: Codable {
     let room_type: String?
     let floor: String?
     let note: String?
-
     let is_primary: Bool
     let is_private_house: Bool
 }

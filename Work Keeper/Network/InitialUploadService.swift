@@ -434,7 +434,8 @@ final class InitialUploadService {
                 entrance: a.entrance,
                 entrance_type: a.entranceType,
                 room_type: a.roomType,
-                floor: a.floor, note: a.note,
+                floor: a.floor,
+                note: a.note,
                 is_primary: a.isPrimary,
                 is_private_house: a.isPrivateHouse
             )

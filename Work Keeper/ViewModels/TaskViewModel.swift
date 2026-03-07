@@ -459,6 +459,7 @@ final class CreateTaskViewModel: ObservableObject {
              📆 Дата: \(scheduledAt)
              👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
              🏠 Адрес: \(streetName), дом: \(house), \(roomType ) \(apartment), \(entranceType) \(entrance), этаж \(floor)
+             Комментарий к адресу: \(addressNote)
              📝 Описание: \(description)
              💬 Комментарий: \(comment)
              🌍 Удалённо: Нет
@@ -708,6 +709,9 @@ final class EditTaskViewModel: ObservableObject {
         client.firstName = firstName
         client.lastName = lastName
         client.phone =  phoneDigits.isEmpty ? "" : phoneDigits
+        client.deletedAt = nil
+        client.updatedAt = Date()
+        client.needsSync = true
 //        phoneDigits.isEmpty ? "" : "+7" + phoneDigits
         
         // Обновляем адрес, привязанный к задаче (а не обязательно primary-адрес клиента)
@@ -727,6 +731,11 @@ final class EditTaskViewModel: ObservableObject {
                 existingAddress.entranceType = entranceType
                 existingAddress.roomType = roomType
                 existingAddress.note = addressNote
+
+                // Mark address as changed so PushAddresses picks it up
+                existingAddress.deletedAt = nil
+                existingAddress.updatedAt = Date()
+                existingAddress.needsSync = true
             } else {
                 // Если у задачи ещё нет адреса, создаём/находим его и привязываем
                 let newAddress = addressStore.createOrFetchAddress(
@@ -768,6 +777,7 @@ final class EditTaskViewModel: ObservableObject {
          📆 Дата: \(scheduledAt)
          👤 Клиент: \(firstName) \(lastName), телефон: \(maskRU(fromDigits: phoneDigits))
                 🏠 Адрес: \(streetName), дом: \(house), \(roomType ?? "") \(apartment), \(entranceType ?? "") \(entrance), этаж \(floor)
+            Комментарий к адресу: \(addressNote)
          📝 Описание: \(descriptionText)
          💬 Комментарий: \(comment)
          🌍 Удалённо: \(isRemote ? "Да" : "Нет")
