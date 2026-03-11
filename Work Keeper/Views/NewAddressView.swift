@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AddAddressView: View {
-    @ObservedObject var clientsVM: ClientsListViewModel
+    @StateObject var clientsVM: ClientsListViewModel
     let client: Client
     
     @StateObject private var streetListViewModel = StreetListViewModel()

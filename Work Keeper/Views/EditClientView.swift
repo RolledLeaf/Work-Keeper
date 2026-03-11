@@ -2,7 +2,7 @@ import SwiftUI
 
 struct EditClientView: View {
     
-    @ObservedObject var viewModel: EditClientViewModel
+    @StateObject var viewModel: EditClientViewModel
     @StateObject var streetListViewModel = StreetListViewModel()
    
     @State private var roomType = "кв"

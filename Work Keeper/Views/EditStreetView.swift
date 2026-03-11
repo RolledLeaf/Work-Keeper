@@ -7,7 +7,7 @@ struct EditStreetView: View {
     @State var saveButtomOpacity: Double = 0
     var onEdit: ((String) -> Void)?
     
-    @ObservedObject var viewModel: StreetListViewModel
+    @StateObject var viewModel: StreetListViewModel
     
     @Environment(\.dismiss)
     private var dismiss
