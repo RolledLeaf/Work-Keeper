@@ -861,7 +861,7 @@ struct NewTaskView: View {
                         Toggle(isOn: $viewModel.isRemote) {
                             HStack {
                                 Spacer()
-                                Text("Удалёнка")
+                                Text("Удалённо")
                                     .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
                                     .frame(alignment: .trailing)
                                     .foregroundStyle(Color.custom(.pitchBlack))
@@ -908,7 +908,7 @@ struct NewTaskView: View {
                         .padding(.top, 17)
                         
                         ZStack {
-                            Color.custom(.pureWhite)
+                            Color.custom(viewModel.isRemote || viewModel.isAtMyPlace ? .inactiveFiledGray : .pureWhite)
                             
                             TextEditor(text: $viewModel.addressNote)
                             
@@ -916,9 +916,9 @@ struct NewTaskView: View {
                                 .foregroundStyle(Color.custom(.pitchBlack))
                                 .padding(.horizontal, 12)
                                 .frame(height: 60)
+                                .disabled(viewModel.isRemote || viewModel.isAtMyPlace)
                                 .multilineTextAlignment(.leading)
                                 .scrollContentBackground(.hidden) // скрыть внутренний фон
-                                .background(Color.custom(.pureWhite))
                                 .onChange(of: viewModel.addressNote) { newValue in
                                     if newValue.count > maxAddressNoteCharactersCount {
                                         viewModel.addressNote = String(newValue.prefix(maxAddressNoteCharactersCount))

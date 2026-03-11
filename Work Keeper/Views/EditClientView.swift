@@ -43,7 +43,7 @@ struct EditClientView: View {
     }
     
     init(viewModel: EditClientViewModel, onEdit: ((String) -> Void)? = nil) {
-        self._viewModel = ObservedObject(wrappedValue: viewModel)
+        self._viewModel = StateObject(wrappedValue: viewModel)
         self.onEdit = onEdit
       }
     

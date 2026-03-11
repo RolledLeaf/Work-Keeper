@@ -756,17 +756,17 @@ struct EditTaskView: View {
                         .padding(.top, 17)
                         
                         ZStack {
-                            Color.custom(.pureWhite)
+                            Color.custom(viewModel.isRemote || viewModel.isAtMyPlace ? .inactiveFiledGray : .pureWhite)
                             
                             TextEditor(text: $viewModel.addressNote)
                             
                                 .font(.custom(Montserrat.regular.rawValue, size: 15))
                                 .foregroundStyle(Color.custom(.pitchBlack))
+                                .disabled(viewModel.isRemote || viewModel.isAtMyPlace)
                                 .padding(.horizontal, 12)
                                 .frame(height: 60)
                                 .multilineTextAlignment(.leading)
-                                .scrollContentBackground(.hidden) // скрыть внутренний фон
-                                .background(Color.custom(.pureWhite))
+                                .scrollContentBackground(.hidden)
                                 .onChange(of: viewModel.addressNote) { newValue in
                                     if newValue.count > maxAddressNoteCharactersCount {
                                         viewModel.addressNote = String(newValue.prefix(maxAddressNoteCharactersCount))

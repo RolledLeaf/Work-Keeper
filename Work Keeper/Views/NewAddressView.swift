@@ -11,6 +11,7 @@ struct AddAddressView: View {
     private let maxApartmentCharactersCount: Int = 6
     private let maxEntranceCharactersCount: Int = 4
     private let maxFloorCharacters: Int = 4
+    private let maxAddressNoteCharactersCount: Int = 72
     
     @State private var streetName: String = ""
     @State private var building: String = ""
@@ -60,8 +61,12 @@ struct AddAddressView: View {
                             .font(.custom(Montserrat.regular.rawValue, size: 19))
                     }
                 }
-            VStack {
+                .padding(.top, 20)
+                
+                VStack(spacing: 4) {
                 //address section
+                    Spacer()
+                        .frame(height: 20)
                 HStack {
                     Text("Улица")
                         .foregroundColor(Color.custom(.textTitleGray))
@@ -71,7 +76,7 @@ struct AddAddressView: View {
                     Spacer()
                 }
                 .padding(.leading, 36)
-                .frame(height: 12)
+
                 
                 HStack {
                     HStack(spacing: 6) {
@@ -297,6 +302,7 @@ struct AddAddressView: View {
                     )
                     Spacer()
                 }
+                .padding(.top, 6)
                 .padding(.leading, 20)
                 
                 HStack {
@@ -318,8 +324,50 @@ struct AddAddressView: View {
                 .padding(.leading, 38)
                 .padding(.trailing, 21)
                 
+                HStack {
+                    Text("Комментарий к адресу")
+                        .foregroundColor(Color.custom(.textTitleGray))
+                        .font(.custom(Montserrat.regular.rawValue, size: 12))
+                        .background(Color.clear)
+                        
+                    Spacer()
+                }
+                .padding(.leading, 37)
+                .frame(height: 12)
+                .padding(.top, 17)
+                
+                ZStack {
+                    Color.custom(.pureWhite)
+                    
+                    TextEditor(text: $addressNote)
+                    
+                        .font(.custom(Montserrat.regular.rawValue, size: 15))
+                        .foregroundStyle(Color.custom(.pitchBlack))
+                        .padding(.horizontal, 12)
+                        .frame(height: 60)
+                        .multilineTextAlignment(.leading)
+                        .scrollContentBackground(.hidden) // скрыть внутренний фон
+                        .background(Color.custom(.pureWhite))
+                        .onChange(of: addressNote) { newValue in
+                            if newValue.count > maxAddressNoteCharactersCount {
+                                addressNote = String(newValue.prefix(maxAddressNoteCharactersCount))
+                            }
+                        }
+                }
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                )
+                
+                .padding(.horizontal, 20)
+
+                Spacer()
+                        .frame(height: 20)
+
+                
             }
-            .frame(height: 230)
+            .frame(maxHeight: 325)
             .background(
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.custom(.bckgFieldGray))
@@ -379,7 +427,9 @@ struct AddAddressView: View {
             }) {
                 StreetsListView(viewModel: streetListViewModel)
             }
+                Spacer()
         }
+            
     }
 }
     
