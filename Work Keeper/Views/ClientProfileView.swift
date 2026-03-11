@@ -15,7 +15,7 @@ struct PrimaryAddressPickMenu: View {
     @State private var showCascadeDeleteDialog = false
     @State private var tasksCountForDelete: Int = 0
     
-    
+
     private var addresses: [Address] {
         client.addressesArray
     }
@@ -158,6 +158,11 @@ struct ClientProfileView: View {
     @State private var showDeleteAlert = false
     @State private var lastDeletedClientName = ""
     @State private var lastEditedClientName = ""
+    
+    private var dynamicFraction: CGFloat {
+        DeviceLayout.cardRadiusForFraction(for: UIScreen.main.bounds.width) * 0.9
+    }
+    
     let onDismiss: (() -> Void)?
 
     init(client: Client, onDismiss: (() -> Void)? = nil) {
@@ -521,7 +526,9 @@ struct ClientProfileView: View {
                 syncService.runManualSync(auth: auth, debug: true)
             }) {
                 AddAddressView(clientsVM: viewModel, client: client)
+                    .presentationDetents([.fraction(dynamicFraction)])
             }
+            
             
             .sheet(item: $clientToEdit, onDismiss: {
             }) { client in

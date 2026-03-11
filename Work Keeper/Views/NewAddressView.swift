@@ -24,12 +24,16 @@ struct AddAddressView: View {
     
     @State private var roomType: String = "кв"
     @State private var entranceType: String = "под"
+    @State private var showStreetsView = false
+    @State private var StreetCharactersTextOpacity: Double = 0
     
     private let roomTypes = ["кв", "оф", "каб"]
     private let entranceTypes = ["под", "вход"]
     
-    @State private var showStreetsView = false
-    @State private var StreetCharactersTextOpacity: Double = 0
+    private var smallPhoneFontSize: CGFloat {
+        UIScreen.main.bounds.width <= 375 ? 13 : 15
+    }
+
     @FocusState private var focusedField: Field?
     @Environment(\.dismiss) var dismiss
     
@@ -48,20 +52,54 @@ struct AddAddressView: View {
             
             VStack {
                 
-                VStack {
-                    Text("Новый адрес для клиента")
-                        .foregroundColor(Color.custom(.mainBlack))
-                        .font(.custom(Montserrat.bold.rawValue, size: 20))
+                VStack(spacing: 0) {
+                    Spacer()
+                        .frame(height: 25)
                     HStack {
-                        Text("\(client.firstName ?? "нет имени")").textCase(.uppercase)
+                        
+                        Text("• ")
+                            .font(.custom(Montserrat.black.rawValue, size: 20))
+                            .foregroundStyle(Color.custom(.pitchBlack))
+                        
+                        Text("Новый адрес")
                             .foregroundColor(Color.custom(.mainBlack))
-                            .font(.custom(Montserrat.regular.rawValue, size: 19))
-                        Text("\(client.lastName ?? "нет фамилии")").textCase(.uppercase)
+                            .font(.custom(Montserrat.bold.rawValue, size: 20))
+                        +
+                        Text(" для клиента")
                             .foregroundColor(Color.custom(.mainBlack))
-                            .font(.custom(Montserrat.regular.rawValue, size: 19))
+                            .font(.custom(Montserrat.regular.rawValue, size: 20))
+                        
+                        Text(" •")
+                            .font(.custom(Montserrat.black.rawValue, size: 20))
+                            .foregroundStyle(Color.custom(.pitchBlack))
                     }
+                   
+                        
+                        HStack {
+                            Text("\(client.firstName ?? "нет имени")").textCase(.uppercase)
+                                .foregroundColor(Color.custom(.mainBlack))
+                                .font(.custom(Montserrat.black.rawValue, size: 19))
+                            Text("\(client.lastName ?? "нет фамилии")").textCase(.uppercase)
+                                .foregroundColor(Color.custom(.mainBlack))
+                                .font(.custom(Montserrat.black.rawValue, size: 19))
+                        }
+                        .padding(.top, 10)
+                    
+                    Spacer()
+                        .frame(height: 15)
                 }
-                .padding(.top, 20)
+                .frame(maxHeight: 300)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedCorner(radius: 40, corners: [.bottomLeft, .bottomRight])
+                        .fill(Color.custom(.bckgFieldGray))
+                        .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
+                )
+                .padding(.horizontal, 0)
+              
+                 
+                
+            
                 
                 VStack(spacing: 4) {
                 //address section
@@ -307,21 +345,27 @@ struct AddAddressView: View {
                 
                 HStack {
                     Toggle(isOn: $isPrivateHouse) {
-                        Text("Только дом")
-                            .font(.custom(Montserrat.regular.rawValue, size: 15))
-                            .foregroundStyle(Color.custom(.pitchBlack))
+                        HStack {
+                            Spacer()
+                            Text("Только дом")
+                                .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                        }
                     }
                     .tint(Color.custom(.taskCompleteGreen))
                     .frame(alignment: .leading)
                     Spacer()
                     Toggle(isOn: $makePrimary) {
-                        Text("Сделать основным")
-                            .font(.custom(Montserrat.regular.rawValue, size: 15))
-                            .frame(alignment: .trailing)
-                            .foregroundStyle(Color.custom(.pitchBlack))
+                        HStack {
+                            Spacer()
+                            Text("Сделать основным")
+                                .font(.custom(Montserrat.regular.rawValue, size: smallPhoneFontSize))
+                                .frame(alignment: .trailing)
+                                .foregroundStyle(Color.custom(.pitchBlack))
+                        }
                     }
                 }
-                .padding(.leading, 38)
+                .padding(.leading, 25)
                 .padding(.trailing, 21)
                 
                 HStack {
@@ -374,6 +418,7 @@ struct AddAddressView: View {
                     .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
             )
             .padding(.horizontal, 4)
+            .padding(.top, 15)
             
             HStack {
                 Button(action: {

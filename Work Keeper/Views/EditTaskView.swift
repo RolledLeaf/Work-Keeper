@@ -225,11 +225,11 @@ struct EditTaskView: View {
                    
                 }
                 .background(
-                    RoundedCorner(radius: 26, corners: [.bottomLeft, .bottomRight, .topRight, .topLeft])
+                    RoundedCorner(radius: 26, corners: [.allCorners])
                         .fill(Color.custom(.bckgFieldGray))
                 )
                 .overlay(
-                    RoundedCorner(radius: 26, corners: [.bottomLeft, .bottomRight, .topRight, .topLeft])
+                    RoundedCorner(radius: 26, corners: [.allCorners])
                         .stroke(Color.custom(.strokeGray), lineWidth: 0.5)
                 )
                 .padding(.horizontal, 3)
