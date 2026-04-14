@@ -309,7 +309,7 @@ struct AddAddressView: View {
                 HStack {
                     HStack(spacing: 6) {
                         Spacer()
-                        Text("эт.")
+                        Text("эт")
                             .font(.custom(Montserrat.regular.rawValue, size: 12))
                             .foregroundStyle(Color.custom(.textTitleGray))
                         Image("deviderVertical")
@@ -454,6 +454,7 @@ struct AddAddressView: View {
                         Rectangle()
                             .tint(Color.custom(.taskCompleteGreen))
                         Text("Сохранить")
+                            .font(.custom(Montserrat.regular.rawValue, size: 15))
                             .foregroundStyle(Color.custom(.mainBlack))
                     }
                 }

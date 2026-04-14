@@ -342,6 +342,22 @@ final class ClientsListViewModel: ObservableObject {
 }
 
 final class CreateClientViewModel: ObservableObject {
+    
+    struct AddressDraft: Identifiable, Equatable {
+        let id = UUID()
+
+        var streetName: String = ""
+        var building: String = ""
+        var apartment: String = ""
+        var entrance: String = ""
+        var floor: String = ""
+        var addressNote: String = ""
+        var isPrivateHouse: Bool = false
+        var makePrimary: Bool = false
+        var roomType: String = "кв"
+        var entranceType: String = "под"
+    }
+    
     @Published var firstName: String = ""
     @Published var lastName: String = ""
     
@@ -357,7 +373,7 @@ final class CreateClientViewModel: ObservableObject {
     @Published var streetName = ""
     @Published var countryCode: String = ""
     @Published var isPrivateHouse: Bool = false
-    
+    @Published var addressDrafts: [AddressDraft] = [AddressDraft()]
     
     @Published var roomType = "кв"
     @Published var entranceType = "под"
@@ -391,15 +407,38 @@ final class CreateClientViewModel: ObservableObject {
         hasRequiredNameAndPhone() && hasUniquePhone()
     }
     
+  
+    
     func createClient() {
         let trimmedFirstName = firstName.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedLastName = lastName.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        let trimmedStreetName = streetName.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedBuilding = building.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedApartment = apartment.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedEntrance = entrance.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedFloor = floor.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // 1) Trim all address drafts
+        let trimmedDrafts = addressDrafts.map { draft in
+            AddressDraft(
+                streetName: draft.streetName.trimmingCharacters(in: .whitespacesAndNewlines),
+                building: draft.building.trimmingCharacters(in: .whitespacesAndNewlines),
+                apartment: draft.apartment.trimmingCharacters(in: .whitespacesAndNewlines),
+                entrance: draft.entrance.trimmingCharacters(in: .whitespacesAndNewlines),
+                floor: draft.floor.trimmingCharacters(in: .whitespacesAndNewlines),
+                addressNote: draft.addressNote.trimmingCharacters(in: .whitespacesAndNewlines),
+                isPrivateHouse: draft.isPrivateHouse,
+                makePrimary: draft.makePrimary,
+                roomType: draft.roomType,
+                entranceType: draft.entranceType
+            )
+        }
+
+        print("""
+        🆕 createClient started
+        👤 Client:
+           firstName: \(trimmedFirstName)
+           lastName: \(trimmedLastName)
+           phone: \(phoneDigits)
+           comment: \(comment.trimmingCharacters(in: .whitespacesAndNewlines))
+        🏠 Address drafts: \(trimmedDrafts.count)
+
+        """)
 
         // 1) Клиент (может быть создан без адреса — например, если он всегда на удалёнке)
         let client = store.createClient(
@@ -410,9 +449,12 @@ final class CreateClientViewModel: ObservableObject {
             comment: comment
         )
 
-        // 2) Если улица не указана — адрес не создаём
-        guard !trimmedStreetName.isBlank else {
-            // Сохраняем/обновляем базовые поля клиента (включая comment через createClient)
+        // 2) Создаём только непустые адреса
+        let nonEmptyDrafts = trimmedDrafts.filter {
+            !$0.streetName.isBlank && !$0.building.isBlank
+        }
+
+        guard !nonEmptyDrafts.isEmpty else {
             store.updateClient(
                 client,
                 firstName: client.firstName ?? "",
@@ -421,46 +463,59 @@ final class CreateClientViewModel: ObservableObject {
                 addresses: [],
                 phone: client.phone ?? ""
             )
+            print("✅ Client created without address. remote/local name=\(client.firstName ?? "") \(client.lastName ?? "") phone=\(client.phone ?? "")")
             return
         }
 
-        // 3) Улица + адрес
-        guard let street = streetStore.createOrFetchStreet(name: trimmedStreetName) else {
-            print("❌ createClient: invalid streetName")
-            store.updateClient(
-                client,
-                firstName: client.firstName ?? "",
-                lastName: client.lastName,
-                comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
-                addresses: [],
-                phone: client.phone ?? ""
+        var savedAddresses: [Address] = []
+
+        for (index, draft) in nonEmptyDrafts.enumerated() {
+            guard let street = streetStore.createOrFetchStreet(name: draft.streetName) else {
+                print("⚠️ Address draft skipped because street creation failed. name=\(client.firstName ?? "") phone=\(client.phone ?? "") street=\(draft.streetName)")
+                continue
+            }
+
+            let address = addressStore.createOrFetchAddress(
+                house: draft.building,
+                apartment: draft.apartment,
+                entrance: draft.entrance,
+                floor: draft.floor,
+                isPrivateHouse: draft.isPrivateHouse,
+                street: street,
+                client: client,
+                isPrimary: draft.makePrimary || (index == 0 && !nonEmptyDrafts.contains(where: { $0.makePrimary })),
+                roomType: draft.roomType,
+                entranceType: draft.entranceType,
+                note: draft.addressNote
             )
-            return
+            savedAddresses.append(address)
         }
 
-        let address = addressStore.createOrFetchAddress(
-            house: trimmedBuilding,
-            apartment: trimmedApartment,
-            entrance: trimmedEntrance,
-            floor: trimmedFloor,
-            isPrivateHouse: isPrivateHouse,
-            street: street,
-            client: client,
-            isPrimary: true,
-            roomType: roomType,
-            entranceType: entranceType,
-            note: addressNote
-        )
-
-        // 4) Обновляем клиента, чтобы адрес оказался в его наборе адресов
         store.updateClient(
             client,
             firstName: client.firstName ?? "",
             lastName: client.lastName,
             comment: comment.trimmingCharacters(in: .whitespacesAndNewlines),
-            addresses: [address],
+            addresses: savedAddresses,
             phone: client.phone ?? ""
         )
+
+        print("✅ Client created successfully. name=\(client.firstName ?? "") phone=\(client.phone ?? "") addresses=\(savedAddresses.count)")
+        for (index, address) in savedAddresses.enumerated() {
+            print("""
+              🏠 Saved address [\(index)]
+                 street: \(address.street?.name ?? "")
+                 house: \(address.house ?? "")
+                 apartment: \(address.apartment ?? "")
+                 entrance: \(address.entrance ?? "")
+                 floor: \(address.floor ?? "")
+                 isPrivateHouse: \(address.isPrivateHouse)
+                 roomType: \(address.roomType ?? "")
+                 entranceType: \(address.entranceType ?? "")
+                 note: \(address.note ?? "")
+                 isPrimary: \(address.isPrimary)
+            """)
+        }
     }
 }
 

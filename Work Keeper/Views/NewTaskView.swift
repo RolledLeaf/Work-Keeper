@@ -199,7 +199,6 @@ struct NewTaskView: View {
     private let maxApartmentCharactersCount: Int = 6
     private let maxEntranceCharactersCount: Int = 4
     private let maxFloorCharactersCount: Int = 4
-    private let maxCountryCodeCharactersCount: Int = 3
     private let maxPhoneNumberCharactersCount: Int = 20
     private let maxContractAmountCharacters: Int = 7
     private let maxCostCharacters: Int = 7
@@ -210,7 +209,7 @@ struct NewTaskView: View {
     @State private var previousPhoneMasked: String = ""
     @State private var alertMessage: String = "Заполните обязательные поля"
     
-    @State private var StreetCharactersTextOpacity: Double = 0
+    @State private var streetCharactersTextOpacity: Double = 0
     @State private var streetChevronOpacity: Double = 1
     @State private var showStreetsView = false
     @State private var showClientListToPickView = false
@@ -301,7 +300,7 @@ struct NewTaskView: View {
             Color.custom(.newTaskBackgroundGray).edgesIgnoringSafeArea(.all)
             
             ScrollView {
-
+                // Start of main VStack
                 VStack(spacing: 3) {
                     VStack  {
                         HStack {
@@ -549,9 +548,9 @@ struct NewTaskView: View {
                                             viewModel.streetName = String(newValue.prefix(maxStreetCharactersCount))
                                         }
                                         if viewModel.streetName.count >= maxStreetCharactersCount  {
-                                            StreetCharactersTextOpacity = 1
+                                            streetCharactersTextOpacity = 1
                                         } else {
-                                            StreetCharactersTextOpacity = 0
+                                            streetCharactersTextOpacity = 0
                                         }
                                     }
                                     .offset(y: 2)
