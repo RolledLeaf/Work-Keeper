@@ -391,6 +391,14 @@ final class CreateClientViewModel: ObservableObject {
         let phone = phoneDigits.trimmingCharacters(in: .whitespacesAndNewlines)
         return !name.isBlank && !phone.isBlank
     }
+    
+    func setPrimaryAddress(draftID: UUID) {
+
+        for index in addressDrafts.indices {
+
+            addressDrafts[index].makePrimary = (addressDrafts[index].id == draftID)
+        }
+    }
 
     /// Проверяет, что номер телефона не занят другим клиентом
     func hasUniquePhone() -> Bool {

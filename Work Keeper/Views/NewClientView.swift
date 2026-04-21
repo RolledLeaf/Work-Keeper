@@ -61,7 +61,7 @@ struct NewClientView: View {
         let onPickStreet: () -> Void
         let onDelete: () -> Void
         let canDelete: Bool
-
+        let onSetPrimary: () -> Void
         let maxStreetCharactersCount: Int
         let maxBuildingCharactersCount: Int
         let maxApartmentCharactersCount: Int
@@ -336,7 +336,18 @@ struct NewClientView: View {
                 
                 HStack {
                     
-                    Toggle(isOn: $draft.makePrimary) {
+                    Toggle(
+                        isOn: Binding(
+                            get: { draft.makePrimary },
+                            set: { newValue in
+                                if newValue {
+                                    onSetPrimary()
+                                } else {
+                                    draft.makePrimary = false
+                                }
+                            }
+                        )
+                    ) {
                         HStack {
                             Spacer()
                             Text("Сделать основным")
@@ -665,6 +676,11 @@ struct NewClientView: View {
                                     },
                                     onDelete: { },
                                     canDelete: viewModel.addressDrafts.count > 1,
+                                    onSetPrimary: {
+
+                                            viewModel.setPrimaryAddress(draftID: draftID)
+
+                                        },
                                     maxStreetCharactersCount: maxStreetCharactersCount,
                                     maxBuildingCharactersCount: maxBuildingCharactersCount,
                                     maxApartmentCharactersCount: maxApartmentCharactersCount,
